@@ -26,7 +26,7 @@ union cmp_object_data_u {
   double   dbl;
   uint64_t array_size;
   uint64_t map_size;
-  uint64_t raw_size;
+  uint64_t str_size;
 };
 
 struct cmp_object_s {
@@ -67,23 +67,23 @@ bool cmp_write_nil(struct cmp_ctx_s *ctx);
 bool cmp_write_true(struct cmp_ctx_s *ctx);
 bool cmp_write_false(struct cmp_ctx_s *ctx);
 
-bool cmp_write_fixraw_marker(struct cmp_ctx_s *ctx, size_t length);
-bool cmp_write_fixraw(struct cmp_ctx_s *ctx, const void *data, size_t length);
-bool cmp_write_raw16_marker(struct cmp_ctx_s *ctx, size_t length);
-bool cmp_write_raw16(struct cmp_ctx_s *ctx, const void *data, size_t length);
-bool cmp_write_raw32_marker(struct cmp_ctx_s *ctx, size_t length);
-bool cmp_write_raw32(struct cmp_ctx_s *ctx, const void *data, size_t length);
-bool cmp_write_raw(struct cmp_ctx_s *ctx, const void *data, size_t length);
+bool cmp_write_fixstr_marker(struct cmp_ctx_s *ctx, size_t size);
+bool cmp_write_fixstr(struct cmp_ctx_s *ctx, const void *data, size_t size);
+bool cmp_write_str16_marker(struct cmp_ctx_s *ctx, size_t size);
+bool cmp_write_str16(struct cmp_ctx_s *ctx, const void *data, size_t size);
+bool cmp_write_str32_marker(struct cmp_ctx_s *ctx, size_t size);
+bool cmp_write_str32(struct cmp_ctx_s *ctx, const void *data, size_t size);
+bool cmp_write_str(struct cmp_ctx_s *ctx, const void *data, size_t size);
 
-bool cmp_write_fixarray(struct cmp_ctx_s *ctx, size_t length);
-bool cmp_write_array16(struct cmp_ctx_s *ctx, size_t length);
-bool cmp_write_array32(struct cmp_ctx_s *ctx, size_t length);
-bool cmp_write_array(struct cmp_ctx_s *ctx, size_t length);
+bool cmp_write_fixarray(struct cmp_ctx_s *ctx, size_t size);
+bool cmp_write_array16(struct cmp_ctx_s *ctx, size_t size);
+bool cmp_write_array32(struct cmp_ctx_s *ctx, size_t size);
+bool cmp_write_array(struct cmp_ctx_s *ctx, size_t size);
 
-bool cmp_write_fixmap(struct cmp_ctx_s *ctx, size_t length);
-bool cmp_write_map16(struct cmp_ctx_s *ctx, size_t length);
-bool cmp_write_map32(struct cmp_ctx_s *ctx, size_t length);
-bool cmp_write_map(struct cmp_ctx_s *ctx, size_t length);
+bool cmp_write_fixmap(struct cmp_ctx_s *ctx, size_t size);
+bool cmp_write_map16(struct cmp_ctx_s *ctx, size_t size);
+bool cmp_write_map32(struct cmp_ctx_s *ctx, size_t size);
+bool cmp_write_map(struct cmp_ctx_s *ctx, size_t size);
 
 bool cmp_write_object(struct cmp_ctx_s *ctx, struct cmp_object_s *obj);
 
@@ -110,12 +110,12 @@ bool cmp_read_nil(struct cmp_ctx_s *ctx);
 bool cmp_read_bool(struct cmp_ctx_s *ctx, bool *b);
 bool cmp_read_bool_as_u8(struct cmp_ctx_s *ctx, uint8_t *b);
 
-bool cmp_read_raw_length(struct cmp_ctx_s *ctx, size_t *length);
-bool cmp_read_raw(struct cmp_ctx_s *ctx, void *data, size_t *length);
+bool cmp_read_str_size(struct cmp_ctx_s *ctx, size_t *size);
+bool cmp_read_str(struct cmp_ctx_s *ctx, void *data, size_t *size);
 
-bool cmp_read_array(struct cmp_ctx_s *ctx, size_t *length);
+bool cmp_read_array(struct cmp_ctx_s *ctx, size_t *size);
 
-bool cmp_read_map(struct cmp_ctx_s *ctx, size_t *length);
+bool cmp_read_map(struct cmp_ctx_s *ctx, size_t *size);
 
 bool cmp_read_object(struct cmp_ctx_s *ctx, struct cmp_object_s *obj);
 

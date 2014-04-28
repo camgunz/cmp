@@ -10,9 +10,15 @@ enum {
   MP_POSITIVE_FIXNUM,
   MP_FIXMAP,
   MP_FIXARRAY,
-  MP_FIXRAW,
+  MP_FIXSTR,
   MP_NIL,
   MP_BOOLEAN,
+  MP_B8,
+  MP_B16,
+  MP_B32,
+  MP_EXT8,
+  MP_EXT16,
+  MP_EXT32,
   MP_FLOAT,
   MP_DOUBLE,
   MP_U8,
@@ -23,8 +29,14 @@ enum {
   MP_S16,
   MP_S32,
   MP_S64,
-  MP_RAW16,
-  MP_RAW32,
+  MP_FIXEXT1,
+  MP_FIXEXT2,
+  MP_FIXEXT4,
+  MP_FIXEXT8,
+  MP_FIXEXT16,
+  MP_STR8,
+  MP_STR16,
+  MP_STR32,
   MP_ARRAY16,
   MP_ARRAY32,
   MP_MAP16,
@@ -36,10 +48,16 @@ enum {
   POSITIVE_FIXNUM_MARKER = 0x00,
   FIXMAP_MARKER          = 0x80,
   FIXARRAY_MARKER        = 0x90,
-  FIXRAW_MARKER          = 0xA0,
+  FIXSTR_MARKER          = 0xA0,
   NIL_MARKER             = 0xC0,
   FALSE_MARKER           = 0xC2,
   TRUE_MARKER            = 0xC3,
+  B8_MARKER              = 0xC4,
+  B16_MARKER             = 0xC5,
+  B32_MARKER             = 0xC6,
+  EXT8_MARKER            = 0xC7,
+  EXT16_MARKER           = 0xC8,
+  EXT32_MARKER           = 0xC9,
   FLOAT_MARKER           = 0xCA,
   DOUBLE_MARKER          = 0xCB,
   U8_MARKER              = 0xCC,
@@ -50,8 +68,14 @@ enum {
   S16_MARKER             = 0xD1,
   S32_MARKER             = 0xD2,
   S64_MARKER             = 0xD3,
-  RAW16_MARKER           = 0xDA,
-  RAW32_MARKER           = 0xDB,
+  FIXEXT1_MARKER         = 0xD4,
+  FIXEXT2_MARKER         = 0xD5,
+  FIXEXT4_MARKER         = 0xD6,
+  FIXEXT8_MARKER         = 0xD7,
+  FIXEXT16_MARKER        = 0xD8,
+  STR8_MARKER            = 0xD9,
+  STR16_MARKER           = 0xDA,
+  STR32_MARKER           = 0xDB,
   ARRAY16_MARKER         = 0xDC,
   ARRAY32_MARKER         = 0xDD,
   MAP16_MARKER           = 0xDE,
@@ -63,13 +87,13 @@ enum {
   POSITIVE_FIXNUM_SIZE = 0x7F,
   FIXARRAY_SIZE        = 0xF,
   FIXMAP_SIZE          = 0xF,
-  FIXRAW_SIZE          = 0x1F,
+  FIXSTR_SIZE          = 0x1F,
   NEGATIVE_FIXNUM_SIZE = 0x1F
 };
 
 enum {
   ERROR_NONE,
-  RAW_DATA_LENGTH_TOO_LONG_ERROR,
+  STR_DATA_LENGTH_TOO_LONG_ERROR,
   ARRAY_LENGTH_TOO_LONG_ERROR,
   MAP_LENGTH_TOO_LONG_ERROR,
   INPUT_VALUE_TOO_LARGE_ERROR,
@@ -86,7 +110,7 @@ enum {
 
 const char *cmp_error_messages[ERROR_MAX + 1] = {
   "No Error",
-  "Specified raw data length is too long (> 0xFFFFFFFF)",
+  "Specified string data length is too long (> 0xFFFFFFFF)",
   "Specified array length is too long (> 0xFFFFFFFF)",
   "Specified map length is too long (> 0xFFFFFFFF)",
   "Input value is too large",
@@ -96,8 +120,8 @@ const char *cmp_error_messages[ERROR_MAX + 1] = {
   "Error reading packed data",
   "Error writing packed data",
   "Invalid type",
-  "Error reading length",
-  "Error writing length",
+  "Error reading size",
+  "Error writing size",
   "Max Error"
 };
 
@@ -381,180 +405,180 @@ bool cmp_write_false(struct cmp_ctx_s *ctx) {
   return write_type_marker(ctx, FALSE_MARKER);
 }
 
-bool cmp_write_fixraw_marker(struct cmp_ctx_s *ctx, size_t length) {
-  return write_fixed_value(ctx, FIXRAW_MARKER | (length & FIXRAW_SIZE));
+bool cmp_write_fixstr_marker(struct cmp_ctx_s *ctx, size_t size) {
+  return write_fixed_value(ctx, FIXSTR_MARKER | (size & FIXSTR_SIZE));
 }
 
-bool cmp_write_fixraw(struct cmp_ctx_s *ctx, const void *data, size_t length) {
-  if (!cmp_write_fixraw_marker(ctx, length))
+bool cmp_write_fixstr(struct cmp_ctx_s *ctx, const void *data, size_t size) {
+  if (!cmp_write_fixstr_marker(ctx, size))
     return false;
 
-  if (ctx->write(ctx, data, length))
+  if (ctx->write(ctx, data, size))
     return true;
 
   set_error(ctx, DATA_WRITING_ERROR);
   return false;
 }
 
-bool cmp_write_raw16_marker(struct cmp_ctx_s *ctx, size_t length) {
-  if (!write_type_marker(ctx, RAW16_MARKER))
+bool cmp_write_str16_marker(struct cmp_ctx_s *ctx, size_t size) {
+  if (!write_type_marker(ctx, STR16_MARKER))
     return false;
 
-  length = b16(length);
+  size = b16(size);
 
-  if (ctx->write(ctx, &length, sizeof(uint16_t)))
+  if (ctx->write(ctx, &size, sizeof(uint16_t)))
     return true;
 
   set_error(ctx, LENGTH_WRITING_ERROR);
   return false;
 }
 
-bool cmp_write_raw16(struct cmp_ctx_s *ctx, const void *data, size_t length) {
-  if (!cmp_write_raw16_marker(ctx, length))
+bool cmp_write_str16(struct cmp_ctx_s *ctx, const void *data, size_t size) {
+  if (!cmp_write_str16_marker(ctx, size))
     return false;
 
-  if (ctx->write(ctx, data, length))
+  if (ctx->write(ctx, data, size))
     return true;
 
   set_error(ctx, DATA_WRITING_ERROR);
   return false;
 }
 
-bool cmp_write_raw32_marker(struct cmp_ctx_s *ctx, size_t length) {
-  if (!write_type_marker(ctx, RAW32_MARKER))
+bool cmp_write_str32_marker(struct cmp_ctx_s *ctx, size_t size) {
+  if (!write_type_marker(ctx, STR32_MARKER))
     return false;
 
-  length = b32(length);
+  size = b32(size);
 
-  if (ctx->write(ctx, &length, sizeof(uint32_t)))
+  if (ctx->write(ctx, &size, sizeof(uint32_t)))
     return true;
 
   set_error(ctx, LENGTH_WRITING_ERROR);
   return false;
 }
 
-bool cmp_write_raw32(struct cmp_ctx_s *ctx, const void *data, size_t length) {
-  if (!cmp_write_raw32_marker(ctx, length))
+bool cmp_write_str32(struct cmp_ctx_s *ctx, const void *data, size_t size) {
+  if (!cmp_write_str32_marker(ctx, size))
     return false;
 
-  if (ctx->write(ctx, data, length))
+  if (ctx->write(ctx, data, size))
     return true;
 
   set_error(ctx, DATA_WRITING_ERROR);
   return false;
 }
 
-bool cmp_write_raw_marker(struct cmp_ctx_s *ctx, size_t length) {
-  if (length <= FIXRAW_SIZE)
-    return cmp_write_fixraw_marker(ctx, length);
+bool cmp_write_str_marker(struct cmp_ctx_s *ctx, size_t size) {
+  if (size <= FIXSTR_SIZE)
+    return cmp_write_fixstr_marker(ctx, size);
 
-  if (length <= 0xFFFF)
-    return cmp_write_raw16_marker(ctx, length);
+  if (size <= 0xFFFF)
+    return cmp_write_str16_marker(ctx, size);
 
-  if (length <= 0xFFFFFFFF)
-    return cmp_write_raw16_marker(ctx, length);
-
-  set_error(ctx, INPUT_VALUE_TOO_LARGE_ERROR);
-  return false;
-}
-
-bool cmp_write_raw(struct cmp_ctx_s *ctx, const void *data, size_t length) {
-  if (length <= FIXRAW_SIZE)
-    return cmp_write_fixraw(ctx, data, length);
-
-  if (length <= 0xFFFF)
-    return cmp_write_raw16(ctx, data, length);
-
-  if (length <= 0xFFFFFFFF)
-    return cmp_write_raw16(ctx, data, length);
+  if (size <= 0xFFFFFFFF)
+    return cmp_write_str16_marker(ctx, size);
 
   set_error(ctx, INPUT_VALUE_TOO_LARGE_ERROR);
   return false;
 }
 
-bool cmp_write_fixarray(struct cmp_ctx_s *ctx, size_t length) {
-  return write_fixed_value(ctx, FIXARRAY_MARKER | (length & FIXARRAY_SIZE));
+bool cmp_write_str(struct cmp_ctx_s *ctx, const void *data, size_t size) {
+  if (size <= FIXSTR_SIZE)
+    return cmp_write_fixstr(ctx, data, size);
+
+  if (size <= 0xFFFF)
+    return cmp_write_str16(ctx, data, size);
+
+  if (size <= 0xFFFFFFFF)
+    return cmp_write_str16(ctx, data, size);
+
+  set_error(ctx, INPUT_VALUE_TOO_LARGE_ERROR);
+  return false;
 }
 
-bool cmp_write_array16(struct cmp_ctx_s *ctx, size_t length) {
+bool cmp_write_fixarray(struct cmp_ctx_s *ctx, size_t size) {
+  return write_fixed_value(ctx, FIXARRAY_MARKER | (size & FIXARRAY_SIZE));
+}
+
+bool cmp_write_array16(struct cmp_ctx_s *ctx, size_t size) {
   if (!write_type_marker(ctx, ARRAY16_MARKER))
     return false;
 
-  length = b16(length);
+  size = b16(size);
 
-  if (ctx->write(ctx, &length, sizeof(uint16_t)))
+  if (ctx->write(ctx, &size, sizeof(uint16_t)))
     return true;
 
   set_error(ctx, LENGTH_WRITING_ERROR);
   return false;
 }
 
-bool cmp_write_array32(struct cmp_ctx_s *ctx, size_t length) {
+bool cmp_write_array32(struct cmp_ctx_s *ctx, size_t size) {
   if (!write_type_marker(ctx, ARRAY32_MARKER))
     return false;
 
-  length = b32(length);
+  size = b32(size);
 
-  if (ctx->write(ctx, &length, sizeof(uint32_t)))
+  if (ctx->write(ctx, &size, sizeof(uint32_t)))
     return true;
 
   set_error(ctx, LENGTH_WRITING_ERROR);
   return false;
 }
 
-bool cmp_write_array(struct cmp_ctx_s *ctx, size_t length) {
-  if (length <= FIXARRAY_SIZE)
-    return cmp_write_fixarray(ctx, length);
+bool cmp_write_array(struct cmp_ctx_s *ctx, size_t size) {
+  if (size <= FIXARRAY_SIZE)
+    return cmp_write_fixarray(ctx, size);
 
-  if (length <= 0xFFFF)
-    return cmp_write_array16(ctx, length);
+  if (size <= 0xFFFF)
+    return cmp_write_array16(ctx, size);
 
-  if (length <= 0xFFFFFFFF)
-    return cmp_write_array32(ctx, length);
+  if (size <= 0xFFFFFFFF)
+    return cmp_write_array32(ctx, size);
 
   set_error(ctx, INPUT_VALUE_TOO_LARGE_ERROR);
   return false;
 }
 
-bool cmp_write_fixmap(struct cmp_ctx_s *ctx, size_t length) {
-  return write_fixed_value(ctx, FIXMAP_MARKER | (length & FIXMAP_SIZE));
+bool cmp_write_fixmap(struct cmp_ctx_s *ctx, size_t size) {
+  return write_fixed_value(ctx, FIXMAP_MARKER | (size & FIXMAP_SIZE));
 }
 
-bool cmp_write_map16(struct cmp_ctx_s *ctx, size_t length) {
+bool cmp_write_map16(struct cmp_ctx_s *ctx, size_t size) {
   if (!write_type_marker(ctx, MAP16_MARKER))
     return false;
 
-  length = b16(length);
+  size = b16(size);
 
-  if (ctx->write(ctx, &length, sizeof(uint16_t)))
+  if (ctx->write(ctx, &size, sizeof(uint16_t)))
     return true;
 
   set_error(ctx, LENGTH_WRITING_ERROR);
   return false;
 }
 
-bool cmp_write_map32(struct cmp_ctx_s *ctx, size_t length) {
+bool cmp_write_map32(struct cmp_ctx_s *ctx, size_t size) {
   if (!write_type_marker(ctx, MAP32_MARKER))
     return false;
 
-  length = b32(length);
+  size = b32(size);
 
-  if (ctx->write(ctx, &length, sizeof(uint32_t)))
+  if (ctx->write(ctx, &size, sizeof(uint32_t)))
     return true;
 
   set_error(ctx, LENGTH_WRITING_ERROR);
   return false;
 }
 
-bool cmp_write_map(struct cmp_ctx_s *ctx, size_t length) {
-  if (length <= FIXMAP_SIZE)
-    return cmp_write_fixmap(ctx, length);
+bool cmp_write_map(struct cmp_ctx_s *ctx, size_t size) {
+  if (size <= FIXMAP_SIZE)
+    return cmp_write_fixmap(ctx, size);
 
-  if (length <= 0xFFFF)
-    return cmp_write_map16(ctx, length);
+  if (size <= 0xFFFF)
+    return cmp_write_map16(ctx, size);
 
-  if (length <= 0xFFFFFFFF)
-    return cmp_write_map32(ctx, length);
+  if (size <= 0xFFFFFFFF)
+    return cmp_write_map32(ctx, size);
 
   set_error(ctx, INPUT_VALUE_TOO_LARGE_ERROR);
   return false;
@@ -568,8 +592,8 @@ bool cmp_write_object(struct cmp_ctx_s *ctx, struct cmp_object_s *obj) {
       return cmp_write_fixmap(ctx, obj->as.map_size);
     case MP_FIXARRAY:
       return cmp_write_fixarray(ctx, obj->as.array_size);
-    case MP_FIXRAW:
-      return cmp_write_fixraw_marker(ctx, obj->as.raw_size);
+    case MP_FIXSTR:
+      return cmp_write_fixstr_marker(ctx, obj->as.str_size);
     case MP_NIL:
       return cmp_write_nil(ctx);
     case MP_BOOLEAN:
@@ -597,10 +621,10 @@ bool cmp_write_object(struct cmp_ctx_s *ctx, struct cmp_object_s *obj) {
       return cmp_write_s32(ctx, obj->as.s32);
     case MP_S64:
       return cmp_write_s64(ctx, obj->as.s64);
-    case MP_RAW16:
-      return cmp_write_raw16_marker(ctx, obj->as.raw_size);
-    case MP_RAW32:
-      return cmp_write_raw32_marker(ctx, obj->as.raw_size);
+    case MP_STR16:
+      return cmp_write_str16_marker(ctx, obj->as.str_size);
+    case MP_STR32:
+      return cmp_write_str32_marker(ctx, obj->as.str_size);
     case MP_ARRAY16:
       return cmp_write_array16(ctx, obj->as.array_size);
     case MP_ARRAY32:
@@ -944,34 +968,34 @@ bool cmp_read_bool_as_u8(struct cmp_ctx_s *ctx, uint8_t *b) {
   return true;
 }
 
-bool cmp_read_raw_length(struct cmp_ctx_s *ctx, size_t *length) {
+bool cmp_read_str_size(struct cmp_ctx_s *ctx, size_t *size) {
   uint8_t type_marker = 0;
-  uint16_t raw_size_16 = 0;
-  uint32_t raw_size_32 = 0;
+  uint16_t str_size_16 = 0;
+  uint32_t str_size_32 = 0;
 
   if (!read_type_marker(ctx, &type_marker))
     return false;
 
-  if ((type_marker & FIXRAW_MARKER) == FIXRAW_MARKER) {
-    *length = type_marker & FIXRAW_SIZE;
+  if ((type_marker & FIXSTR_MARKER) == FIXSTR_MARKER) {
+    *size = type_marker & FIXSTR_SIZE;
     return true;
   }
 
-  if (type_marker == RAW16_MARKER) {
-    if (!ctx->read(ctx, &raw_size_16, sizeof(uint16_t))) {
+  if (type_marker == STR16_MARKER) {
+    if (!ctx->read(ctx, &str_size_16, sizeof(uint16_t))) {
       set_error(ctx, LENGTH_READING_ERROR);
       return false;
     }
-    *length = b16(raw_size_16);
+    *size = b16(str_size_16);
     return true;
   }
 
-  if (type_marker == RAW32_MARKER) {
-    if (!ctx->read(ctx, &raw_size_32, sizeof(uint32_t))) {
+  if (type_marker == STR32_MARKER) {
+    if (!ctx->read(ctx, &str_size_32, sizeof(uint32_t))) {
       set_error(ctx, LENGTH_READING_ERROR);
       return false;
     }
-    *length = b32(raw_size_32);
+    *size = b32(str_size_32);
     return true;
   }
 
@@ -979,27 +1003,27 @@ bool cmp_read_raw_length(struct cmp_ctx_s *ctx, size_t *length) {
   return false;
 }
 
-bool cmp_read_raw(struct cmp_ctx_s *ctx, void *data, size_t *length) {
-  size_t raw_length = 0;
+bool cmp_read_str(struct cmp_ctx_s *ctx, void *data, size_t *size) {
+  size_t str_size = 0;
 
-  if (!cmp_read_raw_length(ctx, &raw_length))
+  if (!cmp_read_str_size(ctx, &str_size))
     return false;
 
-  if (raw_length > *length) {
-    set_error(ctx, RAW_DATA_LENGTH_TOO_LONG_ERROR);
+  if (str_size > *size) {
+    set_error(ctx, STR_DATA_LENGTH_TOO_LONG_ERROR);
     return false;
   }
 
-  if (!ctx->read(ctx, data, raw_length)) {
+  if (!ctx->read(ctx, data, str_size)) {
     set_error(ctx, DATA_READING_ERROR);
     return false;
   }
 
-  *length = raw_length;
+  *size = str_size;
   return true;
 }
 
-bool cmp_read_array(struct cmp_ctx_s *ctx, size_t *length) {
+bool cmp_read_array(struct cmp_ctx_s *ctx, size_t *size) {
   uint8_t type_marker = 0;
   uint16_t array_size_16 = 0;
   uint32_t array_size_32 = 0;
@@ -1008,7 +1032,7 @@ bool cmp_read_array(struct cmp_ctx_s *ctx, size_t *length) {
     return false;
 
   if ((type_marker & FIXARRAY_MARKER) == FIXARRAY_MARKER) {
-    *length = type_marker & FIXARRAY_SIZE;
+    *size = type_marker & FIXARRAY_SIZE;
     return true;
   }
 
@@ -1017,7 +1041,7 @@ bool cmp_read_array(struct cmp_ctx_s *ctx, size_t *length) {
       set_error(ctx, LENGTH_READING_ERROR);
       return false;
     }
-    *length = b16(array_size_16);
+    *size = b16(array_size_16);
     return true;
   }
 
@@ -1026,7 +1050,7 @@ bool cmp_read_array(struct cmp_ctx_s *ctx, size_t *length) {
       set_error(ctx, LENGTH_READING_ERROR);
       return false;
     }
-    *length = b32(array_size_32);
+    *size = b32(array_size_32);
     return true;
   }
 
@@ -1034,7 +1058,7 @@ bool cmp_read_array(struct cmp_ctx_s *ctx, size_t *length) {
   return false;
 }
 
-bool cmp_read_map(struct cmp_ctx_s *ctx, size_t *length) {
+bool cmp_read_map(struct cmp_ctx_s *ctx, size_t *size) {
   uint8_t type_marker = 0;
   uint16_t map_size_16 = 0;
   uint32_t map_size_32 = 0;
@@ -1043,7 +1067,7 @@ bool cmp_read_map(struct cmp_ctx_s *ctx, size_t *length) {
     return false;
 
   if ((type_marker & FIXMAP_MARKER) == FIXMAP_MARKER) {
-    *length = type_marker & FIXMAP_SIZE;
+    *size = type_marker & FIXMAP_SIZE;
     return true;
   }
 
@@ -1052,7 +1076,7 @@ bool cmp_read_map(struct cmp_ctx_s *ctx, size_t *length) {
       set_error(ctx, LENGTH_READING_ERROR);
       return false;
     }
-    *length = b16(map_size_16);
+    *size = b16(map_size_16);
     return true;
   }
 
@@ -1061,7 +1085,7 @@ bool cmp_read_map(struct cmp_ctx_s *ctx, size_t *length) {
       set_error(ctx, LENGTH_READING_ERROR);
       return false;
     }
-    *length = b32(map_size_32);
+    *size = b32(map_size_32);
     return true;
   }
 
@@ -1089,8 +1113,8 @@ bool cmp_read_object(struct cmp_ctx_s *ctx, struct cmp_object_s *obj) {
     obj->as.array_size = type_marker & FIXARRAY_SIZE;
   }
   else if (type_marker <= 0xBF) {
-    obj->type = MP_FIXRAW;
-    obj->as.raw_size = type_marker & FIXRAW_SIZE;
+    obj->type = MP_FIXSTR;
+    obj->as.str_size = type_marker & FIXSTR_SIZE;
   }
   else if (type_marker == NIL_MARKER) {
     obj->type = MP_NIL;
@@ -1182,21 +1206,21 @@ bool cmp_read_object(struct cmp_ctx_s *ctx, struct cmp_object_s *obj) {
     }
     obj->as.u64 = b64(obj->as.u64);
   }
-  else if (type_marker == RAW16_MARKER) {
-    obj->type = MP_RAW16;
+  else if (type_marker == STR16_MARKER) {
+    obj->type = MP_STR16;
     if (!ctx->read(ctx, &obj->as.u16, sizeof(uint16_t))) {
       set_error(ctx, DATA_READING_ERROR);
       return false;
     }
-    obj->as.raw_size = b16(obj->as.u16);
+    obj->as.str_size = b16(obj->as.u16);
   }
-  else if (type_marker == RAW32_MARKER) {
-    obj->type = MP_RAW32;
+  else if (type_marker == STR32_MARKER) {
+    obj->type = MP_STR32;
     if (!ctx->read(ctx, &obj->as.u32, sizeof(uint32_t))) {
       set_error(ctx, DATA_READING_ERROR);
       return false;
     }
-    obj->as.raw_size = b32(obj->as.u32);
+    obj->as.str_size = b32(obj->as.u32);
   }
   else if (type_marker == ARRAY16_MARKER) {
     obj->type = MP_ARRAY16;
@@ -1204,7 +1228,7 @@ bool cmp_read_object(struct cmp_ctx_s *ctx, struct cmp_object_s *obj) {
       set_error(ctx, DATA_READING_ERROR);
       return false;
     }
-    obj->as.raw_size = b16(obj->as.u16);
+    obj->as.str_size = b16(obj->as.u16);
   }
   else if (type_marker == ARRAY32_MARKER) {
     obj->type = MP_ARRAY32;
@@ -1212,7 +1236,7 @@ bool cmp_read_object(struct cmp_ctx_s *ctx, struct cmp_object_s *obj) {
       set_error(ctx, DATA_READING_ERROR);
       return false;
     }
-    obj->as.raw_size = b32(obj->as.u32);
+    obj->as.str_size = b32(obj->as.u32);
   }
   else if (type_marker == MAP16_MARKER) {
     obj->type = MP_MAP16;
@@ -1220,7 +1244,7 @@ bool cmp_read_object(struct cmp_ctx_s *ctx, struct cmp_object_s *obj) {
       set_error(ctx, DATA_READING_ERROR);
       return false;
     }
-    obj->as.raw_size = b16(obj->as.u16);
+    obj->as.str_size = b16(obj->as.u16);
   }
   else if (type_marker == MAP32_MARKER) {
     obj->type = MP_MAP32;
@@ -1228,7 +1252,7 @@ bool cmp_read_object(struct cmp_ctx_s *ctx, struct cmp_object_s *obj) {
       set_error(ctx, DATA_READING_ERROR);
       return false;
     }
-    obj->as.raw_size = b32(obj->as.u32);
+    obj->as.str_size = b32(obj->as.u32);
   }
   else if (type_marker >= NEGATIVE_FIXNUM_MARKER) {
     obj->type = MP_NEGATIVE_FIXNUM;
