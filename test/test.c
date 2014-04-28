@@ -15,12 +15,13 @@ static bool buf_reader(struct cmp_ctx_s *ctx, void *data, size_t limit) {
   return M_BufferRead(buf, data, limit);
 }
 
-static size_t buf_writer(struct cmp_ctx_s *ctx, void *data, size_t count) {
+static size_t buf_writer(struct cmp_ctx_s *ctx, const void *data, size_t sz) {
   buf_t *buf = (buf_t *)ctx->buf;
+  size_t pos = M_BufferGetCursor(buf);
 
-  M_BufferWrite(buf, data, count);
+  M_BufferWrite(buf, (void *)data, sz);
 
-  return count;
+  return M_BufferGetCursor(buf) - pos;
 }
 
 
