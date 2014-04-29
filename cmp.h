@@ -6,41 +6,41 @@ typedef size_t (*cmp_writer)(
 );
 
 enum {
-  CMP_POSITIVE_FIXNUM, /*  0 */
-  CMP_FIXMAP,          /*  1 */
-  CMP_FIXARRAY,        /*  2 */
-  CMP_FIXSTR,          /*  3 */
-  CMP_NIL,             /*  4 */
-  CMP_BOOLEAN,         /*  5 */
-  CMP_BIN8,            /*  6 */
-  CMP_BIN16,           /*  7 */
-  CMP_BIN32,           /*  8 */
-  CMP_EXT8,            /*  9 */
-  CMP_EXT16,           /* 10 */
-  CMP_EXT32,           /* 11 */
-  CMP_FLOAT,           /* 12 */
-  CMP_DOUBLE,          /* 13 */
-  CMP_UINT8,           /* 14 */
-  CMP_UINT16,          /* 15 */
-  CMP_UINT32,          /* 16 */
-  CMP_UINT64,          /* 17 */
-  CMP_SINT8,           /* 18 */
-  CMP_SINT16,          /* 19 */
-  CMP_SINT32,          /* 20 */
-  CMP_SINT64,          /* 21 */
-  CMP_FIXEXT1,         /* 22 */
-  CMP_FIXEXT2,         /* 23 */
-  CMP_FIXEXT4,         /* 24 */
-  CMP_FIXEXT8,         /* 25 */
-  CMP_FIXEXT16,        /* 26 */
-  CMP_STR8,            /* 27 */
-  CMP_STR16,           /* 28 */
-  CMP_STR32,           /* 29 */
-  CMP_ARRAY16,         /* 30 */
-  CMP_ARRAY32,         /* 31 */
-  CMP_MAP16,           /* 32 */
-  CMP_MAP32,           /* 33 */
-  CMP_NEGATIVE_FIXNUM  /* 34 */
+  CMP_TYPE_POSITIVE_FIXNUM, /*  0 */
+  CMP_TYPE_FIXMAP,          /*  1 */
+  CMP_TYPE_FIXARRAY,        /*  2 */
+  CMP_TYPE_FIXSTR,          /*  3 */
+  CMP_TYPE_NIL,             /*  4 */
+  CMP_TYPE_BOOLEAN,         /*  5 */
+  CMP_TYPE_BIN8,            /*  6 */
+  CMP_TYPE_BIN16,           /*  7 */
+  CMP_TYPE_BIN32,           /*  8 */
+  CMP_TYPE_EXT8,            /*  9 */
+  CMP_TYPE_EXT16,           /* 10 */
+  CMP_TYPE_EXT32,           /* 11 */
+  CMP_TYPE_FLOAT,           /* 12 */
+  CMP_TYPE_DOUBLE,          /* 13 */
+  CMP_TYPE_UINT8,           /* 14 */
+  CMP_TYPE_UINT16,          /* 15 */
+  CMP_TYPE_UINT32,          /* 16 */
+  CMP_TYPE_UINT64,          /* 17 */
+  CMP_TYPE_SINT8,           /* 18 */
+  CMP_TYPE_SINT16,          /* 19 */
+  CMP_TYPE_SINT32,          /* 20 */
+  CMP_TYPE_SINT64,          /* 21 */
+  CMP_TYPE_FIXEXT1,         /* 22 */
+  CMP_TYPE_FIXEXT2,         /* 23 */
+  CMP_TYPE_FIXEXT4,         /* 24 */
+  CMP_TYPE_FIXEXT8,         /* 25 */
+  CMP_TYPE_FIXEXT16,        /* 26 */
+  CMP_TYPE_STR8,            /* 27 */
+  CMP_TYPE_STR16,           /* 28 */
+  CMP_TYPE_STR32,           /* 29 */
+  CMP_TYPE_ARRAY16,         /* 30 */
+  CMP_TYPE_ARRAY32,         /* 31 */
+  CMP_TYPE_MAP16,           /* 32 */
+  CMP_TYPE_MAP32,           /* 33 */
+  CMP_TYPE_NEGATIVE_FIXNUM  /* 34 */
 };
 
 typedef struct cmp_ext_s {
