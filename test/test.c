@@ -124,17 +124,21 @@ bool run_msgpack_tests(void) {
   if (!buffers_equal) {
     M_BufferPrint(&in_buf);
     M_BufferPrint(&out_buf);
-    return true;
+    return false;
   }
 
   return true;
+}
+
+bool run_ext_type_texts(void) {
+
 }
 
 int main(void) {
 
   run_test(msgpack);
 
-  puts("\nAll tests pass!\n");
+  printf("\nAll tests pass!\n\n");
   return EXIT_SUCCESS;
 }
 

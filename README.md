@@ -130,3 +130,7 @@ flags, and generates no compilation errors.
 There is no build system for CMP.  The programmer can drop `cmp.c` and `cmp.h`
 in their source tree and modify as necessary.  No special compiler settings are required to build it.
 
+## To Do
+
+  - Improve test coverage
+
