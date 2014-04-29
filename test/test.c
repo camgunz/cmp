@@ -148,6 +148,67 @@ bool run_fixedint_tests(void) {
   }
   cmp.error = 0;
 
+  if (cmp_write_ufix(&cmp, -128)) {
+    set_error("Wrote a negative unsigned fixed integer (-128).\n");
+    return false;
+  }
+  cmp.error = 0;
+
+  if (!cmp_write_ufix(&cmp, 0)) {
+    set_error("Failed to write ufix (0): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+  cmp.error = 0;
+
+  if (!cmp_write_ufix(&cmp, -0)) {
+    set_error("Failed to write ufix (-0): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+  cmp.error = 0;
+
+  if (cmp_write_ufix(&cmp, -1)) {
+    set_error("Wrote a negative unsigned fixed integer.\n");
+    return false;
+  }
+  cmp.error = 0;
+
+  if (cmp_write_ufix(&cmp, -128)) {
+    set_error("Wrote a negative unsigned fixed integer.\n");
+    return false;
+  }
+  cmp.error = 0;
+
+  if (cmp_write_sfix(&cmp, -33)) {
+    set_error("Wrote a negative signed fixed integer that was too large.\n");
+    return false;
+  }
+  cmp.error = 0;
+
+  if (!cmp_write_sfix(&cmp, 0)) {
+    set_error("Failed to write sfix (0): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sfix(&cmp, -0)) {
+    set_error("Failed to write sfix (-0): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sfix(&cmp, 127)) {
+    set_error("Failed to write sfix (127): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sfix(&cmp, -32)) {
+    set_error("Failed to write sfix (-32): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (cmp_write_sfix(&cmp, 128)) {
+    set_error("Wrote 128 as a signed fixed integer.\n");
+    return false;
+  }
+
   if (cmp_write_nfix(&cmp, 0)) {
     set_error("Wrote 0 as a negative fixed integer.\n");
     return false;
@@ -200,9 +261,317 @@ bool run_fixedint_tests(void) {
   return true;
 }
 
+bool run_number_tests(void) {
+  buf_t buf;
+  cmp_ctx_t cmp;
+
+  setup_cmp_and_buf(&cmp, &buf);
+
+  if (!cmp_write_sint(&cmp, 0)) {
+    set_error("Failed to write sint (0): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sint(&cmp, -0)) {
+    set_error("Failed to write sint (0): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sint(&cmp, 1)) {
+    set_error("Failed to write sint (1): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sint(&cmp, -1)) {
+    set_error("Failed to write sint (1): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sint(&cmp, 0x7F)) {
+    set_error("Failed to write sint (0x80): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sint(&cmp, 0x80)) {
+    set_error("Failed to write sint (0x80): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sint(&cmp, 0xFF)) {
+    set_error("Failed to write sint (0xFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sint(&cmp, 0xFFF)) {
+    set_error("Failed to write sint (0xFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sint(&cmp, 0xFFFF)) {
+    set_error("Failed to write sint (0xFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sint(&cmp, 0xFFFFF)) {
+    set_error("Failed to write sint (0xFFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sint(&cmp, 0xFFFFFF)) {
+    set_error("Failed to write sint (0xFFFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sint(&cmp, 0xFFFFFFF)) {
+    set_error("Failed to write sint (0xFFFFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sint(&cmp, 0xFFFFFFFF)) {
+    set_error("Failed to write sint (0xFFFFFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sint(&cmp, 0xFFFFFFFFF)) {
+    set_error("Failed to write sint (0xFFFFFFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sint(&cmp, -0xFF)) {
+    set_error("Failed to write sint (-0xFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sint(&cmp, -0xFFF)) {
+    set_error("Failed to write sint (-0xFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sint(&cmp, -0xFFFF)) {
+    set_error("Failed to write sint (-0xFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sint(&cmp, -0xFFFFF)) {
+    set_error("Failed to write sint (-0xFFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sint(&cmp, -0xFFFFFF)) {
+    set_error("Failed to write sint (-0xFFFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sint(&cmp, -0xFFFFFFF)) {
+    set_error("Failed to write sint (-0xFFFFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sint(&cmp, -0xFFFFFFFF)) {
+    set_error("Failed to write sint (-0xFFFFFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_sint(&cmp, -0xFFFFFFFFF)) {
+    set_error("Failed to write sint (-0xFFFFFFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, 0)) {
+    set_error("Failed to write uint (0): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, -0)) {
+    set_error("Failed to write uint (0): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, 1)) {
+    set_error("Failed to write uint (1): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, -1)) {
+    set_error("Failed to write uint (1): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, 0x7F)) {
+    set_error("Failed to write uint (0x80): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, 0x80)) {
+    set_error("Failed to write uint (0x80): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, 0xFF)) {
+    set_error("Failed to write uint (0xFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, 0xFFF)) {
+    set_error("Failed to write uint (0xFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, 0xFFFF)) {
+    set_error("Failed to write uint (0xFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, 0xFFFFF)) {
+    set_error("Failed to write uint (0xFFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, 0xFFFFFF)) {
+    set_error("Failed to write uint (0xFFFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, 0xFFFFFFF)) {
+    set_error("Failed to write uint (0xFFFFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, 0xFFFFFFFF)) {
+    set_error("Failed to write uint (0xFFFFFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, 0xFFFFFFFFF)) {
+    set_error("Failed to write uint (0xFFFFFFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, -0xFF)) {
+    set_error("Failed to write uint (-0xFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, -0xFFF)) {
+    set_error("Failed to write uint (-0xFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, -0xFFFF)) {
+    set_error("Failed to write uint (-0xFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, -0xFFFFF)) {
+    set_error("Failed to write uint (-0xFFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, -0xFFFFFF)) {
+    set_error("Failed to write uint (-0xFFFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, -0xFFFFFFF)) {
+    set_error("Failed to write uint (-0xFFFFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, -0xFFFFFFFF)) {
+    set_error("Failed to write uint (-0xFFFFFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_uint(&cmp, -0xFFFFFFFFF)) {
+    set_error("Failed to write uint (-0xFFFFFFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_float(&cmp, 0.0f)) {
+    set_error("Failed to write float (0.0f): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_float(&cmp, -0.0f)) {
+    set_error("Failed to write float (-0.0f): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_float(&cmp, 1.0f)) {
+    set_error("Failed to write float (1.0f): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_float(&cmp, -1.0f)) {
+    set_error("Failed to write float (-1.0f): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_float(&cmp, 0xFFFFFFFF)) {
+    set_error("Failed to write float (0xFFFFFFFF): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_float(&cmp, 0x80000000)) {
+    set_error("Failed to write float (0x80000000): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_float(&cmp, -0x80000000)) {
+    set_error("Failed to write float (-0x80000000): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_double(&cmp, 0.0)) {
+    set_error("Failed to write double (0.0): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_double(&cmp, -0.0)) {
+    set_error("Failed to write double (-0.0): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_double(&cmp, 1.0)) {
+    set_error("Failed to write double (1.0): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_double(&cmp, -1.0)) {
+    set_error("Failed to write double (-1.0): %s.\n", cmp_strerror(&cmp));
+    return false;
+  }
+
+  if (!cmp_write_double(&cmp, 0xFFFFFFFFFFFFFFFF)) {
+    set_error("Failed to write double (0xFFFFFFFFFFFFFFFF): %s.\n",
+      cmp_strerror(&cmp)
+    );
+    return false;
+  }
+
+  if (!cmp_write_double(&cmp, -0x8000000000000000)) {
+    set_error("Failed to write double (-0x8000000000000000): %s.\n",
+      cmp_strerror(&cmp)
+    );
+    return false;
+  }
+
+  if (!cmp_write_double(&cmp, 0x8000000000000000)) {
+    set_error("Failed to write double (0x8000000000000000): %s.\n",
+      cmp_strerror(&cmp)
+    );
+    return false;
+  }
+
+  return true;
+}
+
 int main(void) {
+  printf("=== Testing CMP v%u ===\n\n", cmp_version());
+
   run_test(msgpack);
   run_test(fixedint);
+  run_test(number);
 
   printf("\nAll tests pass!\n\n");
   return EXIT_SUCCESS;
