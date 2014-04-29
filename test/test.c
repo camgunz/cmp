@@ -9,6 +9,16 @@
 #include <stdbool.h>
 #include "cmp.h"
 
+#define run_test(t)             \
+  printf(#t " test: ");         \
+  if (!run_ ## t ## _tests()) { \
+    printf("-- FAILED --\n");   \
+    return EXIT_FAILURE;        \
+  }                             \
+  else {                        \
+    printf("passed\n");         \
+  }
+
 static bool buf_reader(struct cmp_ctx_s *ctx, void *data, size_t limit) {
   buf_t *buf = (buf_t *)ctx->buf;
 
@@ -81,7 +91,7 @@ static size_t buf_writer(struct cmp_ctx_s *ctx, const void *data, size_t sz) {
 ]
 */
 
-int main(void) {
+bool run_msgpack_tests(void) {
   buf_t in_buf, out_buf;
   struct cmp_ctx_s in_cmp, out_cmp;
   struct cmp_object_s obj;
@@ -97,11 +107,11 @@ int main(void) {
   while (M_BufferGetCursor(&in_buf) < (M_BufferGetSize(&in_buf))) {
     if (!cmp_read_object(&in_cmp, &obj)) {
       fprintf(stderr, "Error reading object: %s\n", cmp_strerror(&in_cmp));
-      return EXIT_FAILURE;
+      return false;
     }
     if (!cmp_write_object(&out_cmp, &obj)) {
       fprintf(stderr, "Error writing object: %s\n", cmp_strerror(&out_cmp));
-      return EXIT_FAILURE;
+      return false;
     }
   }
 
@@ -112,13 +122,19 @@ int main(void) {
   );
 
   if (!buffers_equal) {
-    printf("Failure!\n");
     M_BufferPrint(&in_buf);
     M_BufferPrint(&out_buf);
-    return EXIT_FAILURE;
+    return true;
   }
 
-  printf("Success!\n");
+  return true;
+}
+
+int main(void) {
+
+  run_test(msgpack);
+
+  puts("\nAll tests pass!\n");
   return EXIT_SUCCESS;
 }
 

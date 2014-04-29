@@ -1,103 +1,17 @@
-cmp
-===
+# cmp
 
 CMP is a C implementation of the MessagePack serialization format.  It
-currently implements the spec located on the [MessagePack
-Wiki](http://wiki.msgpack.org/display/MSGPACK/Format+specification), but as
-that spec is outdated, CMP will soon be updated to support [the latest
-version](http://github.com/msgpack/msgpack/blob/master/spec.md).
+currently implements version 5 of the [MessagePack
+Spec](http://github.com/msgpack/msgpack/blob/master/spec.md).
 
 CMP's goal is to be lightweight and straightforward, forcing nothing on the
 programmer.
 
-### Fast
-
-CMP uses no internal buffers.  Conversions, encoding and decoding are done on
-the fly.
-
-### Lightweight
-
-CMP's source is < 1,500 LOC, and it allocates nothing.  It has no dependencies,
-not even the C Standard Library.
-
-### Flexible
-
-CMP only requires a read function and a write function.  In this way, the
-programmer can use CMP on memory, files, sockets, etc.
-
-### Simple
-
-CMP is straightforward and unsurprising.  It makes minimal use of the
-preprocessor, and its code is written in a clear manner with descriptive
-variable names.  Despite its small size, CMP provides many convenience methods
-to the programmer.  Consider packing an `int64_t` as efficiently as possible:
-
-    int counter(void) {
-        int64_t c = 0;
-        bool res = false;
-        struct cmp_ctx_s cmp;
-
-        /* ... */
-
-        if (c >= -31 && c <= -1)
-            res = cmp_write_nfix(&cmp, c);
-        else if (c <= 0 && c <= 127)
-            res = cmp_write_pfix(&cmp, c);
-        else if (c >= -32767 && c <= 32767)
-            res = cmp_write_s16(&cmp, c);
-        else if (c >= -2147483647 && c <= 2147483647)
-            res = cmp_write_s32(&cmp, c);
-        else if (c >= -9223372036854775807 && c <= 9223372036854775807)
-            res = cmp_write_s64(&cmp, c);
-
-        if (!res) {
-            /* handle error */
-        }
-    }
-
-Now with convenience methods:
-
-    int counter(void) {
-        int64_t c = 0;
-        struct cmp_ctx_s cmp;
-
-        /* ... */
-
-        if (!cmp_write_sint(&cmp, c)) {
-            /* handle error */
-        }
-
-    }
-
-And, of course, the type-specific writers are still available for maximum
-flexibility.
-
-### Robust
-
-CMP is portable.  It uses fixed-width integer types, and checks the endianness
-of the machine at runtime before swapping bytes (MessagePack is big-endian).
-It also provides a fairly comprehensive error reporting mechanism modeled after
-`errno` and `strerror`.  CMP is also threadsafe; while contexts cannot be
-shared between threads, each thread may use its own context freely.  CMP is
-written using C89 (ANSI C).
-
-CMP is tested on the MessagePack test suite.  Its small test suite is compiled
-with clang using with `-Wall -Werror -Wextra ...` and a whole bunch of other
-flags, and generates no compilation errors.
-
-### License
+## License
 
 While I'm a big believer in the GPL, I license CMP under the MIT license.
 
-### Building
-
-There is no build system for CMP.  The programmer can drop `cmp.c` and `cmp.h`
-in their source tree and modify as necessary.
-
-CMP uses standardized types rather than declaring its own, therefore it
-requires `stdint.h` and `stdbool.h`.
-
-### Usage
+## Example Usage
 
 The following examples use a file as the backend, and are modeled after the
 examples included with the msgpack-c project.
@@ -106,6 +20,7 @@ examples included with the msgpack-c project.
     #include <stdint.h>
     #include <stdio.h>
     #include <stdlib.h>
+    #include <string.h>
 
     #include "cmp.h"
 
@@ -129,8 +44,8 @@ examples included with the msgpack-c project.
     int main(void) {
         FILE *fh = NULL;
         cmp_ctx_t cmp;
-        size_t array_length = 0;
-        size_t raw_length = 0;
+        uint32_t array_length = 0;
+        uint32_t raw_length = 0;
         char hello[6] = {0, 0, 0, 0, 0, 0};
         char message_pack[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -183,8 +98,35 @@ examples included with the msgpack-c project.
         return EXIT_SUCCESS;
     }
 
-### To Do
 
-  - Add versioning
-  - Implement latest spec
+## Fast, Lightweight, Flexible, and Robust
+
+CMP uses no internal buffers; conversions, encoding and decoding are done on
+the fly.
+
+CMP's source is < 2,000 LOC, and it allocates nothing.
+
+CMP uses standardized types rather than declaring its own, and it depends only
+on `stdbool.h`, `stdint.h` and `string.h`.  It has no link-time dependencies,
+not even the C Standard Library.
+
+CMP only requires the programmer supply a read function and a write function.
+In this way, the programmer can use CMP on memory, files, sockets, etc.
+
+CMP is portable.  It uses fixed-width integer types, and checks the endianness
+of the machine at runtime before swapping bytes (MessagePack is big-endian).
+It also provides a fairly comprehensive error reporting mechanism modeled after
+`errno` and `strerror`.  CMP is also threadsafe; while contexts cannot be
+shared between threads, each thread may use its own context freely.  CMP is
+written using C89 (ANSI C), aside, of course, from its use of fixed-width
+integer types and `bool`.
+
+CMP is tested on the MessagePack test suite.  Its small test program is
+compiled with clang using `-Wall -Werror -Wextra ...` along with several other
+flags, and generates no compilation errors.
+
+## Building
+
+There is no build system for CMP.  The programmer can drop `cmp.c` and `cmp.h`
+in their source tree and modify as necessary.  No special compiler settings are required to build it.
 
