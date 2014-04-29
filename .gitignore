@@ -21,3 +21,11 @@
 *.i*86
 *.x86_64
 *.hex
+
+# Vim swap files
+*.swp
+*.swo
+
+# Testing executable
+test/test-cmp
+
