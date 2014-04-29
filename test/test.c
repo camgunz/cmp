@@ -19,13 +19,13 @@
     printf("passed\n");         \
   }
 
-static bool buf_reader(struct cmp_ctx_s *ctx, void *data, size_t limit) {
+static bool buf_reader(cmp_ctx_t *ctx, void *data, size_t limit) {
   buf_t *buf = (buf_t *)ctx->buf;
 
   return M_BufferRead(buf, data, limit);
 }
 
-static size_t buf_writer(struct cmp_ctx_s *ctx, const void *data, size_t sz) {
+static size_t buf_writer(cmp_ctx_t *ctx, const void *data, size_t sz) {
   buf_t *buf = (buf_t *)ctx->buf;
   size_t pos = M_BufferGetCursor(buf);
 
@@ -34,75 +34,23 @@ static size_t buf_writer(struct cmp_ctx_s *ctx, const void *data, size_t sz) {
   return M_BufferGetCursor(buf) - pos;
 }
 
-
-/*
-[
-  false,
-  true,
-  null,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  -1,
-  -1,
-  -1,
-  -1,
-  -1,
-  127,
-  127,
-  255,
-  65535,
-  4294967295,
-  -32,
-  -32,
-  -128,
-  -32768,
-  -2147483648,
-  0.0,
-  -0.0,
-  1.0,
-  -1.0,
-  "a",
-  "a",
-  "a",
-  "",
-  "",
-  "",
-  [0],
-  [0],
-  [0],
-  [],
-  [],
-  [],
-  {},
-  {},
-  {},
-  {"a":97},
-  {"a":97},
-  {"a":97},
-  [[]],
-  [["a"]]
-]
-*/
+static void setup_cmp_and_buf(cmp_ctx_t *cmp, buf_t *buf) {
+  M_BufferInit(buf);
+  cmp_init(cmp, buf, &buf_reader, &buf_writer);
+}
 
 bool run_msgpack_tests(void) {
   buf_t in_buf, out_buf;
-  struct cmp_ctx_s in_cmp, out_cmp;
-  struct cmp_object_s obj;
+  cmp_ctx_t in_cmp, out_cmp;
+  cmp_object_t obj;
   dboolean buffers_equal = false;
 
-  M_BufferInit(&in_buf);
+  setup_cmp_and_buf(&in_cmp, &in_buf);
   M_BufferSetFile(&in_buf, "cases.mpac");
   M_BufferSeek(&in_buf, 0);
-  M_BufferInitWithCapacity(&out_buf, M_BufferGetSize(&in_buf));
-  cmp_init(&in_cmp, &in_buf, &buf_reader, &buf_writer);
-  cmp_init(&out_cmp, &out_buf, &buf_reader, &buf_writer);
+
+  setup_cmp_and_buf(&out_cmp, &out_buf);
+  M_BufferEnsureCapacity(&out_buf, M_BufferGetSize(&in_buf));
 
   while (M_BufferGetCursor(&in_buf) < (M_BufferGetSize(&in_buf))) {
     if (!cmp_read_object(&in_cmp, &obj)) {
@@ -130,13 +78,14 @@ bool run_msgpack_tests(void) {
   return true;
 }
 
-bool run_ext_type_texts(void) {
-
+bool run_fixedint_tests(void) {
+  return true;
 }
 
 int main(void) {
 
   run_test(msgpack);
+  run_test(fixedint);
 
   printf("\nAll tests pass!\n\n");
   return EXIT_SUCCESS;
