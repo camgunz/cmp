@@ -2,8 +2,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <stdio.h>
-
 #include "cmp.h"
 
 const uint32_t version = 1;
@@ -1273,11 +1271,7 @@ bool cmp_read_double(cmp_ctx_t *ctx, double *d) {
     return false;
   }
 
-  printf("cmp_read_double: read %g.\n", *d);
-
   *d = bedouble(*d);
-
-  printf("cmp_read_double: converted to %g.\n", *d);
 
   return true;
 }
