@@ -38,6 +38,25 @@
     return false;                                                             \
   }
 
+#define test_str_format(func, in, length, data, data_length)                  \
+  M_BufferClear(&buf);                                                        \
+  if (!func(&cmp, in, length)) {                                              \
+    set_error(                                                                \
+      "%s(&cmp, %s, %d) failed: %s\n",                                        \
+      #func, #in, length, cmp_strerror(&cmp)                                  \
+    );                                                                        \
+    return false;                                                             \
+  }                                                                           \
+  M_BufferSeek(&buf, 0);                                                      \
+  if (!M_BufferEqualsData(&buf, data, data_length)) {                         \
+    set_error("Wrote invalid MessagePack data.\n");                           \
+    printf("\n");                                                             \
+    printf("%s(&cmp, %s)\n", #func, #in);                                     \
+    print_bin(data, data_length);                                             \
+    print_bin(M_BufferGetData(&buf), M_BufferGetSize(&buf));                  \
+    return false;                                                             \
+  }
+
 #define test_format_no_input(func, data, data_length)                         \
   M_BufferClear(&buf);                                                        \
   if (!func(&cmp)) {                                                          \
@@ -643,6 +662,23 @@ bool run_boolean_tests(void) {
   return true;
 }
 
+bool run_binary_tests(void) {
+  buf_t buf;
+  cmp_ctx_t cmp;
+
+  setup_cmp_and_buf(&cmp, &buf);
+
+  test_str_format(cmp_write_bin8, "Hey there\n", 10, "\xc4\x0aHey there\n", 12);
+  test_str_format(
+    cmp_write_bin16, "Hey there\n", 10, "\xc5\x00\x0aHey there\n", 13
+  );
+  test_str_format(
+    cmp_write_bin32, "Hey there\n", 10, "\xc6\x00\x00\x00\x0aHey there\n", 15
+  );
+
+  return true;
+}
+
 int main(void) {
   printf("=== Testing CMP v%u ===\n\n", cmp_version());
 
@@ -651,6 +687,7 @@ int main(void) {
   run_test(number);
   run_test(nil);
   run_test(boolean);
+  run_test(binary);
 
   printf("\nAll tests pass!\n\n");
   return EXIT_SUCCESS;

@@ -430,10 +430,10 @@ bool cmp_write_bin8(cmp_ctx_t *ctx, const void *data, uint8_t size) {
   if (!cmp_write_bin8_marker(ctx, size))
     return false;
 
-  if (ctx->write(ctx, data, sizeof(uint8_t)))
+  if (ctx->write(ctx, data, size * sizeof(uint8_t)))
     return true;
 
-  set_error(ctx, LENGTH_WRITING_ERROR);
+  set_error(ctx, DATA_WRITING_ERROR);
   return false;
 }
 
