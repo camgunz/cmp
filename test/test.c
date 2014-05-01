@@ -11,7 +11,7 @@
 #include <stdbool.h>
 #include "cmp.h"
 
-#define run_test(t)                     \
+#define run_tests(t)                    \
   printf(#t " test: ");                 \
   if (!run_ ## t ## _tests()) {         \
     printf("-- FAILED --\n");           \
@@ -701,16 +701,46 @@ bool run_string_tests(void) {
   return true;
 }
 
+bool run_array_tests(void) {
+  buf_t buf;
+  cmp_ctx_t cmp;
+
+  setup_cmp_and_buf(&cmp, &buf);
+
+  test_format(cmp_write_fixarray, 10, "\x9a", 1);
+  test_format(cmp_write_array16, 10, "\xdc\x00\x0a", 3);
+  test_format(cmp_write_array32, 10, "\xdd\x00\x00\x00\x0a", 5);
+  test_format(cmp_write_array, 10, "\x9a", 1);
+
+  return true;
+}
+
+bool run_map_tests(void) {
+  buf_t buf;
+  cmp_ctx_t cmp;
+
+  setup_cmp_and_buf(&cmp, &buf);
+
+  test_format(cmp_write_fixmap, 10, "\x8a", 1);
+  test_format(cmp_write_map16, 10, "\xde\x00\x0a", 3);
+  test_format(cmp_write_map32, 10, "\xdf\x00\x00\x00\x0a", 5);
+  test_format(cmp_write_map, 10, "\x8a", 1);
+
+  return true;
+}
+
 int main(void) {
   printf("=== Testing CMP v%u ===\n\n", cmp_version());
 
-  run_test(msgpack);
-  run_test(fixedint);
-  run_test(number);
-  run_test(nil);
-  run_test(boolean);
-  run_test(binary);
-  run_test(string);
+  run_tests(msgpack);
+  run_tests(fixedint);
+  run_tests(number);
+  run_tests(nil);
+  run_tests(boolean);
+  run_tests(binary);
+  run_tests(string);
+  run_tests(array);
+  run_tests(map);
 
   printf("\nAll tests pass!\n\n");
   return EXIT_SUCCESS;
