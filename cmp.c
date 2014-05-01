@@ -915,6 +915,25 @@ bool cmp_write_ext32(cmp_ctx_t *ctx, uint32_t size, int8_t type, void *data) {
   return false;
 }
 
+bool cmp_write_ext(cmp_ctx_t *ctx, uint32_t size, int8_t type, void *data) {
+  if (size == 1)
+    return cmp_write_fixext1(ctx, type, data);
+  if (size == 2)
+    return cmp_write_fixext2(ctx, type, data);
+  if (size == 4)
+    return cmp_write_fixext4(ctx, type, data);
+  if (size == 8)
+    return cmp_write_fixext8(ctx, type, data);
+  if (size == 16)
+    return cmp_write_fixext16(ctx, type, data);
+  if (size <= 0xFF)
+    return cmp_write_ext8(ctx, size, type, data);
+  if (size <= 0xFFFF)
+    return cmp_write_ext16(ctx, size, type, data);
+
+  return cmp_write_ext32(ctx, size, type, data);
+}
+
 bool cmp_write_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
   switch(obj->type) {
     case CMP_TYPE_POSITIVE_FIXNUM:

@@ -133,4 +133,5 @@ in their source tree and modify as necessary.  No special compiler settings are 
 ## To Do
 
   - Improve test coverage
+  - Prevent users from using extended types < 0 (reserved by MessagePack)
 

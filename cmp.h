@@ -153,6 +153,7 @@ bool cmp_write_ext16_marker(cmp_ctx_t *ctx, uint16_t size, int8_t type);
 bool cmp_write_ext16(cmp_ctx_t *ctx, uint16_t size, int8_t type, void *data);
 bool cmp_write_ext32_marker(cmp_ctx_t *ctx, uint32_t size, int8_t type);
 bool cmp_write_ext32(cmp_ctx_t *ctx, uint32_t size, int8_t type, void *data);
+bool cmp_write_ext(cmp_ctx_t *ctx, uint32_t size, int8_t type, void *data);
 
 bool cmp_write_object(cmp_ctx_t *ctx, cmp_object_t *obj);
 
