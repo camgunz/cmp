@@ -675,6 +675,7 @@ bool run_binary_tests(void) {
   test_str_format(
     cmp_write_bin32, "Hey there\n", 10, "\xc6\x00\x00\x00\x0aHey there\n", 15
   );
+  test_str_format(cmp_write_bin, "Hey there\n", 10, "\xc4\x0aHey there\n", 12);
 
   return true;
 }
