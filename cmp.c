@@ -232,8 +232,7 @@ static bool write_fixed_value(cmp_ctx_t *ctx, uint8_t value) {
   return false;
 }
 
-void cmp_init(cmp_ctx_t *ctx, void *buf, cmp_reader read,
-                                                cmp_writer write) {
+void cmp_init(cmp_ctx_t *ctx, void *buf, cmp_reader read, cmp_writer write) {
   ctx->error = ERROR_NONE;
   ctx->buf = buf;
   ctx->read = read;
@@ -270,7 +269,6 @@ bool cmp_write_nfix(cmp_ctx_t *ctx, int8_t c) {
 bool cmp_write_sfix(cmp_ctx_t *ctx, int8_t c) {
   if (c >= 0 && c <= 0x7F)
     return cmp_write_pfix(ctx, c);
-
   if (c >= -32 && c <= -1)
     return cmp_write_nfix(ctx, c);
 
@@ -315,16 +313,12 @@ bool cmp_write_s64(cmp_ctx_t *ctx, int64_t l) {
 bool cmp_write_sint(cmp_ctx_t *ctx, int64_t d) {
   if (d >= 0)
     return cmp_write_uint(ctx, d);
-
   if (d >= -32)
     return cmp_write_nfix(ctx, d);
-
   if (d >= -128)
     return cmp_write_s8(ctx, d);
-
   if (d >= -32768)
     return cmp_write_s16(ctx, d);
-
   if (d >= -2147483648)
     return cmp_write_s32(ctx, d);
 
@@ -372,13 +366,10 @@ bool cmp_write_u64(cmp_ctx_t *ctx, uint64_t l) {
 bool cmp_write_uint(cmp_ctx_t *ctx, uint64_t u) {
   if (u <= 0x7F)
     return cmp_write_pfix(ctx, u);
-
   if (u <= 0xFF)
     return cmp_write_u8(ctx, u);
-
   if (u <= 0xFFFF)
     return cmp_write_u16(ctx, u);
-
   if (u <= 0xFFFFFFFF)
     return cmp_write_u32(ctx, u);
 
@@ -488,29 +479,19 @@ bool cmp_write_bin32(cmp_ctx_t *ctx, const void *data, uint32_t size) {
 bool cmp_write_bin_marker(cmp_ctx_t *ctx, uint32_t size) {
   if (size <= 0xFF)
     return cmp_write_bin8_marker(ctx, size);
-
   if (size <= 0xFFFF)
     return cmp_write_bin16_marker(ctx, size);
 
-  if (size <= 0xFFFFFFFF)
-    return cmp_write_bin32_marker(ctx, size);
-
-  set_error(ctx, INPUT_VALUE_TOO_LARGE_ERROR);
-  return false;
+  return cmp_write_bin32_marker(ctx, size);
 }
 
 bool cmp_write_bin(cmp_ctx_t *ctx, const void *data, uint32_t size) {
   if (size <= 0xFF)
     return cmp_write_bin8(ctx, data, size);
-
   if (size <= 0xFFFF)
     return cmp_write_bin16(ctx, data, size);
 
-  if (size <= 0xFFFFFFFF)
-    return cmp_write_bin32(ctx, data, size);
-
-  set_error(ctx, INPUT_VALUE_TOO_LARGE_ERROR);
-  return false;
+  return cmp_write_bin32(ctx, data, size);
 }
 
 bool cmp_write_fixstr_marker(cmp_ctx_t *ctx, uint8_t size) {
@@ -605,23 +586,19 @@ bool cmp_write_str32(cmp_ctx_t *ctx, const void *data, uint32_t size) {
 bool cmp_write_str_marker(cmp_ctx_t *ctx, uint32_t size) {
   if (size <= FIXSTR_SIZE)
     return cmp_write_fixstr_marker(ctx, size);
-
   if (size <= 0xFF)
     return cmp_write_str8_marker(ctx, size);
-
   if (size <= 0xFFFF)
     return cmp_write_str16_marker(ctx, size);
 
-  return cmp_write_str16_marker(ctx, size);
+  return cmp_write_str32_marker(ctx, size);
 }
 
 bool cmp_write_str(cmp_ctx_t *ctx, const void *data, uint32_t size) {
   if (size <= FIXSTR_SIZE)
     return cmp_write_fixstr(ctx, data, size);
-
   if (size <= 0xFF)
     return cmp_write_str8(ctx, data, size);
-
   if (size <= 0xFFFF)
     return cmp_write_str16(ctx, data, size);
 
@@ -665,15 +642,10 @@ bool cmp_write_array32(cmp_ctx_t *ctx, uint32_t size) {
 bool cmp_write_array(cmp_ctx_t *ctx, uint32_t size) {
   if (size <= FIXARRAY_SIZE)
     return cmp_write_fixarray(ctx, size);
-
   if (size <= 0xFFFF)
     return cmp_write_array16(ctx, size);
 
-  if (size <= 0xFFFFFFFF)
-    return cmp_write_array32(ctx, size);
-
-  set_error(ctx, INPUT_VALUE_TOO_LARGE_ERROR);
-  return false;
+  return cmp_write_array32(ctx, size);
 }
 
 bool cmp_write_fixmap(cmp_ctx_t *ctx, uint8_t size) {
@@ -713,15 +685,10 @@ bool cmp_write_map32(cmp_ctx_t *ctx, uint32_t size) {
 bool cmp_write_map(cmp_ctx_t *ctx, uint32_t size) {
   if (size <= FIXMAP_SIZE)
     return cmp_write_fixmap(ctx, size);
-
   if (size <= 0xFFFF)
     return cmp_write_map16(ctx, size);
 
-  if (size <= 0xFFFFFFFF)
-    return cmp_write_map32(ctx, size);
-
-  set_error(ctx, INPUT_VALUE_TOO_LARGE_ERROR);
-  return false;
+  return cmp_write_map32(ctx, size);
 }
 
 bool cmp_write_fixext1_marker(cmp_ctx_t *ctx, int8_t type) {
