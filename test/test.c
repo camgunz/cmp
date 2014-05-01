@@ -76,7 +76,7 @@
     return false;                                                             \
   }
 
-#define test_ext_format(func, size, type, in, data, data_length)              \
+#define test_ext_format(func, type, size, in, data, data_length)              \
   M_BufferClear(&buf);                                                        \
   if (!func(&cmp, size, type, in)) {                                          \
     set_error(                                                                \
@@ -781,18 +781,40 @@ bool run_ext_tests(void) {
 
   setup_cmp_and_buf(&cmp, &buf);
 
-  test_fixext_format(cmp_write_fixext1, 1, "C", "\xd4\x01\x43", 2);
-  test_fixext_format(cmp_write_fixext2, 2, "CC", "\xd5\x02\x43\x43", 3);
-  test_fixext_format(cmp_write_fixext4, 3, "CCCC", "\xd6\x03\x43\x43\x43\x43", 5);
+  test_fixext_format(cmp_write_fixext1, 1, "C", "\xd4\x01\x43", 3);
+  test_fixext_format(cmp_write_fixext2, 2, "CC", "\xd5\x02\x43\x43", 4);
+  test_fixext_format(cmp_write_fixext4, 3, "CCCC", "\xd6\x03\x43\x43\x43\x43", 6);
   test_fixext_format(
-    cmp_write_fixext8, 4, "CCCCCCCC", "\xd7\x04\x43\x43\x43\x43\x43\x43\x43\x43", 9
+    cmp_write_fixext8,
+    4,
+    "CCCCCCCC",
+    "\xd7\x04\x43\x43\x43\x43\x43\x43\x43\x43",
+    10
   );
   test_fixext_format(
     cmp_write_fixext16,
     5,
     "CCCCCCCCCCCCCCCC",
     "\xd8\x05\x43\x43\x43\x43\x43\x43\x43\x43\x43\x43\x43\x43\x43\x43\x43\x43",
-    17
+    18
+  );
+  test_ext_format(cmp_write_ext8, 1, 1, "C", "\xc7\x01\x01\x43", 4);
+  test_ext_format(
+    cmp_write_ext8, 2, 3, "CCC", "\xc7\x02\x03\x43\x43\x43", 6
+  );
+  test_ext_format(cmp_write_ext16, 1, 1, "C", "\xc8\x01\x00\x01\x43", 5);
+  test_ext_format(
+    cmp_write_ext16, 2, 3, "CCC", "\xc8\x02\x00\x03\x43\x43\x43", 7
+  );
+  test_ext_format(
+    cmp_write_ext32, 1, 1, "C", "\xc9\x01\x00\x00\x00\x01\x43", 7
+  );
+  test_ext_format(
+    cmp_write_ext32, 2, 3, "CCC", "\xc9\x02\x00\x00\x00\x03\x43\x43\x43", 9
+  );
+  test_ext_format(cmp_write_ext, 1, 1, "C", "\xd4\x01\x43", 3);
+  test_ext_format(
+    cmp_write_ext, 2, 3, "CCC", "\xc7\x02\x03\x43\x43\x43", 6
   );
 
   return true;

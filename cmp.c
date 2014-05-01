@@ -805,15 +805,15 @@ bool cmp_write_ext8_marker(cmp_ctx_t *ctx, uint8_t size, int8_t type) {
   if (!write_type_marker(ctx, EXT8_MARKER))
     return false;
 
-  if (!ctx->write(ctx, &size, sizeof(uint8_t))) {
-    set_error(ctx, LENGTH_WRITING_ERROR);
+  if (!ctx->write(ctx, &type, sizeof(int8_t))) {
+    set_error(ctx, EXT_TYPE_WRITING_ERROR);
     return false;
   }
 
-  if (ctx->write(ctx, &type, sizeof(int8_t)))
+  if (ctx->write(ctx, &size, sizeof(uint8_t)))
     return true;
 
-  set_error(ctx, EXT_TYPE_WRITING_ERROR);
+  set_error(ctx, LENGTH_WRITING_ERROR);
   return false;
 }
 
@@ -832,15 +832,17 @@ bool cmp_write_ext16_marker(cmp_ctx_t *ctx, uint16_t size, int8_t type) {
   if (!write_type_marker(ctx, EXT16_MARKER))
     return false;
 
-  if (!ctx->write(ctx, &size, sizeof(uint16_t))) {
-    set_error(ctx, LENGTH_WRITING_ERROR);
+  if (!ctx->write(ctx, &type, sizeof(int8_t))) {
+    set_error(ctx, EXT_TYPE_WRITING_ERROR);
     return false;
   }
 
-  if (ctx->write(ctx, &type, sizeof(int8_t)))
+  size = be16(size);
+
+  if (ctx->write(ctx, &size, sizeof(uint16_t)))
     return true;
 
-  set_error(ctx, EXT_TYPE_WRITING_ERROR);
+  set_error(ctx, LENGTH_WRITING_ERROR);
   return false;
 }
 
@@ -859,15 +861,17 @@ bool cmp_write_ext32_marker(cmp_ctx_t *ctx, uint32_t size, int8_t type) {
   if (!write_type_marker(ctx, EXT32_MARKER))
     return false;
 
-  if (!ctx->write(ctx, &size, sizeof(uint32_t))) {
-    set_error(ctx, LENGTH_WRITING_ERROR);
+  if (!ctx->write(ctx, &type, sizeof(int8_t))) {
+    set_error(ctx, EXT_TYPE_WRITING_ERROR);
     return false;
   }
 
-  if (ctx->write(ctx, &type, sizeof(int8_t)))
+  size = be32(size);
+
+  if (ctx->write(ctx, &size, sizeof(uint32_t)))
     return true;
 
-  set_error(ctx, EXT_TYPE_WRITING_ERROR);
+  set_error(ctx, LENGTH_WRITING_ERROR);
   return false;
 }
 

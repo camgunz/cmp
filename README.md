@@ -44,8 +44,8 @@ examples included with the msgpack-c project.
     int main(void) {
         FILE *fh = NULL;
         cmp_ctx_t cmp;
-        uint32_t array_length = 0;
-        uint32_t raw_length = 0;
+        uint32_t array_size = 0;
+        uint32_t str_size = 0;
         char hello[6] = {0, 0, 0, 0, 0, 0};
         char message_pack[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -59,26 +59,26 @@ examples included with the msgpack-c project.
         if (!cmp_write_array(&cmp, 2))
             error_and_exit(cmp_strerror(&cmp));
 
-        if (!cmp_write_raw(&cmp, "Hello", 5))
+        if (!cmp_write_str(&cmp, "Hello", 5))
             error_and_exit(cmp_strerror(&cmp));
 
-        if (!cmp_write_raw(&cmp, "MessagePack", 11))
+        if (!cmp_write_str(&cmp, "MessagePack", 11))
             error_and_exit(cmp_strerror(&cmp));
 
         rewind(fh);
 
-        if (!cmp_read_array(&cmp, &array_length))
+        if (!cmp_read_array(&cmp, &array_size))
             error_and_exit(cmp_strerror(&cmp));
 
-        /* You can read the raw byte size and then read raw bytes... */
+        /* You can read the string's size and then read its bytes... */
 
-        if (!cmp_read_raw_length(&cmp, &raw_length))
+        if (!cmp_read_str_size(&cmp, &str_size))
             error_and_exit(cmp_strerror(&cmp));
 
-        if (raw_length > (sizeof(hello) - 1))
-            error_and_exit("Packed 'hello' length too long\n");
+        if (str_size > (sizeof(hello) - 1))
+            error_and_exit("Packed 'hello' size too large\n");
 
-        if (!read_bytes(hello, raw_length, fh))
+        if (!read_bytes(hello, str_size, fh))
             error_and_exit(cmp_strerror(&cmp));
 
         /*
@@ -86,11 +86,11 @@ examples included with the msgpack-c project.
          * in one call
          */
 
-        raw_length = sizeof(message_pack) - 1;
-        if (!cmp_read_raw(&cmp, message_pack, &raw_length))
+        str_size = sizeof(message_pack) - 1;
+        if (!cmp_read_str(&cmp, message_pack, &str_size))
             error_and_exit(cmp_strerror(&cmp));
 
-        printf("Array Length: %zu.\n", array_length);
+        printf("Array Length: %zu.\n", array_size);
         printf("[\"%s\", \"%s\"]\n", hello, message_pack);
 
         fclose(fh);
@@ -110,25 +110,31 @@ CMP uses standardized types rather than declaring its own, and it depends only
 on `stdbool.h`, `stdint.h` and `string.h`.  It has no link-time dependencies,
 not even the C Standard Library.
 
+CMP is written using C89 (ANSI C), aside, of course, from its use of
+fixed-width integer types and `bool`.
+
 CMP only requires the programmer supply a read function and a write function.
 In this way, the programmer can use CMP on memory, files, sockets, etc.
 
 CMP is portable.  It uses fixed-width integer types, and checks the endianness
 of the machine at runtime before swapping bytes (MessagePack is big-endian).
-It also provides a fairly comprehensive error reporting mechanism modeled after
-`errno` and `strerror`.  CMP is also threadsafe; while contexts cannot be
-shared between threads, each thread may use its own context freely.  CMP is
-written using C89 (ANSI C), aside, of course, from its use of fixed-width
-integer types and `bool`.
 
-CMP is tested on the MessagePack test suite.  Its small test program is
-compiled with clang using `-Wall -Werror -Wextra ...` along with several other
-flags, and generates no compilation errors.
+CMP provides a fairly comprehensive error reporting mechanism modeled after
+`errno` and `strerror`.
+
+CMP is threadsafe; while contexts cannot be shared between threads, each thread
+may use its own context freely.
+
+CMP is tested using the MessagePack test suite as well as a comprehensive set
+of custom test cases.  Its small test program is compiled with clang using
+`-Wall -Werror -Wextra ...` along with several other flags, and generates no
+compilation errors.
 
 ## Building
 
 There is no build system for CMP.  The programmer can drop `cmp.c` and `cmp.h`
-in their source tree and modify as necessary.  No special compiler settings are required to build it.
+in their source tree and modify as necessary.  No special compiler settings are
+required to build it.
 
 ## To Do
 
