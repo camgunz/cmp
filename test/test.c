@@ -38,7 +38,7 @@
     return false;                                                             \
   }
 
-#define test_str_format(func, in, length, data, data_length)                  \
+#define test_format_with_length(func, in, length, data, data_length)          \
   M_BufferClear(&buf);                                                        \
   if (!func(&cmp, in, length)) {                                              \
     set_error(                                                                \
@@ -51,7 +51,45 @@
   if (!M_BufferEqualsData(&buf, data, data_length)) {                         \
     set_error("Wrote invalid MessagePack data.\n");                           \
     printf("\n");                                                             \
-    printf("%s(&cmp, %s)\n", #func, #in);                                     \
+    printf("%s(&cmp, %s, %d)\n", #func, #in, length);                         \
+    print_bin(data, data_length);                                             \
+    print_bin(M_BufferGetData(&buf), M_BufferGetSize(&buf));                  \
+    return false;                                                             \
+  }
+
+#define test_fixext_format(func, type, in, data, data_length)                 \
+  M_BufferClear(&buf);                                                        \
+  if (!func(&cmp, type, in)) {                                                \
+    set_error(                                                                \
+      "%s(&cmp, %s, %s) failed: %s\n",                                        \
+      #func, #type, #in, cmp_strerror(&cmp)                                   \
+    );                                                                        \
+    return false;                                                             \
+  }                                                                           \
+  M_BufferSeek(&buf, 0);                                                      \
+  if (!M_BufferEqualsData(&buf, data, data_length)) {                         \
+    set_error("Wrote invalid MessagePack data.\n");                           \
+    printf("\n");                                                             \
+    printf("%s(&cmp, %s, %s)\n", #func, #type, #in);                          \
+    print_bin(data, data_length);                                             \
+    print_bin(M_BufferGetData(&buf), M_BufferGetSize(&buf));                  \
+    return false;                                                             \
+  }
+
+#define test_ext_format(func, size, type, in, data, data_length)              \
+  M_BufferClear(&buf);                                                        \
+  if (!func(&cmp, size, type, in)) {                                          \
+    set_error(                                                                \
+      "%s(&cmp, %s, %s, %s) failed: %s\n"                                     \
+      #func, #size, #type, #in, cmp_strerror(&cmp)                            \
+    );                                                                        \
+    return false;                                                             \
+  }                                                                           \
+  M_BufferSeek(&buf, 0);                                                      \
+  if (!M_BufferEqualsData(&buf, data, data_length)) {                         \
+    set_error("Wrote invalid MessagePack data.\n");                           \
+    printf("\n");                                                             \
+    printf("%s(&cmp, %s, %s, %s)\n", #func, #size, #type, #in);               \
     print_bin(data, data_length);                                             \
     print_bin(M_BufferGetData(&buf), M_BufferGetSize(&buf));                  \
     return false;                                                             \
@@ -668,14 +706,18 @@ bool run_binary_tests(void) {
 
   setup_cmp_and_buf(&cmp, &buf);
 
-  test_str_format(cmp_write_bin8, "Hey there\n", 10, "\xc4\x0aHey there\n", 12);
-  test_str_format(
+  test_format_with_length(
+    cmp_write_bin8, "Hey there\n", 10, "\xc4\x0aHey there\n", 12
+  );
+  test_format_with_length(
     cmp_write_bin16, "Hey there\n", 10, "\xc5\x00\x0aHey there\n", 13
   );
-  test_str_format(
+  test_format_with_length(
     cmp_write_bin32, "Hey there\n", 10, "\xc6\x00\x00\x00\x0aHey there\n", 15
   );
-  test_str_format(cmp_write_bin, "Hey there\n", 10, "\xc4\x0aHey there\n", 12);
+  test_format_with_length(
+    cmp_write_bin, "Hey there\n", 10, "\xc4\x0aHey there\n", 12
+  );
 
   return true;
 }
@@ -686,17 +728,21 @@ bool run_string_tests(void) {
 
   setup_cmp_and_buf(&cmp, &buf);
 
-  test_str_format(cmp_write_fixstr, "Hey there\n", 10, "\xaaHey there\n", 11);
-  test_str_format(
+  test_format_with_length(
+    cmp_write_fixstr, "Hey there\n", 10, "\xaaHey there\n", 11
+  );
+  test_format_with_length(
     cmp_write_str8, "Hey there\n", 10, "\xd9\x0aHey there\n", 12
   );
-  test_str_format(
+  test_format_with_length(
     cmp_write_str16, "Hey there\n", 10, "\xda\x00\x0aHey there\n", 13
   );
-  test_str_format(
+  test_format_with_length(
     cmp_write_str32, "Hey there\n", 10, "\xdb\x00\x00\x00\x0aHey there\n", 15
   );
-  test_str_format(cmp_write_str, "Hey there\n", 10, "\xaaHey there\n", 11);
+  test_format_with_length(
+    cmp_write_str, "Hey there\n", 10, "\xaaHey there\n", 11
+  );
 
   return true;
 }
@@ -729,6 +775,29 @@ bool run_map_tests(void) {
   return true;
 }
 
+bool run_ext_tests(void) {
+  buf_t buf;
+  cmp_ctx_t cmp;
+
+  setup_cmp_and_buf(&cmp, &buf);
+
+  test_fixext_format(cmp_write_fixext1, 1, "C", "\xd4\x01\x43", 2);
+  test_fixext_format(cmp_write_fixext2, 2, "CC", "\xd5\x02\x43\x43", 3);
+  test_fixext_format(cmp_write_fixext4, 3, "CCCC", "\xd6\x03\x43\x43\x43\x43", 5);
+  test_fixext_format(
+    cmp_write_fixext8, 4, "CCCCCCCC", "\xd7\x04\x43\x43\x43\x43\x43\x43\x43\x43", 9
+  );
+  test_fixext_format(
+    cmp_write_fixext16,
+    5,
+    "CCCCCCCCCCCCCCCC",
+    "\xd8\x05\x43\x43\x43\x43\x43\x43\x43\x43\x43\x43\x43\x43\x43\x43\x43\x43",
+    17
+  );
+
+  return true;
+}
+
 int main(void) {
   printf("=== Testing CMP v%u ===\n\n", cmp_version());
 
@@ -741,6 +810,7 @@ int main(void) {
   run_tests(string);
   run_tests(array);
   run_tests(map);
+  run_tests(ext);
 
   printf("\nAll tests pass!\n\n");
   return EXIT_SUCCESS;

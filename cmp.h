@@ -137,23 +137,23 @@ bool cmp_write_map32(cmp_ctx_t *ctx, uint32_t size);
 bool cmp_write_map(cmp_ctx_t *ctx, uint32_t size);
 
 bool cmp_write_fixext1_marker(cmp_ctx_t *ctx, int8_t type);
-bool cmp_write_fixext1(cmp_ctx_t *ctx, int8_t type, void *data);
+bool cmp_write_fixext1(cmp_ctx_t *ctx, int8_t type, const void *data);
 bool cmp_write_fixext2_marker(cmp_ctx_t *ctx, int8_t type);
-bool cmp_write_fixext2(cmp_ctx_t *ctx, int8_t type, void *data);
+bool cmp_write_fixext2(cmp_ctx_t *ctx, int8_t type, const void *data);
 bool cmp_write_fixext4_marker(cmp_ctx_t *ctx, int8_t type);
-bool cmp_write_fixext4(cmp_ctx_t *ctx, int8_t type, void *data);
+bool cmp_write_fixext4(cmp_ctx_t *ctx, int8_t type, const void *data);
 bool cmp_write_fixext8_marker(cmp_ctx_t *ctx, int8_t type);
-bool cmp_write_fixext8(cmp_ctx_t *ctx, int8_t type, void *data);
+bool cmp_write_fixext8(cmp_ctx_t *ctx, int8_t type, const void *data);
 bool cmp_write_fixext16_marker(cmp_ctx_t *ctx, int8_t type);
-bool cmp_write_fixext16(cmp_ctx_t *ctx, int8_t type, void *data);
+bool cmp_write_fixext16(cmp_ctx_t *ctx, int8_t type, const void *data);
 
 bool cmp_write_ext8_marker(cmp_ctx_t *ctx, uint8_t size, int8_t type);
-bool cmp_write_ext8(cmp_ctx_t *ctx, uint8_t size, int8_t type, void *data);
+bool cmp_write_ext8(cmp_ctx_t *ctx, uint8_t sz, int8_t tp, const void *data);
 bool cmp_write_ext16_marker(cmp_ctx_t *ctx, uint16_t size, int8_t type);
-bool cmp_write_ext16(cmp_ctx_t *ctx, uint16_t size, int8_t type, void *data);
+bool cmp_write_ext16(cmp_ctx_t *ctx, uint16_t sz, int8_t tp, const void *data);
 bool cmp_write_ext32_marker(cmp_ctx_t *ctx, uint32_t size, int8_t type);
-bool cmp_write_ext32(cmp_ctx_t *ctx, uint32_t size, int8_t type, void *data);
-bool cmp_write_ext(cmp_ctx_t *ctx, uint32_t size, int8_t type, void *data);
+bool cmp_write_ext32(cmp_ctx_t *ctx, uint32_t sz, int8_t tp, const void *data);
+bool cmp_write_ext(cmp_ctx_t *ctx, uint32_t sz, int8_t tp, const void *data);
 
 bool cmp_write_object(cmp_ctx_t *ctx, cmp_object_t *obj);
 

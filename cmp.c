@@ -735,7 +735,7 @@ bool cmp_write_fixext1_marker(cmp_ctx_t *ctx, int8_t type) {
   return false;
 }
 
-bool cmp_write_fixext1(cmp_ctx_t *ctx, int8_t type, void *data) {
+bool cmp_write_fixext1(cmp_ctx_t *ctx, int8_t type, const void *data) {
   if (!cmp_write_fixext1_marker(ctx, type))
     return false;
 
@@ -747,7 +747,7 @@ bool cmp_write_fixext1(cmp_ctx_t *ctx, int8_t type, void *data) {
 }
 
 bool cmp_write_fixext2_marker(cmp_ctx_t *ctx, int8_t type) {
-  if (!write_type_marker(ctx, FIXEXT1_MARKER))
+  if (!write_type_marker(ctx, FIXEXT2_MARKER))
     return false;
 
   if (ctx->write(ctx, &type, sizeof(int8_t)))
@@ -757,7 +757,7 @@ bool cmp_write_fixext2_marker(cmp_ctx_t *ctx, int8_t type) {
   return false;
 }
 
-bool cmp_write_fixext2(cmp_ctx_t *ctx, int8_t type, void *data) {
+bool cmp_write_fixext2(cmp_ctx_t *ctx, int8_t type, const void *data) {
   if (!cmp_write_fixext2_marker(ctx, type))
     return false;
 
@@ -769,7 +769,7 @@ bool cmp_write_fixext2(cmp_ctx_t *ctx, int8_t type, void *data) {
 }
 
 bool cmp_write_fixext4_marker(cmp_ctx_t *ctx, int8_t type) {
-  if (!write_type_marker(ctx, FIXEXT1_MARKER))
+  if (!write_type_marker(ctx, FIXEXT4_MARKER))
     return false;
 
   if (ctx->write(ctx, &type, sizeof(int8_t)))
@@ -779,7 +779,7 @@ bool cmp_write_fixext4_marker(cmp_ctx_t *ctx, int8_t type) {
   return false;
 }
 
-bool cmp_write_fixext4(cmp_ctx_t *ctx, int8_t type, void *data) {
+bool cmp_write_fixext4(cmp_ctx_t *ctx, int8_t type, const void *data) {
   if (!cmp_write_fixext4_marker(ctx, type))
     return false;
 
@@ -791,7 +791,7 @@ bool cmp_write_fixext4(cmp_ctx_t *ctx, int8_t type, void *data) {
 }
 
 bool cmp_write_fixext8_marker(cmp_ctx_t *ctx, int8_t type) {
-  if (!write_type_marker(ctx, FIXEXT1_MARKER))
+  if (!write_type_marker(ctx, FIXEXT8_MARKER))
     return false;
 
   if (ctx->write(ctx, &type, sizeof(int8_t)))
@@ -801,7 +801,7 @@ bool cmp_write_fixext8_marker(cmp_ctx_t *ctx, int8_t type) {
   return false;
 }
 
-bool cmp_write_fixext8(cmp_ctx_t *ctx, int8_t type, void *data) {
+bool cmp_write_fixext8(cmp_ctx_t *ctx, int8_t type, const void *data) {
   if (!cmp_write_fixext8_marker(ctx, type))
     return false;
 
@@ -813,7 +813,7 @@ bool cmp_write_fixext8(cmp_ctx_t *ctx, int8_t type, void *data) {
 }
 
 bool cmp_write_fixext16_marker(cmp_ctx_t *ctx, int8_t type) {
-  if (!write_type_marker(ctx, FIXEXT1_MARKER))
+  if (!write_type_marker(ctx, FIXEXT16_MARKER))
     return false;
 
   if (ctx->write(ctx, &type, sizeof(int8_t)))
@@ -823,7 +823,7 @@ bool cmp_write_fixext16_marker(cmp_ctx_t *ctx, int8_t type) {
   return false;
 }
 
-bool cmp_write_fixext16(cmp_ctx_t *ctx, int8_t type, void *data) {
+bool cmp_write_fixext16(cmp_ctx_t *ctx, int8_t type, const void *data) {
   if (!cmp_write_fixext16_marker(ctx, type))
     return false;
 
@@ -850,11 +850,11 @@ bool cmp_write_ext8_marker(cmp_ctx_t *ctx, uint8_t size, int8_t type) {
   return false;
 }
 
-bool cmp_write_ext8(cmp_ctx_t *ctx, uint8_t size, int8_t type, void *data) {
-  if (!cmp_write_ext8_marker(ctx, size, type))
+bool cmp_write_ext8(cmp_ctx_t *ctx, uint8_t sz, int8_t tp, const void *data) {
+  if (!cmp_write_ext8_marker(ctx, sz, tp))
     return false;
 
-  if (ctx->write(ctx, data, size))
+  if (ctx->write(ctx, data, sz))
     return true;
 
   set_error(ctx, DATA_WRITING_ERROR);
@@ -877,11 +877,11 @@ bool cmp_write_ext16_marker(cmp_ctx_t *ctx, uint16_t size, int8_t type) {
   return false;
 }
 
-bool cmp_write_ext16(cmp_ctx_t *ctx, uint16_t size, int8_t type, void *data) {
-  if (!cmp_write_ext16_marker(ctx, size, type))
+bool cmp_write_ext16(cmp_ctx_t *ctx, uint16_t sz, int8_t tp, const void *data) {
+  if (!cmp_write_ext16_marker(ctx, sz, tp))
     return false;
 
-  if (ctx->write(ctx, data, size))
+  if (ctx->write(ctx, data, sz))
     return true;
 
   set_error(ctx, DATA_WRITING_ERROR);
@@ -904,34 +904,34 @@ bool cmp_write_ext32_marker(cmp_ctx_t *ctx, uint32_t size, int8_t type) {
   return false;
 }
 
-bool cmp_write_ext32(cmp_ctx_t *ctx, uint32_t size, int8_t type, void *data) {
-  if (!cmp_write_ext32_marker(ctx, size, type))
+bool cmp_write_ext32(cmp_ctx_t *ctx, uint32_t sz, int8_t tp, const void *data) {
+  if (!cmp_write_ext32_marker(ctx, sz, tp))
     return false;
 
-  if (ctx->write(ctx, data, size))
+  if (ctx->write(ctx, data, sz))
     return true;
 
   set_error(ctx, DATA_WRITING_ERROR);
   return false;
 }
 
-bool cmp_write_ext(cmp_ctx_t *ctx, uint32_t size, int8_t type, void *data) {
-  if (size == 1)
-    return cmp_write_fixext1(ctx, type, data);
-  if (size == 2)
-    return cmp_write_fixext2(ctx, type, data);
-  if (size == 4)
-    return cmp_write_fixext4(ctx, type, data);
-  if (size == 8)
-    return cmp_write_fixext8(ctx, type, data);
-  if (size == 16)
-    return cmp_write_fixext16(ctx, type, data);
-  if (size <= 0xFF)
-    return cmp_write_ext8(ctx, size, type, data);
-  if (size <= 0xFFFF)
-    return cmp_write_ext16(ctx, size, type, data);
+bool cmp_write_ext(cmp_ctx_t *ctx, uint32_t sz, int8_t tp, const void *data) {
+  if (sz == 1)
+    return cmp_write_fixext1(ctx, tp, data);
+  if (sz == 2)
+    return cmp_write_fixext2(ctx, tp, data);
+  if (sz == 4)
+    return cmp_write_fixext4(ctx, tp, data);
+  if (sz == 8)
+    return cmp_write_fixext8(ctx, tp, data);
+  if (sz == 16)
+    return cmp_write_fixext16(ctx, tp, data);
+  if (sz <= 0xFF)
+    return cmp_write_ext8(ctx, sz, tp, data);
+  if (sz <= 0xFFFF)
+    return cmp_write_ext16(ctx, sz, tp, data);
 
-  return cmp_write_ext32(ctx, size, type, data);
+  return cmp_write_ext32(ctx, sz, tp, data);
 }
 
 bool cmp_write_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
