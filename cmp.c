@@ -154,6 +154,50 @@ static uint64_t be64(uint64_t x) {
   return x;
 }
 
+static float befloat(float x) {
+  char *b = (char *)&x;
+
+  if (!is_bigendian()) {
+    char swap = 0;
+
+    swap = b[0];
+    b[0] = b[3];
+    b[3] = swap;
+
+    swap = b[1];
+    b[1] = b[2];
+    b[2] = swap;
+  }
+
+  return x;
+}
+
+static double bedouble(double x) {
+  char *b = (char *)&x;
+
+  if (!is_bigendian()) {
+    char swap = 0;
+
+    swap = b[0];
+    b[0] = b[7];
+    b[7] = swap;
+
+    swap = b[1];
+    b[1] = b[6];
+    b[6] = swap;
+
+    swap = b[2];
+    b[2] = b[5];
+    b[5] = swap;
+
+    swap = b[3];
+    b[3] = b[4];
+    b[4] = swap;
+  }
+
+  return x;
+}
+
 static void set_error(cmp_ctx_t *ctx, uint8_t error_code) {
   ctx->error = error_code;
 }
@@ -271,28 +315,22 @@ bool cmp_write_s64(cmp_ctx_t *ctx, int64_t l) {
 }
 
 bool cmp_write_sint(cmp_ctx_t *ctx, int64_t d) {
-  uint64_t b = d;
+  if (d >= 0)
+    return cmp_write_uint(ctx, d);
 
-  if (d >= -32 && d <= -1)
+  if (d >= -32)
     return cmp_write_nfix(ctx, d);
 
-  if (d >= 0 && d <= 0x7F)
-    return cmp_write_pfix(ctx, d);
-
-  if (b <= 0xFF)
+  if (d >= -128)
     return cmp_write_s8(ctx, d);
 
-  if (b <= 0xFFFF)
+  if (d >= -32768)
     return cmp_write_s16(ctx, d);
 
-  if (b <= 0xFFFFFFFF)
+  if (d >= -2147483648)
     return cmp_write_s32(ctx, d);
 
-  if (b <= 0xFFFFFFFFFFFFFFFF)
-    return cmp_write_s64(ctx, d);
-
-  set_error(ctx, INPUT_VALUE_TOO_LARGE_ERROR);
-  return false;
+  return cmp_write_s64(ctx, d);
 }
 
 bool cmp_write_ufix(cmp_ctx_t *ctx, uint8_t c) {
@@ -338,24 +376,22 @@ bool cmp_write_uint(cmp_ctx_t *ctx, uint64_t u) {
     return cmp_write_pfix(ctx, u);
 
   if (u <= 0xFF)
-    return cmp_write_s8(ctx, u);
+    return cmp_write_u8(ctx, u);
 
   if (u <= 0xFFFF)
-    return cmp_write_s16(ctx, u);
+    return cmp_write_u16(ctx, u);
 
   if (u <= 0xFFFFFFFF)
-    return cmp_write_s32(ctx, u);
+    return cmp_write_u32(ctx, u);
 
-  if (u <= 0xFFFFFFFFFFFFFFFF)
-    return cmp_write_s64(ctx, u);
-
-  set_error(ctx, INPUT_VALUE_TOO_LARGE_ERROR);
-  return false;
+  return cmp_write_u64(ctx, u);
 }
 
 bool cmp_write_float(cmp_ctx_t *ctx, float f) {
   if (!write_type_marker(ctx, FLOAT_MARKER))
     return false;
+
+  f = befloat(f);
 
   return ctx->write(ctx, &f, sizeof(float));
 }
@@ -363,6 +399,8 @@ bool cmp_write_float(cmp_ctx_t *ctx, float f) {
 bool cmp_write_double(cmp_ctx_t *ctx, double d) {
   if (!write_type_marker(ctx, DOUBLE_MARKER))
     return false;
+
+  d = bedouble(d);
 
   return ctx->write(ctx, &d, sizeof(double));
 }
@@ -1214,7 +1252,8 @@ bool cmp_read_float(cmp_ctx_t *ctx, float *f) {
     return false;
   }
 
-  *f = be32(*f);
+  *f = befloat(*f);
+
   return true;
 }
 
@@ -1234,7 +1273,12 @@ bool cmp_read_double(cmp_ctx_t *ctx, double *d) {
     return false;
   }
 
-  *d = be64(*d);
+  printf("cmp_read_double: read %g.\n", *d);
+
+  *d = bedouble(*d);
+
+  printf("cmp_read_double: converted to %g.\n", *d);
+
   return true;
 }
 
@@ -1559,12 +1603,12 @@ bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
       set_error(ctx, LENGTH_READING_ERROR);
       return false;
     }
-    ext.size = obj->as.u16;
+    ext.size = be16(obj->as.u16);
     if (!ctx->read(ctx, &obj->as.s16, sizeof(int16_t))) {
       set_error(ctx, EXT_TYPE_READING_ERROR);
       return false;
     }
-    ext.type = obj->as.s16;
+    ext.type = be16(obj->as.s16);
   }
   else if (type_marker == EXT32_MARKER) {
     cmp_ext_t ext;
@@ -1574,12 +1618,12 @@ bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
       set_error(ctx, LENGTH_READING_ERROR);
       return false;
     }
-    ext.size = obj->as.u32;
+    ext.size = be32(obj->as.u32);
     if (!ctx->read(ctx, &obj->as.s32, sizeof(int32_t))) {
       set_error(ctx, EXT_TYPE_READING_ERROR);
       return false;
     }
-    ext.type = obj->as.s32;
+    ext.type = be32(obj->as.s32);
   }
   else if (type_marker == FLOAT_MARKER) {
     obj->type = CMP_TYPE_FLOAT;
@@ -1587,7 +1631,7 @@ bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
       set_error(ctx, DATA_READING_ERROR);
       return false;
     }
-    obj->as.flt = obj->as.flt;
+    obj->as.flt = befloat(obj->as.flt);
   }
   else if (type_marker == DOUBLE_MARKER) {
     obj->type = CMP_TYPE_DOUBLE;
@@ -1595,7 +1639,8 @@ bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
       set_error(ctx, DATA_READING_ERROR);
       return false;
     }
-    obj->as.flt = obj->as.flt;
+
+    obj->as.dbl = bedouble(obj->as.dbl);
   }
   else if (type_marker == U8_MARKER) {
     obj->type = CMP_TYPE_UINT8;
@@ -1641,7 +1686,7 @@ bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
       set_error(ctx, DATA_READING_ERROR);
       return false;
     }
-    obj->as.u16 = be16(obj->as.u16);
+    obj->as.s16 = be16(obj->as.s16);
   }
   else if (type_marker == S32_MARKER) {
     obj->type = CMP_TYPE_SINT32;
@@ -1649,7 +1694,7 @@ bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
       set_error(ctx, DATA_READING_ERROR);
       return false;
     }
-    obj->as.u32 = be32(obj->as.u32);
+    obj->as.s32 = be32(obj->as.s32);
   }
   else if (type_marker == S64_MARKER) {
     obj->type = CMP_TYPE_SINT64;
@@ -1657,7 +1702,7 @@ bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
       set_error(ctx, DATA_READING_ERROR);
       return false;
     }
-    obj->as.u64 = be64(obj->as.u64);
+    obj->as.s64 = be64(obj->as.s64);
   }
   else if (type_marker == FIXEXT1_MARKER) {
     obj->type = CMP_TYPE_FIXEXT1;
@@ -1709,7 +1754,7 @@ bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
       set_error(ctx, DATA_READING_ERROR);
       return false;
     }
-    obj->as.str_size = be16(obj->as.u16);
+    obj->as.array_size = be16(obj->as.u16);
   }
   else if (type_marker == ARRAY32_MARKER) {
     obj->type = CMP_TYPE_ARRAY32;
@@ -1717,7 +1762,7 @@ bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
       set_error(ctx, DATA_READING_ERROR);
       return false;
     }
-    obj->as.str_size = be32(obj->as.u32);
+    obj->as.array_size = be32(obj->as.u32);
   }
   else if (type_marker == MAP16_MARKER) {
     obj->type = CMP_TYPE_MAP16;
@@ -1725,7 +1770,7 @@ bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
       set_error(ctx, DATA_READING_ERROR);
       return false;
     }
-    obj->as.str_size = be16(obj->as.u16);
+    obj->as.map_size = be16(obj->as.u16);
   }
   else if (type_marker == MAP32_MARKER) {
     obj->type = CMP_TYPE_MAP32;
@@ -1733,7 +1778,7 @@ bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
       set_error(ctx, DATA_READING_ERROR);
       return false;
     }
-    obj->as.str_size = be32(obj->as.u32);
+    obj->as.map_size = be32(obj->as.u32);
   }
   else if (type_marker >= NEGATIVE_FIXNUM_MARKER) {
     obj->type = CMP_TYPE_NEGATIVE_FIXNUM;

@@ -553,8 +553,12 @@ void M_BufferPrint(buf_t *buf) {
     buf->cursor
   );
 
-  for (i = 0; i < MIN(256, buf->size); i++)
+  for (i = 0; i < MIN(256, buf->size); i++) {
     printf("%02x ", (unsigned char)buf->data[i]);
+
+    if ((i > 0) && (((i + 1) % 25) == 0))
+      printf("\n");
+  }
 
   printf("\n");
 }
