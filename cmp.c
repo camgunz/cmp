@@ -430,7 +430,7 @@ bool cmp_write_bin8(cmp_ctx_t *ctx, const void *data, uint8_t size) {
   if (!cmp_write_bin8_marker(ctx, size))
     return false;
 
-  if (ctx->write(ctx, data, size * sizeof(uint8_t)))
+  if (ctx->write(ctx, data, size))
     return true;
 
   set_error(ctx, DATA_WRITING_ERROR);
@@ -547,10 +547,10 @@ bool cmp_write_str8(cmp_ctx_t *ctx, const void *data, uint8_t size) {
   if (!cmp_write_str8_marker(ctx, size))
     return false;
 
-  if (ctx->write(ctx, data, sizeof(uint8_t)))
+  if (ctx->write(ctx, data, size))
     return true;
 
-  set_error(ctx, LENGTH_WRITING_ERROR);
+  set_error(ctx, DATA_WRITING_ERROR);
   return false;
 }
 
@@ -606,14 +606,13 @@ bool cmp_write_str_marker(cmp_ctx_t *ctx, uint32_t size) {
   if (size <= FIXSTR_SIZE)
     return cmp_write_fixstr_marker(ctx, size);
 
+  if (size <= 0xFF)
+    return cmp_write_str8_marker(ctx, size);
+
   if (size <= 0xFFFF)
     return cmp_write_str16_marker(ctx, size);
 
-  if (size <= 0xFFFFFFFF)
-    return cmp_write_str16_marker(ctx, size);
-
-  set_error(ctx, INPUT_VALUE_TOO_LARGE_ERROR);
-  return false;
+  return cmp_write_str16_marker(ctx, size);
 }
 
 bool cmp_write_str(cmp_ctx_t *ctx, const void *data, uint32_t size) {
@@ -626,11 +625,7 @@ bool cmp_write_str(cmp_ctx_t *ctx, const void *data, uint32_t size) {
   if (size <= 0xFFFF)
     return cmp_write_str16(ctx, data, size);
 
-  if (size <= 0xFFFFFFFF)
-    return cmp_write_str32(ctx, data, size);
-
-  set_error(ctx, INPUT_VALUE_TOO_LARGE_ERROR);
-  return false;
+  return cmp_write_str32(ctx, data, size);
 }
 
 bool cmp_write_fixarray(cmp_ctx_t *ctx, uint8_t size) {

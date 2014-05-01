@@ -680,6 +680,27 @@ bool run_binary_tests(void) {
   return true;
 }
 
+bool run_string_tests(void) {
+  buf_t buf;
+  cmp_ctx_t cmp;
+
+  setup_cmp_and_buf(&cmp, &buf);
+
+  test_str_format(cmp_write_fixstr, "Hey there\n", 10, "\xaaHey there\n", 11);
+  test_str_format(
+    cmp_write_str8, "Hey there\n", 10, "\xd9\x0aHey there\n", 12
+  );
+  test_str_format(
+    cmp_write_str16, "Hey there\n", 10, "\xda\x00\x0aHey there\n", 13
+  );
+  test_str_format(
+    cmp_write_str32, "Hey there\n", 10, "\xdb\x00\x00\x00\x0aHey there\n", 15
+  );
+  test_str_format(cmp_write_str, "Hey there\n", 10, "\xaaHey there\n", 11);
+
+  return true;
+}
+
 int main(void) {
   printf("=== Testing CMP v%u ===\n\n", cmp_version());
 
@@ -689,6 +710,7 @@ int main(void) {
   run_test(nil);
   run_test(boolean);
   run_test(binary);
+  run_test(string);
 
   printf("\nAll tests pass!\n\n");
   return EXIT_SUCCESS;
