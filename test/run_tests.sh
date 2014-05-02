@@ -1,8 +1,9 @@
 #!/bin/sh
 
 EXE_NAME='test-cmp'
+CC=gcc
 CC=clang
-CFLAGS="--std=c89 -Werror -Wall -Wextra"
+CFLAGS="--std=c99 -Werror -Wall -Wextra"
 CFLAGS="$CFLAGS -funsigned-char"
 CFLAGS="$CFLAGS -fwrapv"
 CFLAGS="$CFLAGS -Wmissing-format-attribute"

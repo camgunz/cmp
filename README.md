@@ -104,14 +104,14 @@ examples included with the msgpack-c project.
 CMP uses no internal buffers; conversions, encoding and decoding are done on
 the fly.
 
-CMP's source is < 2,000 LOC, and it allocates nothing.
+CMP's source is < 2,100 LOC, and it allocates nothing.
 
 CMP uses standardized types rather than declaring its own, and it depends only
 on `stdbool.h`, `stdint.h` and `string.h`.  It has no link-time dependencies,
 not even the C Standard Library.
 
 CMP is written using C89 (ANSI C), aside, of course, from its use of
-fixed-width integer types and `bool`.
+fixed-width integer types and `bool`.  CMP's test suite, however, requires C99.
 
 CMP only requires the programmer supply a read function and a write function.
 In this way, the programmer can use CMP on memory, files, sockets, etc.
@@ -125,16 +125,17 @@ CMP provides a fairly comprehensive error reporting mechanism modeled after
 CMP is threadsafe; while contexts cannot be shared between threads, each thread
 may use its own context freely.
 
-CMP is tested using the MessagePack test suite as well as a comprehensive set
-of custom test cases.  Its small test program is compiled with clang using
-`-Wall -Werror -Wextra ...` along with several other flags, and generates no
-compilation errors.
+CMP is tested using the MessagePack test suite as well as a large set of custom
+test cases.  Its small test program is compiled with clang using `-Wall -Werror
+-Wextra ...` along with several other flags, and generates no compilation
+errors.
 
 ## Building
 
 There is no build system for CMP.  The programmer can drop `cmp.c` and `cmp.h`
 in their source tree and modify as necessary.  No special compiler settings are
-required to build it.
+required to build it, and it generates no compilation errors in either clang or
+gcc.
 
 ## To Do
 
