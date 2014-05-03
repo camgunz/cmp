@@ -21,6 +21,5 @@ CFLAGS="$CFLAGS --pedantic-errors"
 CFLAGS="$CFLAGS -g"
 
 $CC $CFLAGS -I../ -o example1 ../cmp.c example1.c
-# $CC $CFLAGS -I../ -o example2 ../cmp.c example2.c
-# $CC $CFLAGS -I../ -o example3 ../cmp.c example3.c
+$CC $CFLAGS -I../ -o example2 ../cmp.c example2.c
 

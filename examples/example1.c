@@ -18,48 +18,48 @@ static size_t file_writer(cmp_ctx_t *ctx, const void *data, size_t count) {
 }
 
 void error_and_exit(const char *msg) {
-    fprintf(stderr, "%s", msg);
+    fprintf(stderr, "%s\n\n", msg);
     exit(EXIT_FAILURE);
 }
 
 int main(void) {
     FILE *fh = NULL;
     cmp_ctx_t cmp;
-    size_t array_length = 0;
-    size_t raw_length = 0;
+    uint32_t array_size = 0;
+    uint32_t str_size = 0;
     char hello[6] = {0, 0, 0, 0, 0, 0};
     char message_pack[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     fh = fopen("cmp_data.dat", "w+b");
 
     if (fh == NULL)
-        error_and_exit("Error opening data.dat\n");
+        error_and_exit("Error opening data.dat");
 
     cmp_init(&cmp, fh, file_reader, file_writer);
 
     if (!cmp_write_array(&cmp, 2))
         error_and_exit(cmp_strerror(&cmp));
 
-    if (!cmp_write_raw(&cmp, "Hello", 5))
+    if (!cmp_write_str(&cmp, "Hello", 5))
         error_and_exit(cmp_strerror(&cmp));
 
-    if (!cmp_write_raw(&cmp, "MessagePack", 11))
+    if (!cmp_write_str(&cmp, "MessagePack", 11))
         error_and_exit(cmp_strerror(&cmp));
 
     rewind(fh);
 
-    if (!cmp_read_array(&cmp, &array_length))
+    if (!cmp_read_array(&cmp, &array_size))
         error_and_exit(cmp_strerror(&cmp));
 
-    /* You can read the raw byte size and then read raw bytes... */
+    /* You can read the str byte size and then read str bytes... */
 
-    if (!cmp_read_raw_length(&cmp, &raw_length))
+    if (!cmp_read_str_size(&cmp, &str_size))
         error_and_exit(cmp_strerror(&cmp));
 
-    if (raw_length > (sizeof(hello) - 1))
+    if (str_size > (sizeof(hello) - 1))
         error_and_exit("Packed 'hello' length too long\n");
 
-    if (!read_bytes(hello, raw_length, fh))
+    if (!read_bytes(hello, str_size, fh))
         error_and_exit(cmp_strerror(&cmp));
 
     /*
@@ -67,11 +67,11 @@ int main(void) {
      * one call
      */
 
-    raw_length = sizeof(message_pack) - 1;
-    if (!cmp_read_raw(&cmp, message_pack, &raw_length))
+    str_size = sizeof(message_pack);
+    if (!cmp_read_str(&cmp, message_pack, &str_size))
         error_and_exit(cmp_strerror(&cmp));
 
-    printf("Array Length: %zu.\n", array_length);
+    printf("Array Length: %zu.\n", array_size);
     printf("[\"%s\", \"%s\"]\n", hello, message_pack);
 
     fclose(fh);

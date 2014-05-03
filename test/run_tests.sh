@@ -1,8 +1,8 @@
 #!/bin/sh
 
 EXE_NAME='test-cmp'
-CC=gcc
 CC=clang
+# CC=gcc
 CFLAGS="--std=c99 -Werror -Wall -Wextra"
 CFLAGS="$CFLAGS -funsigned-char"
 CFLAGS="$CFLAGS -fwrapv"
@@ -14,8 +14,8 @@ CFLAGS="$CFLAGS -Wwrite-strings"
 CFLAGS="$CFLAGS -Wshadow"
 CFLAGS="$CFLAGS -Wenum-compare"
 CFLAGS="$CFLAGS -Wempty-body"
-CFLAGS="$CFLAGS -Wsizeof-array-argument"
-CFLAGS="$CFLAGS -Wstring-conversion"
+CFLAGS="$CFLAGS -Wsizeof-array-argument" # GCC does not support this
+CFLAGS="$CFLAGS -Wstring-conversion"     # GCC does not support this
 CFLAGS="$CFLAGS -Wparentheses"
 CFLAGS="$CFLAGS -Wcast-align"
 CFLAGS="$CFLAGS -Wstrict-aliasing"

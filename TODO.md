@@ -1,2 +1,1 @@
-- Implement latest spec
-- Add versioning
+- Prevent users from using extended types < 0 (reserved by MessagePack)

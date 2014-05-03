@@ -154,7 +154,7 @@ static void error_printf(const char *msg, ...);
   }                                                                           \
   if (obj.as.ext.type != etype || obj.as.ext.size != esize) {                 \
     error_printf(                                                             \
-      "Input/Output mismatch: %s(&cmp, %d, %s) != {%d, %" PRIu64 "}\n",       \
+      "Input/Output mismatch: %s(&cmp, %d, %s) != {%d, %u}\n",                \
       #wfunc, etype, in, obj.as.ext.type, obj.as.ext.size                     \
     );                                                                        \
     return false;                                                             \
@@ -188,7 +188,7 @@ static void error_printf(const char *msg, ...);
   }                                                                           \
   if (obj.as.ext.type != etype || obj.as.ext.size != esize) {                 \
     error_printf(                                                             \
-      "Input/Output mismatch: %s(&cmp, %d, %u, %s) != {%d, %" PRIu64 "}\n",   \
+      "Input/Output mismatch: %s(&cmp, %d, %u, %s) != {%d, %u}\n",            \
       #wfunc, etype, esize, in, obj.as.ext.type, obj.as.ext.size              \
     );                                                                        \
     return false;                                                             \
@@ -259,18 +259,17 @@ static void error_print_object(cmp_object_t *obj) {
     case CMP_TYPE_FIXMAP:
     case CMP_TYPE_MAP16:
     case CMP_TYPE_MAP32:
-      error_printf("%" PRIu64, obj->as.map_size);
-      break;
     case CMP_TYPE_FIXARRAY:
     case CMP_TYPE_ARRAY16:
     case CMP_TYPE_ARRAY32:
-      error_printf("%" PRIu64, obj->as.array_size);
-      break;
     case CMP_TYPE_FIXSTR:
     case CMP_TYPE_STR8:
     case CMP_TYPE_STR16:
     case CMP_TYPE_STR32:
-      error_printf("%" PRIu64, obj->as.str_size);
+    case CMP_TYPE_BIN8:
+    case CMP_TYPE_BIN16:
+    case CMP_TYPE_BIN32:
+      error_printf("%u", obj->as.bin_size);
       break;
     case CMP_TYPE_NIL:
       error_printf("NULL");
@@ -281,11 +280,6 @@ static void error_print_object(cmp_object_t *obj) {
       else
         error_printf("false");
       break;
-    case CMP_TYPE_BIN8:
-    case CMP_TYPE_BIN16:
-    case CMP_TYPE_BIN32:
-      error_printf("%" PRIu64, obj->as.bin_size);
-      break;
     case CMP_TYPE_EXT8:
     case CMP_TYPE_EXT16:
     case CMP_TYPE_EXT32:
@@ -294,7 +288,7 @@ static void error_print_object(cmp_object_t *obj) {
     case CMP_TYPE_FIXEXT4:
     case CMP_TYPE_FIXEXT8:
     case CMP_TYPE_FIXEXT16:
-      error_printf("{%d, %" PRIu64"}", obj->as.ext.type, obj->as.ext.size);
+      error_printf("{%d, %u}", obj->as.ext.type, obj->as.ext.size);
       break;
     case CMP_TYPE_FLOAT:
       error_printf("%f", obj->as.flt);

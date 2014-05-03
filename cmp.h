@@ -1,9 +1,11 @@
+#ifndef CMP_H__
+#define CMP_H__
+
 struct cmp_ctx_s;
 
 typedef bool   (*cmp_reader)(struct cmp_ctx_s *ctx, void *data, size_t limit);
-typedef size_t (*cmp_writer)(
-  struct cmp_ctx_s *ctx, const void *data, size_t count
-);
+typedef size_t (*cmp_writer)(struct cmp_ctx_s *ctx, const void *data,
+                                                    size_t count);
 
 enum {
   CMP_TYPE_POSITIVE_FIXNUM, /*  0 */
@@ -45,7 +47,7 @@ enum {
 
 typedef struct cmp_ext_s {
   int8_t type;
-  uint64_t size;
+  uint32_t size;
 } cmp_ext_t;
 
 union cmp_object_data_u {
@@ -60,10 +62,10 @@ union cmp_object_data_u {
   int64_t   s64;
   float     flt;
   double    dbl;
-  uint64_t  array_size;
-  uint64_t  map_size;
-  uint64_t  str_size;
-  uint64_t  bin_size;
+  uint32_t  array_size;
+  uint32_t  map_size;
+  uint32_t  str_size;
+  uint32_t  bin_size;
   cmp_ext_t ext;
 };
 
@@ -79,11 +81,153 @@ typedef struct cmp_object_s {
   union cmp_object_data_u as;
 } cmp_object_t;
 
+/*
+ * ============================================================================
+ * === Main API
+ * ============================================================================
+ */
+
+/* Initializes a CMP context */
 void cmp_init(cmp_ctx_t *ctx, void *buf, cmp_reader read, cmp_writer write);
 
-uint32_t    cmp_version(void);
-uint32_t    cmp_mp_version(void);
+/* Returns CMP's version */
+uint32_t cmp_version(void);
+
+/* Returns the MessagePack version employed by CMP */
+uint32_t cmp_mp_version(void);
+
+/* Returns a string description of a CMP context's error */
 const char* cmp_strerror(cmp_ctx_t *ctx);
+
+/* Writes a signed integer to the backend */
+bool cmp_write_sint(cmp_ctx_t *ctx, int64_t d);
+
+/* Writes an unsigned integer to the backend */
+bool cmp_write_uint(cmp_ctx_t *ctx, uint64_t u);
+
+/* Writes a single-precision float to the backend */
+bool cmp_write_float(cmp_ctx_t *ctx, float f);
+
+/* Writes a double-precision float to the backend */
+bool cmp_write_double(cmp_ctx_t *ctx, double d);
+
+/* Writes NULL to the backend */
+bool cmp_write_nil(cmp_ctx_t *ctx);
+
+/* Writes true to the backend */
+bool cmp_write_true(cmp_ctx_t *ctx);
+
+/* Writes false to the backend */
+bool cmp_write_false(cmp_ctx_t *ctx);
+
+/* Writes a boolean value to the backend */
+bool cmp_write_bool(cmp_ctx_t *ctx, bool b);
+
+/*
+ * Writes an unsigned char's value to the backend as a boolean.  This is useful
+ * if you are using a different boolean type in your application.
+ */
+bool cmp_write_u8_as_bool(cmp_ctx_t *ctx, uint8_t b);
+
+/*
+ * Writes a string to the backend; according to the MessagePack spec, this must
+ * be encoded using UTF-8, but CMP leaves that job up to the programmer.
+ */
+bool cmp_write_str(cmp_ctx_t *ctx, const char *data, uint32_t size);
+
+/*
+ * Writes the string marker to the backend.  This is useful if you are writing
+ * data in chunks instead of a single shot.
+ */
+bool cmp_write_str_marker(cmp_ctx_t *ctx, uint32_t size);
+
+/* Writes binary data to the backend */
+bool cmp_write_bin(cmp_ctx_t *ctx, const void *data, uint32_t size);
+
+/*
+ * Writes the binary data marker to the backend.  This is useful if you are
+ * writing data in chunks instead of a single shot.
+ */
+bool cmp_write_bin_marker(cmp_ctx_t *ctx, uint32_t size);
+
+/* Writes an array to the backend. */
+bool cmp_write_array(cmp_ctx_t *ctx, uint32_t size);
+
+/* Writes a map to the backend. */
+bool cmp_write_map(cmp_ctx_t *ctx, uint32_t size);
+
+/* Writes an extended type to the backend */
+bool cmp_write_ext(cmp_ctx_t *ctx, int8_t type, uint32_t size,
+                                   const void *data);
+
+/*
+ * Writes the extended type marker to the backend.  This is useful if you want
+ * to write the type's data in chunks instead of a single shot.
+ */
+bool cmp_write_ext_marker(cmp_ctx_t *ctx, int8_t type, uint32_t size);
+
+/* Writes an object to the backend */
+bool cmp_write_object(cmp_ctx_t *ctx, cmp_object_t *obj);
+
+/* Reads a signed int */
+bool cmp_read_sint(cmp_ctx_t *ctx, int64_t *d);
+
+/* Reads an unsigned int */
+bool cmp_read_uint(cmp_ctx_t *ctx, uint64_t *u);
+
+/* Reads a single-precision float from the backend */
+bool cmp_read_float(cmp_ctx_t *ctx, float *f);
+
+/* Reads a double-precision float from the backend */
+bool cmp_read_double(cmp_ctx_t *ctx, double *d);
+
+/* "Reads" (more like "skips") a NULL value from the backend */
+bool cmp_read_nil(cmp_ctx_t *ctx);
+
+/* Reads a boolean from the backend */
+bool cmp_read_bool(cmp_ctx_t *ctx, bool *b);
+
+/*
+ * Reads a boolean as an unsigned char from the backend; this is useful if your
+ * application uses a different boolean type.
+ */
+bool cmp_read_bool_as_u8(cmp_ctx_t *ctx, uint8_t *b);
+
+/* Reads a string's size from the backend */
+bool cmp_read_str_size(cmp_ctx_t *ctx, uint32_t *size);
+
+/*
+ * Reads a string from the backend; according to the spec, the string's data
+ * ought to be encoded using UTF-8, 
+ */
+bool cmp_read_str(cmp_ctx_t *ctx, char *data, uint32_t *size);
+
+/* Reads the size of packed binary data from the backend */
+bool cmp_read_bin_size(cmp_ctx_t *ctx, uint32_t *size);
+
+/* Reads packed binary data from the backend */
+bool cmp_read_bin(cmp_ctx_t *ctx, void *data, uint32_t *size);
+
+/* Reads an array from the backend */
+bool cmp_read_array(cmp_ctx_t *ctx, uint32_t *size);
+
+/* Reads a map from the backend */
+bool cmp_read_map(cmp_ctx_t *ctx, uint32_t *size);
+
+/* Reads the extended type's marker from the backend */
+bool cmp_read_ext_marker(cmp_ctx_t *ctx, int8_t *type, uint32_t *size);
+
+/* Reads an extended type from the backend */
+bool cmp_read_ext(cmp_ctx_t *ctx, int8_t *type, uint32_t *size, void *data);
+
+/* Reads an object from the backend */
+bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj);
+
+/*
+ * ============================================================================
+ * === Specific API
+ * ============================================================================
+ */
 
 bool cmp_write_pfix(cmp_ctx_t *ctx, uint8_t c);
 bool cmp_write_nfix(cmp_ctx_t *ctx, int8_t c);
@@ -93,34 +237,21 @@ bool cmp_write_s8(cmp_ctx_t *ctx, int8_t c);
 bool cmp_write_s16(cmp_ctx_t *ctx, int16_t s);
 bool cmp_write_s32(cmp_ctx_t *ctx, int32_t i);
 bool cmp_write_s64(cmp_ctx_t *ctx, int64_t l);
-bool cmp_write_sint(cmp_ctx_t *ctx, int64_t d);
 
 bool cmp_write_ufix(cmp_ctx_t *ctx, uint8_t c);
 bool cmp_write_u8(cmp_ctx_t *ctx, uint8_t c);
 bool cmp_write_u16(cmp_ctx_t *ctx, uint16_t s);
 bool cmp_write_u32(cmp_ctx_t *ctx, uint32_t i);
 bool cmp_write_u64(cmp_ctx_t *ctx, uint64_t l);
-bool cmp_write_uint(cmp_ctx_t *ctx, uint64_t u);
-
-bool cmp_write_float(cmp_ctx_t *ctx, float f);
-bool cmp_write_double(cmp_ctx_t *ctx, double d);
-
-bool cmp_write_nil(cmp_ctx_t *ctx);
-bool cmp_write_true(cmp_ctx_t *ctx);
-bool cmp_write_false(cmp_ctx_t *ctx);
-bool cmp_write_bool(cmp_ctx_t *ctx, bool b);
-bool cmp_write_u8_as_bool(cmp_ctx_t *ctx, uint8_t b);
 
 bool cmp_write_fixstr_marker(cmp_ctx_t *ctx, uint8_t size);
-bool cmp_write_fixstr(cmp_ctx_t *ctx, const void *data, uint8_t size);
+bool cmp_write_fixstr(cmp_ctx_t *ctx, const char *data, uint8_t size);
 bool cmp_write_str8_marker(cmp_ctx_t *ctx, uint8_t size);
-bool cmp_write_str8(cmp_ctx_t *ctx, const void *data, uint8_t size);
+bool cmp_write_str8(cmp_ctx_t *ctx, const char *data, uint8_t size);
 bool cmp_write_str16_marker(cmp_ctx_t *ctx, uint16_t size);
-bool cmp_write_str16(cmp_ctx_t *ctx, const void *data, uint16_t size);
+bool cmp_write_str16(cmp_ctx_t *ctx, const char *data, uint16_t size);
 bool cmp_write_str32_marker(cmp_ctx_t *ctx, uint32_t size);
-bool cmp_write_str32(cmp_ctx_t *ctx, const void *data, uint32_t size);
-bool cmp_write_str_marker(cmp_ctx_t *ctx, uint32_t size);
-bool cmp_write_str(cmp_ctx_t *ctx, const void *data, uint32_t size);
+bool cmp_write_str32(cmp_ctx_t *ctx, const char *data, uint32_t size);
 
 bool cmp_write_bin8_marker(cmp_ctx_t *ctx, uint8_t size);
 bool cmp_write_bin8(cmp_ctx_t *ctx, const void *data, uint8_t size);
@@ -128,18 +259,14 @@ bool cmp_write_bin16_marker(cmp_ctx_t *ctx, uint16_t size);
 bool cmp_write_bin16(cmp_ctx_t *ctx, const void *data, uint16_t size);
 bool cmp_write_bin32_marker(cmp_ctx_t *ctx, uint32_t size);
 bool cmp_write_bin32(cmp_ctx_t *ctx, const void *data, uint32_t size);
-bool cmp_write_bin_marker(cmp_ctx_t *ctx, uint32_t size);
-bool cmp_write_bin(cmp_ctx_t *ctx, const void *data, uint32_t size);
 
 bool cmp_write_fixarray(cmp_ctx_t *ctx, uint8_t size);
 bool cmp_write_array16(cmp_ctx_t *ctx, uint16_t size);
 bool cmp_write_array32(cmp_ctx_t *ctx, uint32_t size);
-bool cmp_write_array(cmp_ctx_t *ctx, uint32_t size);
 
 bool cmp_write_fixmap(cmp_ctx_t *ctx, uint8_t size);
 bool cmp_write_map16(cmp_ctx_t *ctx, uint16_t size);
 bool cmp_write_map32(cmp_ctx_t *ctx, uint32_t size);
-bool cmp_write_map(cmp_ctx_t *ctx, uint32_t size);
 
 bool cmp_write_fixext1_marker(cmp_ctx_t *ctx, int8_t type);
 bool cmp_write_fixext1(cmp_ctx_t *ctx, int8_t type, const void *data);
@@ -153,15 +280,14 @@ bool cmp_write_fixext16_marker(cmp_ctx_t *ctx, int8_t type);
 bool cmp_write_fixext16(cmp_ctx_t *ctx, int8_t type, const void *data);
 
 bool cmp_write_ext8_marker(cmp_ctx_t *ctx, int8_t type, uint8_t size);
-bool cmp_write_ext8(cmp_ctx_t *ctx, int8_t tp, uint8_t sz, const void *data);
+bool cmp_write_ext8(cmp_ctx_t *ctx, int8_t type, uint8_t size,
+                                    const void *data);
 bool cmp_write_ext16_marker(cmp_ctx_t *ctx, int8_t type, uint16_t size);
-bool cmp_write_ext16(cmp_ctx_t *ctx, int8_t tp, uint16_t sz, const void *data);
+bool cmp_write_ext16(cmp_ctx_t *ctx, int8_t type, uint16_t size,
+                                     const void *data);
 bool cmp_write_ext32_marker(cmp_ctx_t *ctx, int8_t type, uint32_t size);
-bool cmp_write_ext32(cmp_ctx_t *ctx, int8_t tp, uint32_t sz, const void *data);
-bool cmp_write_ext_marker(cmp_ctx_t *ctx, int8_t tp, uint32_t sz);
-bool cmp_write_ext(cmp_ctx_t *ctx, int8_t tp, uint32_t sz, const void *data);
-
-bool cmp_write_object(cmp_ctx_t *ctx, cmp_object_t *obj);
+bool cmp_write_ext32(cmp_ctx_t *ctx, int8_t type, uint32_t size,
+                                     const void *data);
 
 bool cmp_read_pfix(cmp_ctx_t *ctx, uint8_t *c);
 bool cmp_read_nfix(cmp_ctx_t *ctx, int8_t *c);
@@ -171,37 +297,32 @@ bool cmp_read_s8(cmp_ctx_t *ctx, int8_t *c);
 bool cmp_read_s16(cmp_ctx_t *ctx, int16_t *s);
 bool cmp_read_s32(cmp_ctx_t *ctx, int32_t *i);
 bool cmp_read_s64(cmp_ctx_t *ctx, int64_t *l);
-bool cmp_read_sint(cmp_ctx_t *ctx, int64_t *d);
 
 bool cmp_read_ufix(cmp_ctx_t *ctx, uint8_t *c);
 bool cmp_read_u8(cmp_ctx_t *ctx, uint8_t *c);
 bool cmp_read_u16(cmp_ctx_t *ctx, uint16_t *s);
 bool cmp_read_u32(cmp_ctx_t *ctx, uint32_t *i);
 bool cmp_read_u64(cmp_ctx_t *ctx, uint64_t *l);
-bool cmp_read_uint(cmp_ctx_t *ctx, uint64_t *u);
 
-bool cmp_read_float(cmp_ctx_t *ctx, float *f);
-bool cmp_read_double(cmp_ctx_t *ctx, double *d);
+bool cmp_read_fixext1_marker(cmp_ctx_t *ctx, int8_t *type);
+bool cmp_read_fixext1(cmp_ctx_t *ctx, int8_t *type, void *data);
+bool cmp_read_fixext2_marker(cmp_ctx_t *ctx, int8_t *type);
+bool cmp_read_fixext2(cmp_ctx_t *ctx, int8_t *type, void *data);
+bool cmp_read_fixext4_marker(cmp_ctx_t *ctx, int8_t *type);
+bool cmp_read_fixext4(cmp_ctx_t *ctx, int8_t *type, void *data);
+bool cmp_read_fixext8_marker(cmp_ctx_t *ctx, int8_t *type);
+bool cmp_read_fixext8(cmp_ctx_t *ctx, int8_t *type, void *data);
+bool cmp_read_fixext16_marker(cmp_ctx_t *ctx, int8_t *type);
+bool cmp_read_fixext16(cmp_ctx_t *ctx, int8_t *type, void *data);
 
-bool cmp_read_nil(cmp_ctx_t *ctx);
-bool cmp_read_bool(cmp_ctx_t *ctx, bool *b);
-bool cmp_read_bool_as_u8(cmp_ctx_t *ctx, uint8_t *b);
+bool cmp_read_ext8_marker(cmp_ctx_t *ctx, int8_t *type, uint8_t *size);
+bool cmp_read_ext8(cmp_ctx_t *ctx, int8_t *type, uint8_t *size, void *data);
+bool cmp_read_ext16_marker(cmp_ctx_t *ctx, int8_t *type, uint16_t *size);
+bool cmp_read_ext16(cmp_ctx_t *ctx, int8_t *type, uint16_t *size, void *data);
+bool cmp_read_ext32_marker(cmp_ctx_t *ctx, int8_t *type, uint32_t *size);
+bool cmp_read_ext32(cmp_ctx_t *ctx, int8_t *type, uint32_t *size, void *data);
 
-bool cmp_read_str_size(cmp_ctx_t *ctx, uint32_t *size);
-bool cmp_read_str(cmp_ctx_t *ctx, void *data, uint32_t *size);
-
-bool cmp_read_bin_size(cmp_ctx_t *ctx, uint32_t *size);
-bool cmp_read_bin(cmp_ctx_t *ctx, void *data, uint32_t *size);
-
-bool cmp_read_array(cmp_ctx_t *ctx, uint32_t *size);
-
-bool cmp_read_map(cmp_ctx_t *ctx, uint32_t *size);
-
-bool cmp_read_ext_type(cmp_ctx_t *ctx, int8_t *type);
-bool cmp_read_ext_size(cmp_ctx_t *ctx, uint32_t *size);
-bool cmp_read_ext(cmp_ctx_t *ctx, int8_t *type, uint32_t *size);
-
-bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj);
+#endif
 
 /* vi: set et ts=2 sw=2: */
 
