@@ -4,7 +4,7 @@
 
 #include "cmp.h"
 
-static const uint32_t version = 2;
+static const uint32_t version = 3;
 static const uint32_t mp_version = 5;
 
 enum {
@@ -1137,6 +1137,11 @@ bool cmp_read_char(cmp_ctx_t *ctx, int8_t *c) {
     case CMP_TYPE_SINT8:
       *c = obj.as.s8;
       return true;
+    case CMP_TYPE_UINT8:
+      if (obj.as.u8 <= 127) {
+        *c = obj.as.u8;
+        return true;
+      }
     default:
       ctx->error = INVALID_TYPE_ERROR;
       return false;
@@ -1155,9 +1160,17 @@ bool cmp_read_short(cmp_ctx_t *ctx, int16_t *s) {
     case CMP_TYPE_SINT8:
       *s = obj.as.s8;
       return true;
+    case CMP_TYPE_UINT8:
+      *s = obj.as.u8;
+      return true;
     case CMP_TYPE_SINT16:
       *s = obj.as.s16;
       return true;
+    case CMP_TYPE_UINT16:
+      if (obj.as.u16 <= 32767) {
+        *s = obj.as.u16;
+        return true;
+      }
     default:
       ctx->error = INVALID_TYPE_ERROR;
       return false;
@@ -1176,12 +1189,23 @@ bool cmp_read_int(cmp_ctx_t *ctx, int32_t *i) {
     case CMP_TYPE_SINT8:
       *i = obj.as.s8;
       return true;
+    case CMP_TYPE_UINT8:
+      *i = obj.as.u8;
+      return true;
     case CMP_TYPE_SINT16:
       *i = obj.as.s16;
+      return true;
+    case CMP_TYPE_UINT16:
+      *i = obj.as.u16;
       return true;
     case CMP_TYPE_SINT32:
       *i = obj.as.s32;
       return true;
+    case CMP_TYPE_UINT32:
+      if (obj.as.u32 <= 2147483647) {
+        *i = obj.as.u32;
+        return true;
+      }
     default:
       ctx->error = INVALID_TYPE_ERROR;
       return false;
@@ -1200,15 +1224,29 @@ bool cmp_read_long(cmp_ctx_t *ctx, int64_t *d) {
     case CMP_TYPE_SINT8:
       *d = obj.as.s8;
       return true;
+    case CMP_TYPE_UINT8:
+      *d = obj.as.u8;
+      return true;
     case CMP_TYPE_SINT16:
-      *d = be16(obj.as.s16);
+      *d = obj.as.s16;
+      return true;
+    case CMP_TYPE_UINT16:
+      *d = obj.as.u16;
       return true;
     case CMP_TYPE_SINT32:
-      *d = be32(obj.as.s32);
+      *d = obj.as.s32;
+      return true;
+    case CMP_TYPE_UINT32:
+      *d = obj.as.u32;
       return true;
     case CMP_TYPE_SINT64:
-      *d = be64(obj.as.s64);
+      *d = obj.as.s64;
       return true;
+    case CMP_TYPE_UINT64:
+      if (obj.as.u64 <= 9223372036854775807) {
+        *d = obj.as.u64;
+        return true;
+      }
     default:
       ctx->error = INVALID_TYPE_ERROR;
       return false;
@@ -1260,7 +1298,7 @@ bool cmp_read_u16(cmp_ctx_t *ctx, uint16_t *s) {
     return false;
   }
 
-  *s = be16(obj.as.u16);
+  *s = obj.as.u16;
   return true;
 }
 
@@ -1275,7 +1313,7 @@ bool cmp_read_u32(cmp_ctx_t *ctx, uint32_t *i) {
     return false;
   }
 
-  *i = be32(obj.as.u32);
+  *i = obj.as.u32;
   return true;
 }
 
@@ -1290,7 +1328,7 @@ bool cmp_read_u64(cmp_ctx_t *ctx, uint64_t *l) {
     return false;
   }
 
-  *l = be64(obj.as.u64);
+  *l = obj.as.u64;
   return true;
 }
 
@@ -1368,13 +1406,13 @@ bool cmp_read_ulong(cmp_ctx_t *ctx, uint64_t *u) {
       *u = obj.as.u8;
       return true;
     case CMP_TYPE_UINT16:
-      *u = be16(obj.as.u16);
+      *u = obj.as.u16;
       return true;
     case CMP_TYPE_UINT32:
-      *u = be32(obj.as.u32);
+      *u = obj.as.u32;
       return true;
     case CMP_TYPE_UINT64:
-      *u = be64(obj.as.u64);
+      *u = obj.as.u64;
       return true;
     default:
       ctx->error = INVALID_TYPE_ERROR;
