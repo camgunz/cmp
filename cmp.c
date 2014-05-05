@@ -4,7 +4,7 @@
 
 #include "cmp.h"
 
-const uint32_t version = 1;
+const uint32_t version = 2;
 const uint32_t mp_version = 5;
 
 enum {
@@ -1125,7 +1125,70 @@ bool cmp_read_s64(cmp_ctx_t *ctx, int64_t *l) {
   return true;
 }
 
-bool cmp_read_sint(cmp_ctx_t *ctx, int64_t *d) {
+bool cmp_read_char(cmp_ctx_t *ctx, int8_t *c) {
+  cmp_object_t obj;
+
+  if (!cmp_read_object(ctx, &obj))
+    return false;
+
+  switch (obj.type) {
+    case CMP_TYPE_POSITIVE_FIXNUM:
+    case CMP_TYPE_NEGATIVE_FIXNUM:
+    case CMP_TYPE_SINT8:
+      *c = obj.as.s8;
+      return true;
+    default:
+      ctx->error = INVALID_TYPE_ERROR;
+      return false;
+  }
+}
+
+bool cmp_read_short(cmp_ctx_t *ctx, int16_t *s) {
+  cmp_object_t obj;
+
+  if (!cmp_read_object(ctx, &obj))
+    return false;
+
+  switch (obj.type) {
+    case CMP_TYPE_POSITIVE_FIXNUM:
+    case CMP_TYPE_NEGATIVE_FIXNUM:
+    case CMP_TYPE_SINT8:
+      *s = obj.as.s8;
+      return true;
+    case CMP_TYPE_SINT16:
+      *s = obj.as.s16;
+      return true;
+    default:
+      ctx->error = INVALID_TYPE_ERROR;
+      return false;
+  }
+}
+
+bool cmp_read_int(cmp_ctx_t *ctx, int32_t *i) {
+  cmp_object_t obj;
+
+  if (!cmp_read_object(ctx, &obj))
+    return false;
+
+  switch (obj.type) {
+    case CMP_TYPE_POSITIVE_FIXNUM:
+    case CMP_TYPE_NEGATIVE_FIXNUM:
+    case CMP_TYPE_SINT8:
+      *i = obj.as.s8;
+      return true;
+    case CMP_TYPE_SINT16:
+      *i = obj.as.s16;
+      return true;
+    case CMP_TYPE_SINT32:
+      *i = obj.as.s32;
+      return true;
+    default:
+      ctx->error = INVALID_TYPE_ERROR;
+      return false;
+  }
+}
+
+bool cmp_read_long(cmp_ctx_t *ctx, int64_t *d) {
   cmp_object_t obj;
 
   if (!cmp_read_object(ctx, &obj))
@@ -1150,6 +1213,10 @@ bool cmp_read_sint(cmp_ctx_t *ctx, int64_t *d) {
       ctx->error = INVALID_TYPE_ERROR;
       return false;
   }
+}
+
+bool cmp_read_sinteger(cmp_ctx_t *ctx, int64_t *d) {
+  return cmp_read_long(ctx, d);
 }
 
 bool cmp_read_ufix(cmp_ctx_t *ctx, uint8_t *c) {
@@ -1227,7 +1294,7 @@ bool cmp_read_u64(cmp_ctx_t *ctx, uint64_t *l) {
   return true;
 }
 
-bool cmp_read_uint(cmp_ctx_t *ctx, uint64_t *u) {
+bool cmp_read_uchar(cmp_ctx_t *ctx, uint8_t *c) {
   cmp_object_t obj;
 
   if (!cmp_read_object(ctx, &obj))
@@ -1235,6 +1302,68 @@ bool cmp_read_uint(cmp_ctx_t *ctx, uint64_t *u) {
 
   switch (obj.type) {
     case CMP_TYPE_POSITIVE_FIXNUM:
+    case CMP_TYPE_UINT8:
+      *c = obj.as.u8;
+      return true;
+    default:
+      ctx->error = INVALID_TYPE_ERROR;
+      return false;
+  }
+}
+
+bool cmp_read_ushort(cmp_ctx_t *ctx, uint16_t *s) {
+  cmp_object_t obj;
+
+  if (!cmp_read_object(ctx, &obj))
+    return false;
+
+  switch (obj.type) {
+    case CMP_TYPE_POSITIVE_FIXNUM:
+    case CMP_TYPE_UINT8:
+      *s = obj.as.u8;
+      return true;
+    case CMP_TYPE_UINT16:
+      *s = obj.as.u16;
+      return true;
+    default:
+      ctx->error = INVALID_TYPE_ERROR;
+      return false;
+  }
+}
+
+bool cmp_read_uint(cmp_ctx_t *ctx, uint32_t *i) {
+  cmp_object_t obj;
+
+  if (!cmp_read_object(ctx, &obj))
+    return false;
+
+  switch (obj.type) {
+    case CMP_TYPE_POSITIVE_FIXNUM:
+    case CMP_TYPE_NEGATIVE_FIXNUM:
+    case CMP_TYPE_UINT8:
+      *i = obj.as.u8;
+      return true;
+    case CMP_TYPE_UINT16:
+      *i = obj.as.u16;
+      return true;
+    case CMP_TYPE_UINT32:
+      *i = obj.as.u32;
+      return true;
+    default:
+      ctx->error = INVALID_TYPE_ERROR;
+      return false;
+  }
+}
+
+bool cmp_read_ulong(cmp_ctx_t *ctx, uint64_t *u) {
+  cmp_object_t obj;
+
+  if (!cmp_read_object(ctx, &obj))
+    return false;
+
+  switch (obj.type) {
+    case CMP_TYPE_POSITIVE_FIXNUM:
+    case CMP_TYPE_NEGATIVE_FIXNUM:
     case CMP_TYPE_UINT8:
       *u = obj.as.u8;
       return true;
@@ -1251,6 +1380,10 @@ bool cmp_read_uint(cmp_ctx_t *ctx, uint64_t *u) {
       ctx->error = INVALID_TYPE_ERROR;
       return false;
   }
+}
+
+bool cmp_read_uinteger(cmp_ctx_t *ctx, uint64_t *d) {
+  return cmp_read_ulong(ctx, d);
 }
 
 bool cmp_read_float(cmp_ctx_t *ctx, float *f) {

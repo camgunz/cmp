@@ -106,7 +106,9 @@ See the `examples` folder.
 CMP uses no internal buffers; conversions, encoding and decoding are done on
 the fly.
 
-CMP's source is < 2,400 LOC, and it allocates nothing.
+CMP's source and header file together are < 2,500 LOC.
+
+CMP makes no heap allocations.
 
 CMP uses standardized types rather than declaring its own, and it depends only
 on `stdbool.h`, `stdint.h` and `string.h`.  It has no link-time dependencies,

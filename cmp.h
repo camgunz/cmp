@@ -169,11 +169,35 @@ bool cmp_write_ext_marker(cmp_ctx_t *ctx, int8_t type, uint32_t size);
 /* Writes an object to the backend */
 bool cmp_write_object(cmp_ctx_t *ctx, cmp_object_t *obj);
 
-/* Reads a signed int */
-bool cmp_read_sint(cmp_ctx_t *ctx, int64_t *d);
+/* Reads a signed integer that fits inside a signed char */
+bool cmp_read_char(cmp_ctx_t *ctx, int8_t *c);
 
-/* Reads an unsigned int */
-bool cmp_read_uint(cmp_ctx_t *ctx, uint64_t *u);
+/* Reads a signed integer that fits inside a signed short */
+bool cmp_read_short(cmp_ctx_t *ctx, int16_t *s);
+
+/* Reads a signed integer that fits inside a signed int */
+bool cmp_read_int(cmp_ctx_t *ctx, int32_t *i);
+
+/* Reads a signed integer that fits inside a signed long */
+bool cmp_read_long(cmp_ctx_t *ctx, int64_t *d);
+
+/* Reads a signed integer */
+bool cmp_read_sinteger(cmp_ctx_t *ctx, int64_t *d);
+
+/* Reads an unsigned integer that fits inside an unsigned char */
+bool cmp_read_uchar(cmp_ctx_t *ctx, uint8_t *c);
+
+/* Reads an unsigned integer that fits inside an unsigned short */
+bool cmp_read_ushort(cmp_ctx_t *ctx, uint16_t *s);
+
+/* Reads an unsigned integer that fits inside an unsigned int */
+bool cmp_read_uint(cmp_ctx_t *ctx, uint32_t *i);
+
+/* Reads an unsigned integer that fits inside an unsigned long */
+bool cmp_read_ulong(cmp_ctx_t *ctx, uint64_t *u);
+
+/* Reads an unsigned integer */
+bool cmp_read_uinteger(cmp_ctx_t *ctx, uint64_t *u);
 
 /* Reads a single-precision float from the backend */
 bool cmp_read_float(cmp_ctx_t *ctx, float *f);

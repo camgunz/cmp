@@ -158,13 +158,13 @@ int main(void) {
     if (array_size != 9)
         error_and_exit("Array size was not 9");
 
-    if (!cmp_read_sint(&cmp, &sint))
+    if (!cmp_read_sinteger(&cmp, &sint))
         error_and_exit(cmp_strerror(&cmp));
 
     if (sint != -14)
         error_and_exit("Signed int was not -14");
 
-    if (!cmp_read_uint(&cmp, &uint))
+    if (!cmp_read_uinteger(&cmp, &uint))
         error_and_exit(cmp_strerror(&cmp));
 
     if (uint != 38)
