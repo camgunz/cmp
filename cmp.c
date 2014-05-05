@@ -4,8 +4,8 @@
 
 #include "cmp.h"
 
-const uint32_t version = 2;
-const uint32_t mp_version = 5;
+static const uint32_t version = 2;
+static const uint32_t mp_version = 5;
 
 enum {
   POSITIVE_FIXNUM_MARKER = 0x00,
