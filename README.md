@@ -137,7 +137,7 @@ test cases.  Its small test program is compiled with clang using `-Wall -Werror
 -Wextra ...` along with several other flags, and generates no compilation
 errors.
 
-CMP's source is written as readable as possible, using explicit, descriptive
+CMP's source is written as readably as possible, using explicit, descriptive
 variable names and a consistent, clear style.
 
 CMP's source is written to be as secure as possible.  Its testing suite checks
