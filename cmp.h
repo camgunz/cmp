@@ -1,10 +1,6 @@
 #ifndef CMP_H__
 #define CMP_H__
 
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
 struct cmp_ctx_s;
 
 typedef bool   (*cmp_reader)(struct cmp_ctx_s *ctx, void *data, size_t limit);
@@ -84,6 +80,10 @@ typedef struct cmp_object_s {
   uint8_t type;
   union cmp_object_data_u as;
 } cmp_object_t;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * ============================================================================
@@ -350,11 +350,11 @@ bool cmp_read_ext16(cmp_ctx_t *ctx, int8_t *type, uint16_t *size, void *data);
 bool cmp_read_ext32_marker(cmp_ctx_t *ctx, int8_t *type, uint32_t *size);
 bool cmp_read_ext32(cmp_ctx_t *ctx, int8_t *type, uint32_t *size, void *data);
 
-#if defined (__cplusplus)
+#ifdef __cplusplus
 }
-#endif
+#endif /* extern "C" */
 
-#endif
+#endif /* CMP_H__ */
 
 /* vi: set et ts=2 sw=2: */
 
