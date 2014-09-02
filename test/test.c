@@ -126,6 +126,13 @@ static void error_printf(const char *msg, ...);
     return false;                                                             \
   }                                                                           \
   M_BufferSeek(&buf, 0);                                                      \
+  if (!cmp_read_skip(&cmp)) {                                                 \
+    error_printf("Error skipping object written by %s(&cmp, ", #wfunc);       \
+    error_printbin(in, len);                                                  \
+    error_printf(", %d): %s\n", len, cmp_strerror(&cmp));                     \
+    return false;                                                             \
+  }                                                                           \
+  M_BufferSeek(&buf, 0);                                                      \
   do {                                                                        \
     char ldata[len + 1];                                                      \
     uint32_t data_length = len + 1;                                           \
@@ -219,6 +226,15 @@ static void error_printf(const char *msg, ...);
     return false;                                                             \
   }                                                                           \
   M_BufferSeek(&buf, 0);                                                      \
+  if (!cmp_read_skip(&cmp)) {                                                 \
+    error_printf("Error skipping object written by %s(&cmp, %d, ",            \
+      #wfunc, etype                                                           \
+    );                                                                        \
+    error_printbin(in, esize);                                                \
+    error_printf("): %s\n", cmp_strerror(&cmp));                              \
+    return false;                                                             \
+  }                                                                           \
+  M_BufferSeek(&buf, 0);                                                      \
   do {                                                                        \
     char edata[esize];                                                        \
     int8_t dummy_type = etype;                                                \
@@ -291,6 +307,15 @@ static void error_printf(const char *msg, ...);
     );                                                                        \
     error_printbin(in, esize);                                                \
     error_printf(") != {%d, %u}\n", obj.as.ext.type, obj.as.ext.size);        \
+    return false;                                                             \
+  }                                                                           \
+  M_BufferSeek(&buf, 0);                                                      \
+  if (!cmp_read_skip(&cmp)) {                                                 \
+    error_printf("Error skipping object written by %s(&cmp, %d, %u, ",        \
+      #wfunc, etype, esize                                                    \
+    );                                                                        \
+    error_printbin(in, esize);                                                \
+    error_printf("): %s\n", cmp_strerror(&cmp));                              \
     return false;                                                             \
   }                                                                           \
   M_BufferSeek(&buf, 0);                                                      \

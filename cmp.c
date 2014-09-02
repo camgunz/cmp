@@ -2164,5 +2164,73 @@ bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
   return true;
 }
 
+bool cmp_read_skip(cmp_ctx_t *ctx) {
+  uint8_t type;
+  uint32_t size, i;
+  cmp_object_t obj;
+
+  if (!cmp_read_object(ctx, &obj))
+    return false;
+
+  switch (obj.type) {
+    case CMP_TYPE_FIXSTR:
+    case CMP_TYPE_STR8:
+    case CMP_TYPE_STR16:
+    case CMP_TYPE_STR32:
+      type = CMP_TYPE_STR32;
+      size = obj.as.str_size;
+      break;
+
+    case CMP_TYPE_BIN8:
+    case CMP_TYPE_BIN16:
+    case CMP_TYPE_BIN32:
+      type = CMP_TYPE_STR32;
+      size = obj.as.bin_size;
+      break;
+
+    case CMP_TYPE_FIXEXT1:
+    case CMP_TYPE_FIXEXT2:
+    case CMP_TYPE_FIXEXT4:
+    case CMP_TYPE_FIXEXT8:
+    case CMP_TYPE_FIXEXT16:
+    case CMP_TYPE_EXT8:
+    case CMP_TYPE_EXT16:
+    case CMP_TYPE_EXT32:
+      type = CMP_TYPE_STR32;
+      size = obj.as.ext.size;
+      break;
+
+    case CMP_TYPE_FIXARRAY:
+    case CMP_TYPE_ARRAY16:
+    case CMP_TYPE_ARRAY32:
+      type = CMP_TYPE_ARRAY32;
+      size = obj.as.array_size;
+      break;
+
+    case CMP_TYPE_FIXMAP:
+    case CMP_TYPE_MAP16:
+    case CMP_TYPE_MAP32:
+      type = CMP_TYPE_ARRAY32;
+      size = obj.as.map_size * 2;
+      break;
+
+    default:
+      type = CMP_TYPE_NIL;
+      size = 0;
+      break;
+  }
+
+  if(type == CMP_TYPE_STR32) {
+    char buf[size];
+    return ctx->read(ctx, buf, size);
+  } else if(type == CMP_TYPE_ARRAY32) {
+    for(i = 0; i < size; i++)
+      if(!cmp_read_skip(ctx))
+        return false;
+  }
+
+  return true;
+}
+
 /* vi: set et ts=2 sw=2: */
 
