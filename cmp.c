@@ -2164,5 +2164,78 @@ bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
   return true;
 }
 
+#define SKIP_BLOCK_SIZE (1 << 16)
+
+bool cmp_read_skip_bytes(cmp_ctx_t *ctx, uint32_t size) {
+  uint32_t read_size;
+  char bytes[SKIP_BLOCK_SIZE];
+  while(size) {
+    read_size = (size > SKIP_BLOCK_SIZE) ? SKIP_BLOCK_SIZE : size;
+    if (!ctx->read(ctx, bytes, read_size))
+      return false;
+
+    size -= read_size;
+  }
+  return true;
+}
+
+bool cmp_read_skip(cmp_ctx_t *ctx) {
+  uint32_t i;
+  cmp_object_t obj;
+
+  if (!cmp_read_object(ctx, &obj))
+    return false;
+
+  switch (obj.type) {
+    case CMP_TYPE_FIXSTR:
+    case CMP_TYPE_STR8:
+    case CMP_TYPE_STR16:
+    case CMP_TYPE_STR32:
+      return cmp_read_skip_bytes(ctx, obj.as.str_size);
+
+    case CMP_TYPE_BIN8:
+    case CMP_TYPE_BIN16:
+    case CMP_TYPE_BIN32:
+      return cmp_read_skip_bytes(ctx, obj.as.bin_size);
+
+    case CMP_TYPE_FIXEXT1:
+    case CMP_TYPE_FIXEXT2:
+    case CMP_TYPE_FIXEXT4:
+    case CMP_TYPE_FIXEXT8:
+    case CMP_TYPE_FIXEXT16:
+    case CMP_TYPE_EXT8:
+    case CMP_TYPE_EXT16:
+    case CMP_TYPE_EXT32:
+      return cmp_read_skip_bytes(ctx, obj.as.ext.size);
+
+    case CMP_TYPE_FIXARRAY:
+    case CMP_TYPE_ARRAY16:
+    case CMP_TYPE_ARRAY32:
+      for(i = 0; i < obj.as.array_size; i++) {
+        if(!cmp_read_skip(ctx))
+          return false;
+      }
+      return true;
+
+    case CMP_TYPE_FIXMAP:
+    case CMP_TYPE_MAP16:
+    case CMP_TYPE_MAP32:
+      for(i = 0; i < obj.as.map_size; i++) {
+        // Read key object
+        if(!cmp_read_skip(ctx))
+          return false;
+        // Read value object
+        if(!cmp_read_skip(ctx))
+          return false;
+      }
+      return true;
+
+    default:
+      break;
+  }
+
+  return true;
+}
+
 /* vi: set et ts=2 sw=2: */
 
