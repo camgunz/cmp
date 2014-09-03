@@ -251,6 +251,9 @@ bool cmp_read_ext(cmp_ctx_t *ctx, int8_t *type, uint32_t *size, void *data);
 /* Reads an object from the backend */
 bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj);
 
+/* Skips given bytes from the backend */
+bool cmp_read_skip_bytes(cmp_ctx_t *ctx, uint32_t size);
+
 /* Skips next object from the backend */
 bool cmp_read_skip(cmp_ctx_t *ctx);
 
