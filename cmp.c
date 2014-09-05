@@ -4,7 +4,7 @@
 
 #include "cmp.h"
 
-static const uint32_t version = 3;
+static const uint32_t version = 4;
 static const uint32_t mp_version = 5;
 
 enum {
@@ -433,6 +433,9 @@ bool cmp_write_fixstr(cmp_ctx_t *ctx, const char *data, uint8_t size) {
   if (!cmp_write_fixstr_marker(ctx, size))
     return false;
 
+  if (size == 0)
+    return true;
+
   if (ctx->write(ctx, data, size))
     return true;
 
@@ -454,6 +457,9 @@ bool cmp_write_str8_marker(cmp_ctx_t *ctx, uint8_t size) {
 bool cmp_write_str8(cmp_ctx_t *ctx, const char *data, uint8_t size) {
   if (!cmp_write_str8_marker(ctx, size))
     return false;
+
+  if (size == 0)
+    return true;
 
   if (ctx->write(ctx, data, size))
     return true;
@@ -479,6 +485,9 @@ bool cmp_write_str16(cmp_ctx_t *ctx, const char *data, uint16_t size) {
   if (!cmp_write_str16_marker(ctx, size))
     return false;
 
+  if (size == 0)
+    return true;
+
   if (ctx->write(ctx, data, size))
     return true;
 
@@ -502,6 +511,9 @@ bool cmp_write_str32_marker(cmp_ctx_t *ctx, uint32_t size) {
 bool cmp_write_str32(cmp_ctx_t *ctx, const char *data, uint32_t size) {
   if (!cmp_write_str32_marker(ctx, size))
     return false;
+
+  if (size == 0)
+    return true;
 
   if (ctx->write(ctx, data, size))
     return true;
@@ -547,6 +559,9 @@ bool cmp_write_bin8(cmp_ctx_t *ctx, const void *data, uint8_t size) {
   if (!cmp_write_bin8_marker(ctx, size))
     return false;
 
+  if (size == 0)
+    return true;
+
   if (ctx->write(ctx, data, size))
     return true;
 
@@ -571,6 +586,9 @@ bool cmp_write_bin16(cmp_ctx_t *ctx, const void *data, uint16_t size) {
   if (!cmp_write_bin16_marker(ctx, size))
     return false;
 
+  if (size == 0)
+    return true;
+
   if (ctx->write(ctx, data, size))
     return true;
 
@@ -594,6 +612,9 @@ bool cmp_write_bin32_marker(cmp_ctx_t *ctx, uint32_t size) {
 bool cmp_write_bin32(cmp_ctx_t *ctx, const void *data, uint32_t size) {
   if (!cmp_write_bin32_marker(ctx, size))
     return false;
+
+  if (size == 0)
+    return true;
 
   if (ctx->write(ctx, data, size))
     return true;

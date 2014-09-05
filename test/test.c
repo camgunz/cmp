@@ -386,70 +386,112 @@ static void error_printbin(const char *data, size_t size) {
 static void error_print_object(cmp_object_t *obj) {
   switch (obj->type) {
     case CMP_TYPE_POSITIVE_FIXNUM:
-    case CMP_TYPE_UINT8:
-      error_printf("%u", obj->as.u8);
+      error_printf("positive fixint: %u", obj->as.u8);
+      break;
+    case CMP_TYPE_NEGATIVE_FIXNUM:
+      error_printf("negative fixnum: %d", obj->as.s8);
       break;
     case CMP_TYPE_FIXMAP:
+      error_printf("fixmap: %u", obj->as.bin_size);
+      break;
     case CMP_TYPE_MAP16:
+      error_printf("map16: %u", obj->as.bin_size);
+      break;
     case CMP_TYPE_MAP32:
+      error_printf("map32: %u", obj->as.bin_size);
+      break;
     case CMP_TYPE_FIXARRAY:
+      error_printf("fixarray: %u", obj->as.bin_size);
+      break;
     case CMP_TYPE_ARRAY16:
+      error_printf("array16: %u", obj->as.bin_size);
+      break;
     case CMP_TYPE_ARRAY32:
+      error_printf("array32: %u", obj->as.bin_size);
+      break;
     case CMP_TYPE_FIXSTR:
+      error_printf("fixstr: %u", obj->as.bin_size);
+      break;
     case CMP_TYPE_STR8:
+      error_printf("str8: %u", obj->as.bin_size);
+      break;
     case CMP_TYPE_STR16:
+      error_printf("str16: %u", obj->as.bin_size);
+      break;
     case CMP_TYPE_STR32:
+      error_printf("str32: %u", obj->as.bin_size);
+      break;
     case CMP_TYPE_BIN8:
+      error_printf("bin8: %u", obj->as.bin_size);
+      break;
     case CMP_TYPE_BIN16:
+      error_printf("bin16: %u", obj->as.bin_size);
+      break;
     case CMP_TYPE_BIN32:
-      error_printf("%u", obj->as.bin_size);
+      error_printf("bin32: %u", obj->as.bin_size);
       break;
     case CMP_TYPE_NIL:
       error_printf("NULL");
       break;
     case CMP_TYPE_BOOLEAN:
       if (obj->as.boolean)
-        error_printf("true");
+        error_printf("bool: true");
       else
-        error_printf("false");
+        error_printf("bool: false");
       break;
     case CMP_TYPE_EXT8:
+      error_printf("ext8: {%d, %u}", obj->as.ext.type, obj->as.ext.size);
+      break;
     case CMP_TYPE_EXT16:
+      error_printf("ext16: {%d, %u}", obj->as.ext.type, obj->as.ext.size);
+      break;
     case CMP_TYPE_EXT32:
+      error_printf("ext32: {%d, %u}", obj->as.ext.type, obj->as.ext.size);
+      break;
     case CMP_TYPE_FIXEXT1:
+      error_printf("fixext1: {%d, %u}", obj->as.ext.type, obj->as.ext.size);
+      break;
     case CMP_TYPE_FIXEXT2:
+      error_printf("fixext2: {%d, %u}", obj->as.ext.type, obj->as.ext.size);
+      break;
     case CMP_TYPE_FIXEXT4:
+      error_printf("fixext4: {%d, %u}", obj->as.ext.type, obj->as.ext.size);
+      break;
     case CMP_TYPE_FIXEXT8:
+      error_printf("fixext8: {%d, %u}", obj->as.ext.type, obj->as.ext.size);
+      break;
     case CMP_TYPE_FIXEXT16:
-      error_printf("{%d, %u}", obj->as.ext.type, obj->as.ext.size);
+      error_printf("fixext16: {%d, %u}", obj->as.ext.type, obj->as.ext.size);
       break;
     case CMP_TYPE_FLOAT:
-      error_printf("%f", obj->as.flt);
+      error_printf("float: %f", obj->as.flt);
       break;
     case CMP_TYPE_DOUBLE:
-      error_printf("%f", obj->as.dbl);
+      error_printf("double: %f", obj->as.dbl);
+      break;
+    case CMP_TYPE_UINT8:
+      error_printf("uint8: %u", obj->as.u8);
       break;
     case CMP_TYPE_UINT16:
-      error_printf("%u", obj->as.u16);
+      error_printf("uint16: %u", obj->as.u16);
       break;
     case CMP_TYPE_UINT32:
-      error_printf("%u", obj->as.u32);
+      error_printf("uint32: %u", obj->as.u32);
       break;
     case CMP_TYPE_UINT64:
-      error_printf("%" PRIu64, obj->as.u64);
+      error_printf("uint64: %" PRIu64, obj->as.u64);
       break;
-    case CMP_TYPE_NEGATIVE_FIXNUM:
     case CMP_TYPE_SINT8:
-      error_printf("%d", obj->as.s8);
+      error_printf("int8: %d", obj->as.s8);
       break;
     case CMP_TYPE_SINT16:
-      error_printf("%d", obj->as.s16);
+      error_printf("int16: %d", obj->as.s16);
       break;
     case CMP_TYPE_SINT32:
-      error_printf("%d", obj->as.s32);
+      error_printf("int32: %d", obj->as.s32);
       break;
     case CMP_TYPE_SINT64:
-      error_printf("%" PRId64, obj->as.s64);
+      error_printf("int64: %" PRId64, obj->as.s64);
       break;
   }
 }
@@ -1204,13 +1246,25 @@ bool run_binary_tests(void) {
   setup_cmp_and_buf(&cmp, &buf);
 
   test_format_with_length(
+    cmp_write_bin8, cmp_read_bin, bin_size, "", 0, "\xc4\x00", 2
+  );
+  test_format_with_length(
     cmp_write_bin8, cmp_read_bin, bin_size, "Hey there\n", 10, "\xc4\x0aHey there\n", 12
+  );
+  test_format_with_length(
+    cmp_write_bin16, cmp_read_bin, bin_size, "", 0, "\xc5\x00\x00", 3
   );
   test_format_with_length(
     cmp_write_bin16, cmp_read_bin, bin_size, "Hey there\n", 10, "\xc5\x00\x0aHey there\n", 13
   );
   test_format_with_length(
+    cmp_write_bin32, cmp_read_bin, bin_size, "", 0, "\xc6\x00\x00\x00\x00", 5
+  );
+  test_format_with_length(
     cmp_write_bin32, cmp_read_bin, bin_size, "Hey there\n", 10, "\xc6\x00\x00\x00\x0aHey there\n", 15
+  );
+  test_format_with_length(
+    cmp_write_bin, cmp_read_bin, bin_size, "", 0, "\xc4\x00", 2
   );
   test_format_with_length(
     cmp_write_bin, cmp_read_bin, bin_size, "Hey there\n", 10, "\xc4\x0aHey there\n", 12
@@ -1227,16 +1281,31 @@ bool run_string_tests(void) {
   setup_cmp_and_buf(&cmp, &buf);
 
   test_format_with_length(
+    cmp_write_fixstr, cmp_read_str, str_size, "", 0, "\xa0", 1
+  );
+  test_format_with_length(
     cmp_write_fixstr, cmp_read_str, str_size, "Hey there\n", 10, "\xaaHey there\n", 11
+  );
+  test_format_with_length(
+    cmp_write_str8, cmp_read_str, str_size, "", 0, "\xd9\x00", 2
   );
   test_format_with_length(
     cmp_write_str8, cmp_read_str, str_size, "Hey there\n", 10, "\xd9\x0aHey there\n", 12
   );
   test_format_with_length(
+    cmp_write_str16, cmp_read_str, str_size, "", 0, "\xda\x00\x00", 3
+  );
+  test_format_with_length(
     cmp_write_str16, cmp_read_str, str_size, "Hey there\n", 10, "\xda\x00\x0aHey there\n", 13
   );
   test_format_with_length(
+    cmp_write_str32, cmp_read_str, str_size, "", 0, "\xdb\x00\x00\x00\x00", 5
+  );
+  test_format_with_length(
     cmp_write_str32, cmp_read_str, str_size, "Hey there\n", 10, "\xdb\x00\x00\x00\x0aHey there\n", 15
+  );
+  test_format_with_length(
+    cmp_write_str, cmp_read_str, str_size, "", 0, "\xa0", 1
   );
   test_format_with_length(
     cmp_write_str, cmp_read_str, str_size, "Hey there\n", 10, "\xaaHey there\n", 11
@@ -1252,10 +1321,30 @@ bool run_array_tests(void) {
 
   setup_cmp_and_buf(&cmp, &buf);
 
-  test_format(cmp_write_fixarray, cmp_read_array, array_size, uint32_t, 10, "\x9a", 1);
-  test_format(cmp_write_array16, cmp_read_array, array_size, uint32_t, 10, "\xdc\x00\x0a", 3);
-  test_format(cmp_write_array32, cmp_read_array, array_size, uint32_t, 10, "\xdd\x00\x00\x00\x0a", 5);
-  test_format(cmp_write_array, cmp_read_array, array_size, uint32_t, 10, "\x9a", 1);
+  test_format(
+    cmp_write_fixarray, cmp_read_array, array_size, uint32_t, 0, "\x90", 1
+  );
+  test_format(
+    cmp_write_fixarray, cmp_read_array, array_size, uint32_t, 10, "\x9a", 1
+  );
+  test_format(
+    cmp_write_array16, cmp_read_array, array_size, uint32_t, 0, "\xdc\x00\x00", 3
+  );
+  test_format(
+    cmp_write_array16, cmp_read_array, array_size, uint32_t, 10, "\xdc\x00\x0a", 3
+  );
+  test_format(
+    cmp_write_array32, cmp_read_array, array_size, uint32_t, 0, "\xdd\x00\x00\x00\x00", 5
+  );
+  test_format(
+    cmp_write_array32, cmp_read_array, array_size, uint32_t, 10, "\xdd\x00\x00\x00\x0a", 5
+  );
+  test_format(
+    cmp_write_array, cmp_read_array, array_size, uint32_t, 0, "\x90", 1
+  );
+  test_format(
+    cmp_write_array, cmp_read_array, array_size, uint32_t, 10, "\x9a", 1
+  );
 
   return true;
 }
@@ -1267,10 +1356,30 @@ bool run_map_tests(void) {
 
   setup_cmp_and_buf(&cmp, &buf);
 
-  test_format(cmp_write_fixmap, cmp_read_map, map_size, uint32_t, 10, "\x8a", 1);
-  test_format(cmp_write_map16, cmp_read_map, map_size, uint32_t, 10, "\xde\x00\x0a", 3);
-  test_format(cmp_write_map32, cmp_read_map, map_size, uint32_t, 10, "\xdf\x00\x00\x00\x0a", 5);
-  test_format(cmp_write_map, cmp_read_map, map_size, uint32_t, 10, "\x8a", 1);
+  test_format(
+    cmp_write_fixmap, cmp_read_map, map_size, uint32_t, 0, "\x80", 1
+  );
+  test_format(
+    cmp_write_fixmap, cmp_read_map, map_size, uint32_t, 10, "\x8a", 1
+  );
+  test_format(
+    cmp_write_map16, cmp_read_map, map_size, uint32_t, 0, "\xde\x00\x00", 3
+  );
+  test_format(
+    cmp_write_map16, cmp_read_map, map_size, uint32_t, 10, "\xde\x00\x0a", 3
+  );
+  test_format(
+    cmp_write_map32, cmp_read_map, map_size, uint32_t, 0, "\xdf\x00\x00\x00\x00", 5
+  );
+  test_format(
+    cmp_write_map32, cmp_read_map, map_size, uint32_t, 10, "\xdf\x00\x00\x00\x0a", 5
+  );
+  test_format(
+    cmp_write_map, cmp_read_map, map_size, uint32_t, 0, "\x80", 1
+  );
+  test_format(
+    cmp_write_map, cmp_read_map, map_size, uint32_t, 10, "\x8a", 1
+  );
 
   return true;
 }

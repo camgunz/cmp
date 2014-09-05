@@ -71,7 +71,7 @@ int main(void) {
     if (!cmp_read_str(&cmp, message_pack, &str_size))
         error_and_exit(cmp_strerror(&cmp));
 
-    printf("Array Length: %zu.\n", array_size);
+    printf("Array Length: %u.\n", array_size);
     printf("[\"%s\", \"%s\"]\n", hello, message_pack);
 
     fclose(fh);
