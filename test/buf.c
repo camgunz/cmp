@@ -1,5 +1,28 @@
+/*****************************************************************************/
+/* D2K: A Doom Source Port for the 21st Century                              */
+/*                                                                           */
+/* Copyright (C) 2014: See COPYRIGHT file                                    */
+/*                                                                           */
+/* This file is part of D2K.                                                 */
+/*                                                                           */
+/* D2K is free software: you can redistribute it and/or modify it under the  */
+/* terms of the GNU General Public License as published by the Free Software */
+/* Foundation, either version 2 of the License, or (at your option) any      */
+/* later version.                                                            */
+/*                                                                           */
+/* D2K is distributed in the hope that it will be useful, but WITHOUT ANY    */
+/* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS */
+/* FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more    */
+/* details.                                                                  */
+/*                                                                           */
+/* You should have received a copy of the GNU General Public License along   */
+/* with D2K.  If not, see <http://www.gnu.org/licenses/>.                    */
+/*                                                                           */
+/*****************************************************************************/
 
+#include <inttypes.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,15 +31,6 @@
 #include "utils.h"
 #include "buf.h"
 
-union short_bytes  { unsigned char c[2]; short s; };
-union ushort_bytes { unsigned char c[2]; unsigned short s; };
-union int_bytes    { unsigned char c[4]; int i; };
-union uint_bytes   { unsigned char c[4]; unsigned int i; };
-union float_bytes  { unsigned char c[4]; float f; };
-union bool_bytes   { unsigned char c[4]; dboolean b; };
-union long_bytes   { unsigned char c[8]; int64_t l; };
-union ulong_bytes  { unsigned char c[8]; uint64_t l; };
-union double_bytes { unsigned char c[8]; double d; };
 
 static void check_cursor(buf_t *buf) {
   if (buf->cursor > buf->size)
@@ -27,7 +41,7 @@ buf_t* M_BufferNew(void) {
   buf_t *buf = calloc(1, sizeof(buf_t));
 
   if (buf == NULL)
-    I_Error("M_BufferNew: Calloc returned NULL.\n");
+    error_and_exit("M_BufferNew: Calloc returned NULL.");
 
   M_BufferInit(buf);
 
@@ -38,7 +52,7 @@ buf_t* M_BufferNewWithCapacity(size_t capacity) {
   buf_t *buf = calloc(1, sizeof(buf_t));
 
   if (buf == NULL)
-    I_Error("M_BufferNew: Calloc returned NULL.\n");
+    error_and_exit("M_BufferNew: calloc returned NULL");
 
   M_BufferInitWithCapacity(buf, capacity);
 
@@ -70,20 +84,27 @@ size_t M_BufferGetCursor(buf_t *buf) {
 }
 
 char* M_BufferGetData(buf_t *buf) {
+  return buf->data;
+}
+
+char* M_BufferGetDataAtCursor(buf_t *buf) {
   return buf->data + buf->cursor;
 }
 
 void M_BufferEnsureCapacity(buf_t *buf, size_t capacity) {
-  if (buf->capacity < buf->cursor + capacity) {
-    size_t old_capacity = buf->capacity;
+  size_t needed_capacity = buf->cursor + capacity;
 
-    buf->capacity = buf->cursor + capacity;
-    buf->data = realloc(buf->data, buf->capacity * sizeof(byte));
+  if (buf->capacity < needed_capacity) {
+    buf->data = realloc(buf->data, needed_capacity * sizeof(uint8_t));
 
-    if (buf->data == NULL)
-      I_Error("M_BufferEnsureCapacity: Allocating buffer data failed");
+    if (buf->data == NULL) {
+      error_and_exit(
+        "M_BufferEnsureCapacity: Reallocating buffer data failed"
+      );
+    }
 
-    memset(buf->data + old_capacity, 0, buf->capacity - old_capacity);
+    memset(buf->data + buf->capacity, 0, needed_capacity - buf->capacity);
+    buf->capacity = needed_capacity;
   }
 }
 
@@ -92,10 +113,10 @@ void M_BufferEnsureTotalCapacity(buf_t *buf, size_t capacity) {
     size_t old_capacity = buf->capacity;
 
     buf->capacity = capacity;
-    buf->data = realloc(buf->data, buf->capacity * sizeof(byte));
+    buf->data = realloc(buf->data, buf->capacity * sizeof(uint8_t));
 
     if (buf->data == NULL)
-      I_Error("M_BufferEnsureCapacity: Allocating buffer data failed");
+      error_and_exit("M_BufferEnsureCapacity: Allocating buffer data failed");
 
     memset(buf->data + old_capacity, 0, buf->capacity - old_capacity);
   }
@@ -105,21 +126,40 @@ void M_BufferCopy(buf_t *dst, buf_t *src) {
   M_BufferSetData(dst, M_BufferGetData(src), M_BufferGetSize(src));
 }
 
-void M_BufferSetData(buf_t *buf, void *data, size_t size) {
+void M_BufferCursorCopy(buf_t *dst, buf_t *src) {
+  M_BufferWrite(
+    dst,
+    M_BufferGetDataAtCursor(src),
+    M_BufferGetSize(src) - (M_BufferGetCursor(src) - 1)
+  );
+}
+
+bool M_BufferMove(buf_t *buf, size_t dpos, size_t spos, size_t count) {
+  if ((spos + count) > M_BufferGetSize(buf))
+    return false;
+
+  M_BufferEnsureTotalCapacity(buf, dpos + count);
+
+  memmove(M_BufferGetData(buf) + dpos, M_BufferGetData(buf) + spos, count);
+
+  return true;
+}
+
+void M_BufferSetData(buf_t *buf, const void *data, size_t size) {
   M_BufferClear(buf);
   M_BufferEnsureTotalCapacity(buf, size);
   M_BufferWrite(buf, data, size);
 }
 
-void M_BufferSetString(buf_t *buf, char *data, size_t length) {
+void M_BufferSetString(buf_t *buf, const char *data, size_t length) {
   M_BufferClear(buf);
   M_BufferWriteString(buf, data, length);
 }
 
-dboolean M_BufferSetFile(buf_t *buf, const char *filename) {
+bool M_BufferSetFile(buf_t *buf, const char *filename) {
   FILE *fp = NULL;
   size_t length = 0;
-  dboolean out = false;
+  bool out = false;
 
   if ((fp = fopen(filename, "rb")) == NULL)
     return false;
@@ -131,7 +171,7 @@ dboolean M_BufferSetFile(buf_t *buf, const char *filename) {
   M_BufferClear(buf);
   M_BufferEnsureTotalCapacity(buf, length);
 
-  if (fread(buf->data, sizeof(byte), length, fp) == length) {
+  if (fread(buf->data, sizeof(uint8_t), length, fp) == length) {
     buf->cursor = length;
     buf->size = length;
     out = true;
@@ -145,7 +185,7 @@ dboolean M_BufferSetFile(buf_t *buf, const char *filename) {
   return out;
 }
 
-dboolean M_BufferSeek(buf_t *buf, size_t pos) {
+bool M_BufferSeek(buf_t *buf, size_t pos) {
   if (pos > buf->size)
     return false;
 
@@ -153,7 +193,7 @@ dboolean M_BufferSeek(buf_t *buf, size_t pos) {
   return true;
 }
 
-dboolean M_BufferSeekBackward(buf_t *buf, size_t count) {
+bool M_BufferSeekBackward(buf_t *buf, size_t count) {
   if (count > buf->cursor)
     return false;
 
@@ -161,7 +201,7 @@ dboolean M_BufferSeekBackward(buf_t *buf, size_t count) {
   return true;
 }
 
-dboolean M_BufferSeekForward(buf_t *buf, size_t count) {
+bool M_BufferSeekForward(buf_t *buf, size_t count) {
   if (buf->cursor + count > buf->size)
     return false;
 
@@ -169,11 +209,11 @@ dboolean M_BufferSeekForward(buf_t *buf, size_t count) {
   return true;
 }
 
-byte M_BufferPeek(buf_t *buf) {
+uint8_t M_BufferPeek(buf_t *buf) {
   return *(buf->data + buf->cursor);
 }
 
-void M_BufferWrite(buf_t *buf, void *data, size_t size) {
+void M_BufferWrite(buf_t *buf, const void *data, size_t size) {
   M_BufferEnsureCapacity(buf, size);
   memcpy(buf->data + buf->cursor, data, size);
   buf->cursor += size;
@@ -181,27 +221,20 @@ void M_BufferWrite(buf_t *buf, void *data, size_t size) {
   check_cursor(buf);
 }
 
-void M_BufferWriteBool(buf_t *buf, dboolean b) {
+void M_BufferWriteBool(buf_t *buf, bool b) {
   M_BufferWriteBools(buf, &b, 1);
 }
 
-void M_BufferWriteBools(buf_t *buf, dboolean *bools, size_t count) {
-  size_t i;
-  M_BufferEnsureCapacity(buf, count * sizeof(dboolean));
-
-  for (i = 0; i < count; i++) {
-    union bool_bytes bb;
-
-    bb.b = bools[i];
-    M_BufferWriteUChars(buf, bb.c, 4);
-  }
+void M_BufferWriteBools(buf_t *buf, const bool *bools, size_t count) {
+  M_BufferEnsureCapacity(buf, count * sizeof(bool));
+  M_BufferWriteChars(buf, (char *)bools, count * sizeof(bool));
 }
 
 void M_BufferWriteChar(buf_t *buf, char c) {
   M_BufferWriteChars(buf, &c, 1);
 }
 
-void M_BufferWriteChars(buf_t *buf, char *chars, size_t count) {
+void M_BufferWriteChars(buf_t *buf, const char *chars, size_t count) {
   M_BufferWrite(buf, chars, count * sizeof(char));
 }
 
@@ -209,7 +242,7 @@ void M_BufferWriteUChar(buf_t *buf, unsigned char c) {
   M_BufferWriteUChars(buf, &c, 1);
 }
 
-void M_BufferWriteUChars(buf_t *buf, unsigned char *uchars, size_t count) {
+void M_BufferWriteUChars(buf_t *buf, const unsigned char *uchars, size_t count) {
   M_BufferWrite(buf, uchars, count * sizeof(unsigned char));
 }
 
@@ -217,139 +250,76 @@ void M_BufferWriteShort(buf_t *buf, short s) {
   M_BufferWriteShorts(buf, &s, 1);
 }
 
-void M_BufferWriteShorts(buf_t *buf, short *shorts, size_t count) {
-  size_t i;
-
+void M_BufferWriteShorts(buf_t *buf, const short *shorts, size_t count) {
   M_BufferEnsureCapacity(buf, count * sizeof(short));
-
-  for (i = 0; i < count; i++) {
-    union short_bytes sb;
-
-    sb.s = shorts[i];
-    M_BufferWriteUChars(buf, sb.c, 2);
-  }
+  M_BufferWriteChars(buf, (char *)shorts, count * sizeof(short));
 }
 
 void M_BufferWriteUShort(buf_t *buf, unsigned short s) {
   M_BufferWriteUShorts(buf, &s, 1);
 }
 
-void M_BufferWriteUShorts(buf_t *buf, unsigned short *ushorts, size_t count) {
-  size_t i;
-
+void M_BufferWriteUShorts(buf_t *buf, const unsigned short *ushorts,
+                                      size_t count) {
   M_BufferEnsureCapacity(buf, count * sizeof(unsigned short));
-
-  for (i = 0; i < count; i++) {
-    union ushort_bytes sb;
-
-    sb.s = ushorts[i];
-    M_BufferWriteUChars(buf, sb.c, 2);
-  }
+  M_BufferWriteChars(buf, (char *)ushorts, count * sizeof(unsigned short));
 }
 
 void M_BufferWriteInt(buf_t *buf, int i) {
   M_BufferWriteInts(buf, &i, 1);
 }
 
-void M_BufferWriteInts(buf_t *buf, int *ints, size_t count) {
-  size_t i;
-
+void M_BufferWriteInts(buf_t *buf, const int *ints, size_t count) {
   M_BufferEnsureCapacity(buf, count * sizeof(int));
-
-  for (i = 0; i < count; i++) {
-    union int_bytes ib;
-
-    ib.i = ints[i];
-    M_BufferWriteUChars(buf, ib.c, 4);
-  }
+  M_BufferWriteChars(buf, (char *)ints, count * sizeof(int));
 }
 
 void M_BufferWriteUInt(buf_t *buf, unsigned int s) {
   M_BufferWriteUInts(buf, &s, 1);
 }
 
-void M_BufferWriteUInts(buf_t *buf, unsigned int *uints, size_t count) {
-  size_t i;
-
+void M_BufferWriteUInts(buf_t *buf, const unsigned int *uints, size_t count) {
   M_BufferEnsureCapacity(buf, count * sizeof(unsigned int));
-
-  for (i = 0; i < count; i++) {
-    union uint_bytes ib;
-
-    ib.i = uints[i];
-    M_BufferWriteUChars(buf, ib.c, 4);
-  }
+  M_BufferWriteChars(buf, (char *)uints, count * sizeof(unsigned int));
 }
 
 void M_BufferWriteLong(buf_t *buf, int64_t l) {
   M_BufferWriteLongs(buf, &l, 1);
 }
 
-void M_BufferWriteLongs(buf_t *buf, int64_t *longs, size_t count) {
-  size_t i;
-
+void M_BufferWriteLongs(buf_t *buf, const int64_t *longs, size_t count) {
   M_BufferEnsureCapacity(buf, count * sizeof(int64_t));
-
-  for (i = 0; i < count; i++) {
-    union long_bytes lb;
-
-    lb.l = longs[i];
-    M_BufferWriteUChars(buf, lb.c, 8);
-  }
+  M_BufferWriteChars(buf, (char *)longs, count * sizeof(int64_t));
 }
 
 void M_BufferWriteULong(buf_t *buf, uint64_t l) {
   M_BufferWriteULongs(buf, &l, 1);
 }
 
-void M_BufferWriteULongs(buf_t *buf, uint64_t *ulongs, size_t count) {
-  size_t i;
-
-  M_BufferEnsureCapacity(buf, count * sizeof(uint64_t));
-
-  for (i = 0; i < count; i++) {
-    union ulong_bytes lb;
-
-    lb.l = ulongs[i];
-    M_BufferWriteUChars(buf, lb.c, 8);
-  }
+void M_BufferWriteULongs(buf_t *buf, const uint64_t *ulongs, size_t count) {
+  M_BufferEnsureCapacity(buf, count * sizeof(int64_t));
+  M_BufferWriteChars(buf, (char *)ulongs, count * sizeof(uint64_t));
 }
 
 void M_BufferWriteFloat(buf_t *buf, float f) {
   M_BufferWriteFloats(buf, &f, 1);
 }
 
-void M_BufferWriteFloats(buf_t *buf, float *floats, size_t count) {
-  size_t i;
-
+void M_BufferWriteFloats(buf_t *buf, const float *floats, size_t count) {
   M_BufferEnsureCapacity(buf, count * sizeof(float));
-
-  for (i = 0; i < count; i++) {
-    union float_bytes fb;
-
-    fb.f = floats[i];
-    M_BufferWriteUChars(buf, fb.c, 4);
-  }
+  M_BufferWriteChars(buf, (char *)floats, count * sizeof(floats));
 }
 
 void M_BufferWriteDouble(buf_t *buf, double d) {
   M_BufferWriteDoubles(buf, &d, 1);
 }
 
-void M_BufferWriteDoubles(buf_t *buf, double *doubles, size_t count) {
-  size_t i;
-
+void M_BufferWriteDoubles(buf_t *buf, const double *doubles, size_t count) {
   M_BufferEnsureCapacity(buf, count * sizeof(double));
-
-  for (i = 0; i < count; i++) {
-    union double_bytes db;
-
-    db.d = doubles[i];
-    M_BufferWriteUChars(buf, db.c, 8);
-  }
+  M_BufferWriteChars(buf, (char *)doubles, count * sizeof(doubles));
 }
 
-void M_BufferWriteString(buf_t *buf, char *string, size_t length) {
+void M_BufferWriteString(buf_t *buf, const char *string, size_t length) {
   M_BufferEnsureCapacity(buf, length + 1);
   strncpy(buf->data + buf->cursor, string, length + 1);
   buf->cursor += (length + 1);
@@ -358,24 +328,22 @@ void M_BufferWriteString(buf_t *buf, char *string, size_t length) {
 }
 
 void M_BufferWriteZeros(buf_t *buf, size_t count) {
-  size_t i;
-
   M_BufferEnsureCapacity(buf, count);
 
-  for (i = 0; i < count; i++)
+  for (size_t i = 0; i < count; i++)
     buf->data[buf->cursor++] = 0;
 
   check_cursor(buf);
 }
 
-dboolean M_BufferEqualsString(buf_t *buf, const char *s) {
+bool M_BufferEqualsString(buf_t *buf, const char *s) {
   if (strncmp(buf->data + buf->cursor, s, buf->size - buf->cursor) == 0)
     return true;
 
   return false;
 }
 
-dboolean M_BufferEqualsData(buf_t *buf, const void *d, size_t size) {
+bool M_BufferEqualsData(buf_t *buf, const void *d, size_t size) {
   if (buf->cursor + size > buf->size)
     return false;
 
@@ -385,111 +353,113 @@ dboolean M_BufferEqualsData(buf_t *buf, const void *d, size_t size) {
   return false;
 }
 
-dboolean M_BufferRead(buf_t *buf, void *data, size_t size) {
+bool M_BufferRead(buf_t *buf, void *data, size_t size) {
   if (buf->cursor + size > buf->size)
     return false;
 
-  memcpy(data, buf->data + buf->cursor, size);
+  if (size == 1)
+    *((char *)data) = *(buf->data + buf->cursor);
+  else
+    memcpy(data, buf->data + buf->cursor, size);
 
   buf->cursor += size;
 
   return true;
 }
 
-dboolean M_BufferReadBool(buf_t *buf, dboolean *b) {
+bool M_BufferReadBool(buf_t *buf, bool *b) {
   return M_BufferReadBools(buf, b, 1);
 }
 
-dboolean M_BufferReadBools(buf_t *buf, dboolean *b, size_t count) {
-  return M_BufferRead(buf, b, count * sizeof(dboolean));
+bool M_BufferReadBools(buf_t *buf, bool *b, size_t count) {
+  return M_BufferRead(buf, b, count * sizeof(bool));
 }
 
-dboolean M_BufferReadChar(buf_t *buf, char *c) {
+bool M_BufferReadChar(buf_t *buf, char *c) {
   return M_BufferReadChars(buf, c, 1);
 }
 
-dboolean M_BufferReadChars(buf_t *buf, char *c, size_t count) {
+bool M_BufferReadChars(buf_t *buf, char *c, size_t count) {
   return M_BufferRead(buf, c, count * sizeof(char));
 }
 
-dboolean M_BufferReadUChar(buf_t *buf, unsigned char *c) {
+bool M_BufferReadUChar(buf_t *buf, unsigned char *c) {
   return M_BufferReadUChars(buf, c, 1);
 }
 
-dboolean M_BufferReadUChars(buf_t *buf, unsigned char *c, size_t count) {
+bool M_BufferReadUChars(buf_t *buf, unsigned char *c, size_t count) {
   return M_BufferRead(buf, c, count * sizeof(unsigned char));
 }
 
-dboolean M_BufferReadShort(buf_t *buf, short *s) {
+bool M_BufferReadShort(buf_t *buf, short *s) {
   return M_BufferReadShorts(buf, s, 1);
 }
 
-dboolean M_BufferReadShorts(buf_t *buf, short *s, size_t count) {
+bool M_BufferReadShorts(buf_t *buf, short *s, size_t count) {
   return M_BufferRead(buf, s, count * sizeof(short));
 }
 
-dboolean M_BufferReadUShort(buf_t *buf, unsigned short *s) {
+bool M_BufferReadUShort(buf_t *buf, unsigned short *s) {
   return M_BufferReadUShorts(buf, s, 1);
 }
 
-dboolean M_BufferReadUShorts(buf_t *buf, unsigned short *s, size_t count) {
+bool M_BufferReadUShorts(buf_t *buf, unsigned short *s, size_t count) {
   return M_BufferRead(buf, s, count * sizeof(unsigned short));
 }
 
-dboolean M_BufferReadInt(buf_t *buf, int *i) {
+bool M_BufferReadInt(buf_t *buf, int *i) {
   return M_BufferReadInts(buf, i, 1);
 }
 
-dboolean M_BufferReadInts(buf_t *buf, int *i, size_t count) {
+bool M_BufferReadInts(buf_t *buf, int *i, size_t count) {
   return M_BufferRead(buf, i, count * sizeof(int));
 }
 
-dboolean M_BufferReadUInt(buf_t *buf, unsigned int *i) {
+bool M_BufferReadUInt(buf_t *buf, unsigned int *i) {
   return M_BufferReadUInts(buf, i, 1);
 }
 
-dboolean M_BufferReadUInts(buf_t *buf, unsigned int *i, size_t count) {
+bool M_BufferReadUInts(buf_t *buf, unsigned int *i, size_t count) {
   return M_BufferRead(buf, i, count * sizeof(unsigned int));
 }
 
-dboolean M_BufferReadLong(buf_t *buf, int64_t *l) {
+bool M_BufferReadLong(buf_t *buf, int64_t *l) {
   return M_BufferReadLongs(buf, l, 1);
 }
 
-dboolean M_BufferReadLongs(buf_t *buf, int64_t *l, size_t count) {
+bool M_BufferReadLongs(buf_t *buf, int64_t *l, size_t count) {
   return M_BufferRead(buf, l, count * sizeof(int64_t));
 }
 
-dboolean M_BufferReadULong(buf_t *buf, uint64_t *l) {
+bool M_BufferReadULong(buf_t *buf, uint64_t *l) {
   return M_BufferReadULongs(buf, l, 1);
 }
 
-dboolean M_BufferReadULongs(buf_t *buf, uint64_t *l, size_t count) {
+bool M_BufferReadULongs(buf_t *buf, uint64_t *l, size_t count) {
   return M_BufferRead(buf, l, count * sizeof(uint64_t));
 }
 
-dboolean M_BufferReadFloat(buf_t *buf, float *f) {
+bool M_BufferReadFloat(buf_t *buf, float *f) {
   return M_BufferReadFloats(buf, f, 1);
 }
 
-dboolean M_BufferReadFloats(buf_t *buf, float *f, size_t count) {
+bool M_BufferReadFloats(buf_t *buf, float *f, size_t count) {
   return M_BufferRead(buf, f, count * sizeof(float));
 }
 
-dboolean M_BufferReadDouble(buf_t *buf, double *d) {
+bool M_BufferReadDouble(buf_t *buf, double *d) {
   return M_BufferReadDoubles(buf, d, 1);
 }
 
-dboolean M_BufferReadDoubles(buf_t *buf, double *d, size_t count) {
+bool M_BufferReadDoubles(buf_t *buf, double *d, size_t count) {
   return M_BufferRead(buf, d, count * sizeof(double));
 }
 
-dboolean M_BufferReadString(buf_t *buf, char *s, size_t length) {
+bool M_BufferReadString(buf_t *buf, char *s, size_t length) {
   return M_BufferRead(buf, s, length);
 }
 
-#if 0
-dboolean M_BufferReadStringDup(buf_t *buf, char **s) {
+bool M_BufferReadStringDup(buf_t *buf, char **s) {
   char *d = buf->data + buf->cursor;
   size_t length = strlen(d);
 
@@ -499,9 +469,8 @@ dboolean M_BufferReadStringDup(buf_t *buf, char **s) {
   (*s) = strdup(buf->data + buf->cursor);
   return true;
 }
-#endif
 
-dboolean M_BufferCopyString(buf_t *dst, buf_t *src) {
+bool M_BufferCopyString(buf_t *dst, buf_t *src) {
   char *s = src->data + src->cursor;
   size_t length = strlen(s);
 
@@ -514,10 +483,10 @@ dboolean M_BufferCopyString(buf_t *dst, buf_t *src) {
 
 void M_BufferCompact(buf_t *buf) {
   if (buf->size < buf->capacity) {
-    char *new_buf = calloc(buf->size, sizeof(byte));
+    char *new_buf = calloc(buf->size, sizeof(uint8_t));
 
     if (buf->data == NULL)
-      I_Error("M_BufferCompact: Allocating new buffer data failed");
+      error_and_exit("M_BufferCompact: Allocating new buffer data failed");
 
     memcpy(new_buf, buf->data, buf->size);
     free(buf->data);
@@ -526,6 +495,19 @@ void M_BufferCompact(buf_t *buf) {
     if (buf->cursor > buf->size)
       buf->cursor = buf->size;
   }
+}
+
+void M_BufferTruncate(buf_t *buf, size_t new_size) {
+  size_t old_size = buf->size;
+
+  if (new_size >= buf->size)
+    errorf_and_exit("M_BufferTruncate: %zu >= %zu.", new_size, buf->size);
+
+  memset(buf->data + new_size, 0, old_size - new_size);
+  buf->size = new_size;
+
+  if (buf->cursor >= buf->size)
+    buf->cursor = buf->size - 1;
 }
 
 void M_BufferZero(buf_t *buf) {
@@ -545,16 +527,31 @@ void M_BufferFree(buf_t *buf) {
 }
 
 void M_BufferPrint(buf_t *buf) {
-  size_t i;
-
   printf("Buffer capacity, size and cursor: [%zu, %zu, %zu].\n",
     buf->capacity,
     buf->size,
     buf->cursor
   );
 
-  for (i = 0; i < MIN(256, buf->size); i++) {
-    printf("%02x ", (unsigned char)buf->data[i]);
+  for (size_t i = 0; i < MIN(64, buf->size); i++) {
+    printf("%02X ", (unsigned char)buf->data[i]);
+
+    if ((i > 0) && (((i + 1) % 25) == 0))
+      printf("\n");
+  }
+
+  printf("\n");
+}
+
+void M_BufferPrintAll(buf_t *buf) {
+  printf("Buffer capacity, size and cursor: [%zu, %zu, %zu].\n",
+    buf->capacity,
+    buf->size,
+    buf->cursor
+  );
+
+  for (size_t i = 0; i < buf->size; i++) {
+    printf("%02X ", (unsigned char)buf->data[i]);
 
     if ((i > 0) && (((i + 1) % 25) == 0))
       printf("\n");

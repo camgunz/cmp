@@ -1,15 +1,19 @@
 #ifndef UTILS_H__
 #define UTILS_H__
 
-typedef uint8_t byte;
-typedef enum {false, true} dboolean;
+void error_and_exit(const char *msg);
 
 #ifdef __GNUC__
-void doom_printf(const char *msg, ...) __attribute__ ((format (printf, 1, 2)));
-void I_Error(const char *msg, ...) __attribute__ ((format (printf, 1, 2)));
+void errorf_and_exit(const char *msg, ...)
+    __attribute__ ((format (printf, 1, 2)));
 #else
-void doom_printf(const char *msg, ...);
-void I_Error(const char *msg, ...);
+void errorf_and_exit(const char *msg, ...);
+#endif
+
+char* _strdup(const char *s);
+
+#ifndef strdup
+#define strdup _strdup
 #endif
 
 #ifndef MAX
