@@ -1018,6 +1018,8 @@ bool cmp_write_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
       return cmp_write_fixext8_marker(ctx, obj->as.ext.type);
     case CMP_TYPE_FIXEXT16:
       return cmp_write_fixext16_marker(ctx, obj->as.ext.type);
+    case CMP_TYPE_STR8:
+      return cmp_write_str8_marker(ctx, obj->as.str_size);
     case CMP_TYPE_STR16:
       return cmp_write_str16_marker(ctx, obj->as.str_size);
     case CMP_TYPE_STR32:
