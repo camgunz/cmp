@@ -4,7 +4,7 @@
 
 #include "cmp.h"
 
-static const uint32_t version = 7;
+static const uint32_t version = 8;
 static const uint32_t mp_version = 5;
 
 enum {
