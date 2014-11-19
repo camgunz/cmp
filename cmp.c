@@ -1399,7 +1399,6 @@ bool cmp_read_uint(cmp_ctx_t *ctx, uint32_t *i) {
 
   switch (obj.type) {
     case CMP_TYPE_POSITIVE_FIXNUM:
-    case CMP_TYPE_NEGATIVE_FIXNUM:
     case CMP_TYPE_UINT8:
       *i = obj.as.u8;
       return true;
@@ -1423,7 +1422,6 @@ bool cmp_read_ulong(cmp_ctx_t *ctx, uint64_t *u) {
 
   switch (obj.type) {
     case CMP_TYPE_POSITIVE_FIXNUM:
-    case CMP_TYPE_NEGATIVE_FIXNUM:
     case CMP_TYPE_UINT8:
       *u = obj.as.u8;
       return true;
@@ -2512,7 +2510,6 @@ bool cmp_object_as_ushort(cmp_object_t *obj, uint16_t *s) {
 bool cmp_object_as_uint(cmp_object_t *obj, uint32_t *i) {
   switch (obj->type) {
     case CMP_TYPE_POSITIVE_FIXNUM:
-    case CMP_TYPE_NEGATIVE_FIXNUM:
     case CMP_TYPE_UINT8:
       *i = obj->as.u8;
       return true;
@@ -2530,7 +2527,6 @@ bool cmp_object_as_uint(cmp_object_t *obj, uint32_t *i) {
 bool cmp_object_as_ulong(cmp_object_t *obj, uint64_t *u) {
   switch (obj->type) {
     case CMP_TYPE_POSITIVE_FIXNUM:
-    case CMP_TYPE_NEGATIVE_FIXNUM:
     case CMP_TYPE_UINT8:
       *u = obj->as.u8;
       return true;
