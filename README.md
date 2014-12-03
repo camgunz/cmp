@@ -108,7 +108,7 @@ See the `examples` folder.
 CMP uses no internal buffers; conversions, encoding and decoding are done on
 the fly.
 
-CMP's source and header file together are < 2,500 LOC.
+CMP's source and header file together are ~3,100 LOC.
 
 CMP makes no heap allocations.
 
