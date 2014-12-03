@@ -1113,7 +1113,7 @@ bool cmp_read_s16(cmp_ctx_t *ctx, int16_t *s) {
     return false;
   }
 
-  *s = be16(obj.as.s16);
+  *s = obj.as.s16;
   return true;
 }
 
@@ -1128,7 +1128,7 @@ bool cmp_read_s32(cmp_ctx_t *ctx, int32_t *i) {
     return false;
   }
 
-  *i = be32(obj.as.s32);
+  *i = obj.as.s32;
   return true;
 }
 
@@ -1143,7 +1143,7 @@ bool cmp_read_s64(cmp_ctx_t *ctx, int64_t *l) {
     return false;
   }
 
-  *l = be64(obj.as.s64);
+  *l = obj.as.s64;
   return true;
 }
 
