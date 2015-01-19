@@ -2386,9 +2386,9 @@ bool cmp_object_as_char(cmp_object_t *obj, int8_t *c) {
         *c = obj->as.s8;
         return true;
       }
+    default:
+        return false;
   }
-
-  return false;
 }
 
 bool cmp_object_as_short(cmp_object_t *obj, int16_t *s) {
@@ -2409,9 +2409,9 @@ bool cmp_object_as_short(cmp_object_t *obj, int16_t *s) {
         *s = obj->as.u16;
         return true;
       }
+    default:
+        return false;
   }
-
-  return false;
 }
 
 bool cmp_object_as_int(cmp_object_t *obj, int32_t *i) {
@@ -2438,9 +2438,9 @@ bool cmp_object_as_int(cmp_object_t *obj, int32_t *i) {
         *i = obj->as.u32;
         return true;
       }
+    default:
+        return false;
   }
-
-  return false;
 }
 
 bool cmp_object_as_long(cmp_object_t *obj, int64_t *d) {
@@ -2473,9 +2473,9 @@ bool cmp_object_as_long(cmp_object_t *obj, int64_t *d) {
         *d = obj->as.u64;
         return true;
       }
+    default:
+        return false;
   }
-
-  return false;
 }
 
 bool cmp_object_as_sinteger(cmp_object_t *obj, int64_t *d) {
@@ -2488,9 +2488,9 @@ bool cmp_object_as_uchar(cmp_object_t *obj, uint8_t *c) {
     case CMP_TYPE_UINT8:
       *c = obj->as.u8;
       return true;
+    default:
+        return false;
   }
-
-  return false;
 }
 
 bool cmp_object_as_ushort(cmp_object_t *obj, uint16_t *s) {
@@ -2502,9 +2502,9 @@ bool cmp_object_as_ushort(cmp_object_t *obj, uint16_t *s) {
     case CMP_TYPE_UINT16:
       *s = obj->as.u16;
       return true;
+    default:
+        return false;
   }
-
-  return false;
 }
 
 bool cmp_object_as_uint(cmp_object_t *obj, uint32_t *i) {
@@ -2519,9 +2519,9 @@ bool cmp_object_as_uint(cmp_object_t *obj, uint32_t *i) {
     case CMP_TYPE_UINT32:
       *i = obj->as.u32;
       return true;
+    default:
+        return false;
   }
-
-  return false;
 }
 
 bool cmp_object_as_ulong(cmp_object_t *obj, uint64_t *u) {
@@ -2539,9 +2539,9 @@ bool cmp_object_as_ulong(cmp_object_t *obj, uint64_t *u) {
     case CMP_TYPE_UINT64:
       *u = obj->as.u64;
       return true;
+    default:
+        return false;
   }
-
-  return false;
 }
 
 bool cmp_object_as_uinteger(cmp_object_t *obj, uint64_t *d) {
@@ -2587,9 +2587,9 @@ bool cmp_object_as_str(cmp_object_t *obj, uint32_t *size) {
     case CMP_TYPE_STR32:
       *size = obj->as.str_size;
       return true;
+    default:
+        return false;
   }
-
-  return false;
 }
 
 bool cmp_object_as_bin(cmp_object_t *obj, uint32_t *size) {
@@ -2599,9 +2599,9 @@ bool cmp_object_as_bin(cmp_object_t *obj, uint32_t *size) {
     case CMP_TYPE_BIN32:
       *size = obj->as.bin_size;
       return true;
+    default:
+        return false;
   }
-
-  return false;
 }
 
 bool cmp_object_as_array(cmp_object_t *obj, uint32_t *size) {
@@ -2611,9 +2611,9 @@ bool cmp_object_as_array(cmp_object_t *obj, uint32_t *size) {
     case CMP_TYPE_ARRAY32:
       *size = obj->as.array_size;
       return true;
+    default:
+        return false;
   }
-
-  return false;
 }
 
 bool cmp_object_as_map(cmp_object_t *obj, uint32_t *size) {
@@ -2623,9 +2623,9 @@ bool cmp_object_as_map(cmp_object_t *obj, uint32_t *size) {
     case CMP_TYPE_MAP32:
       *size = obj->as.map_size;
       return true;
+    default:
+        return false;
   }
-
-  return false;
 }
 
 bool cmp_object_as_ext(cmp_object_t *obj, int8_t *type, uint32_t *size) {
@@ -2641,9 +2641,9 @@ bool cmp_object_as_ext(cmp_object_t *obj, int8_t *type, uint32_t *size) {
       *type = obj->as.ext.type;
       *size = obj->as.ext.size;
       return true;
+    default:
+        return false;
   }
-
-  return false;
 }
 
 /* vi: set et ts=2 sw=2: */
