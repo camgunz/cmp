@@ -471,12 +471,12 @@ static void error_printf(const char *msg, ...);
     }                                                                         \
     if (var1 != val1) {                                                       \
       error_printf("%s:%d ", __func__, __LINE__);                             \
-      error_printf("First array value != %d (%lu)\n", val1, var1);            \
+      error_printf("First array value != %d (%llu)\n", val1, var1);           \
       return false;                                                           \
     }                                                                         \
     if (var2 != val2) {                                                       \
       error_printf("%s:%d ", __func__, __LINE__);                             \
-      error_printf("Second array value != %d (%lu)\n", val2, var2);           \
+      error_printf("Second array value != %d (%llu)\n", val2, var2);          \
       return false;                                                           \
     }                                                                         \
   } while (0);
