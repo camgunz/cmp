@@ -321,7 +321,7 @@ bool cmp_write_sint(cmp_ctx_t *ctx, int64_t d) {
   if (d >= -32768)
     return cmp_write_s16(ctx, d);
   if (d >= (-2147483647 - 1))
-    return cmp_write_s32(ctx, d);
+    return cmp_write_s32(ctx, (int32_t) d);
 
   return cmp_write_s64(ctx, d);
 }
@@ -372,7 +372,7 @@ bool cmp_write_uint(cmp_ctx_t *ctx, uint64_t u) {
   if (u <= 0xFFFF)
     return cmp_write_u16(ctx, u);
   if (u <= 0xFFFFFFFF)
-    return cmp_write_u32(ctx, u);
+    return cmp_write_u32(ctx, (uint32_t) u);
 
   return cmp_write_u64(ctx, u);
 }
