@@ -1450,14 +1450,18 @@ bool cmp_read_float(cmp_ctx_t *ctx, float *f) {
   if (!cmp_read_object(ctx, &obj))
     return false;
 
-  if (obj.type != CMP_TYPE_FLOAT) {
-    ctx->error = INVALID_TYPE_ERROR;
-    return false;
+  if (obj.type == CMP_TYPE_FLOAT) {
+    *f = obj.as.flt;
+    return true;
   }
 
-  *f = obj.as.flt;
+  if (obj.type == CMP_TYPE_DOUBLE) {
+    *f = (float)obj.as.dbl;
+    return true;
+  }
 
-  return true;
+  ctx->error = INVALID_TYPE_ERROR;
+  return false;
 }
 
 bool cmp_read_double(cmp_ctx_t *ctx, double *d) {
@@ -1466,14 +1470,18 @@ bool cmp_read_double(cmp_ctx_t *ctx, double *d) {
   if (!cmp_read_object(ctx, &obj))
     return false;
 
-  if (obj.type != CMP_TYPE_DOUBLE) {
-    ctx->error = INVALID_TYPE_ERROR;
-    return false;
+  if (obj.type == CMP_TYPE_FLOAT) {
+    *d = (double)obj.as.flt;
+    return true;
   }
 
-  *d = obj.as.dbl;
+  if (obj.type == CMP_TYPE_DOUBLE) {
+    *d = obj.as.dbl;
+    return true;
+  }
 
-  return true;
+  ctx->error = INVALID_TYPE_ERROR;
+  return false;
 }
 
 bool cmp_read_nil(cmp_ctx_t *ctx) {
