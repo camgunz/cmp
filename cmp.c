@@ -2646,5 +2646,52 @@ bool cmp_object_as_ext(cmp_object_t *obj, int8_t *type, uint32_t *size) {
   }
 }
 
+bool cmp_object_to_str(cmp_ctx_t *ctx, cmp_object_t *obj, char *data, uint32_t buf_size) {
+  uint32_t str_size = 0;
+   switch (obj->type) {
+    case CMP_TYPE_FIXSTR:
+    case CMP_TYPE_STR8:
+    case CMP_TYPE_STR16:
+    case CMP_TYPE_STR32:
+      str_size = obj->as.str_size;
+      if ((str_size + 1) > buf_size) {
+        ctx->error = STR_DATA_LENGTH_TOO_LONG_ERROR;
+        return false;
+      }
+
+      if (!ctx->read(ctx, data, str_size)) {
+        ctx->error = DATA_READING_ERROR;
+        return false;
+      }
+
+      data[str_size] = 0;
+      return true;
+    default:
+      return false;
+   }
+}
+
+bool cmp_object_to_bin(cmp_ctx_t *ctx, cmp_object_t *obj, void *data, uint32_t buf_size) {
+  uint32_t bin_size = 0;
+   switch (obj->type) {
+    case CMP_TYPE_BIN8:
+    case CMP_TYPE_BIN16:
+    case CMP_TYPE_BIN32:
+      bin_size = obj->as.bin_size;
+      if ((bin_size + 1) > buf_size) {
+        ctx->error = BIN_DATA_LENGTH_TOO_LONG_ERROR;
+        return false;
+      }
+
+      if (!ctx->read(ctx, data, bin_size)) {
+        ctx->error = DATA_READING_ERROR;
+        return false;
+      }
+      return true;
+    default:
+      return false;
+   }
+}
+
 /* vi: set et ts=2 sw=2: */
 
