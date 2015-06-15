@@ -1280,18 +1280,7 @@ bool cmp_read_sinteger(cmp_ctx_t *ctx, int64_t *d) {
 }
 
 bool cmp_read_ufix(cmp_ctx_t *ctx, uint8_t *c) {
-  cmp_object_t obj;
-
-  if (!cmp_read_object(ctx, &obj))
-    return false;
-
-  if (obj.type != CMP_TYPE_NEGATIVE_FIXNUM) {
-    ctx->error = INVALID_TYPE_ERROR;
-    return false;
-  }
-
-  *c = obj.as.u8;
-  return true;
+  return cmp_read_pfix(ctx, c);
 }
 
 bool cmp_read_u8(cmp_ctx_t *ctx, uint8_t *c) {
