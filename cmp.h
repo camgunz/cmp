@@ -395,6 +395,10 @@ bool cmp_object_as_array(cmp_object_t *obj, uint32_t *size);
 bool cmp_object_as_map(cmp_object_t *obj, uint32_t *size);
 bool cmp_object_as_ext(cmp_object_t *obj, int8_t *type, uint32_t *size);
 
+
+bool cmp_object_to_str(cmp_ctx_t *ctx, cmp_object_t *obj, char *data, uint32_t buf_size);
+bool cmp_object_to_bin(cmp_ctx_t *ctx, cmp_object_t *obj, void *data, uint32_t buf_size);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

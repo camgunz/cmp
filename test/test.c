@@ -408,6 +408,39 @@ static void error_printf(const char *msg, ...);
     }                                                                         \
   } while (0);
 
+#define obj_to_str_test(val)                                                  \
+  do {                                                                        \
+    uint32_t length;                                                          \
+    if (!cmp_object_is_str(&obj)) {                                           \
+      error_printf("%s:%d ", __func__, __LINE__);                             \
+      error_printf("Object type is not string\n");                            \
+      return false;                                                           \
+    }                                                                         \
+    if (!cmp_object_as_str(&obj, &length)) {                                  \
+      error_printf("%s:%d ", __func__, __LINE__);                             \
+      error_printf("Error reading object as string: %s\n",                    \
+        cmp_strerror(&cmp)                                                    \
+      );                                                                      \
+      return false;                                                           \
+    }                                                                         \
+    char data[255];                                                           \
+    if (!cmp_object_to_str(&cmp, &obj, data, 255)) {                          \
+      error_printf("%s:%d ", __func__, __LINE__);                             \
+      error_printf("Error reading object to string: %s\n",                    \
+        cmp_strerror(&cmp)                                                    \
+      );                                                                      \
+      return false;                                                           \
+    }                                                                         \
+    if (strcmp(data, val) != 0) {                                             \
+      error_printf("%s:%d ", __func__, __LINE__);                             \
+      error_printf(                                                           \
+        "Value was not " val " (%s)\n", M_BufferGetDataAtCursor(&buf)         \
+      );                                                                      \
+      return false;                                                           \
+    }                                                                         \
+  } while (0);
+
+
 #define obj_bin_test(val, inlength)                                           \
   do {                                                                        \
     uint32_t length;                                                          \
@@ -436,6 +469,45 @@ static void error_printf(const char *msg, ...);
       return false;                                                           \
     }                                                                         \
   } while (0);
+
+#define obj_to_bin_test(val, inlength)                                        \
+  do {                                                                        \
+    uint32_t length;                                                          \
+    if (!cmp_object_is_bin(&obj)) {                                           \
+      error_printf("%s:%d ", __func__, __LINE__);                             \
+      error_printf("Object type is not binary\n");                            \
+      return false;                                                           \
+    }                                                                         \
+    if (!cmp_object_as_bin(&obj, &length)) {                                  \
+      error_printf("%s:%d ", __func__, __LINE__);                             \
+      error_printf("Error reading object as binary: %s\n",                    \
+        cmp_strerror(&cmp)                                                    \
+      );                                                                      \
+      return false;                                                           \
+    }                                                                         \
+    if (length != inlength) {                                                 \
+      error_printf("%s:%d ", __func__, __LINE__);                             \
+      error_printf("Mismatched lengths: %d != %d\n", inlength, length);       \
+      return false;                                                           \
+    }                                                                         \
+    unsigned char data[255];                                                  \
+    if (!cmp_object_to_bin(&cmp, &obj, data, 255)) {                          \
+      error_printf("%s:%d ", __func__, __LINE__);                             \
+      error_printf("Error reading object to binary: %s\n",                    \
+        cmp_strerror(&cmp)                                                    \
+      );                                                                      \
+      return false;                                                           \
+    }                                                                         \
+    if (memcmp(data, val, length) != 0) {                                     \
+      error_printf("%s:%d ", __func__, __LINE__);                             \
+      error_printf(                                                           \
+        "Value was not " val " (%s)\n", data                                  \
+      );                                                                      \
+      return false;                                                           \
+    }                                                                         \
+  } while (0);
+
+
 
 #define obj_array_test(val1, val2)                                            \
   do {                                                                        \
@@ -3104,6 +3176,29 @@ bool run_obj_tests(void) {
   obj_test_not(cmp_object_is_map, "map");
   obj_test_not(cmp_object_is_ext, "ext");
 
+  // Test new cmp_object_to_str
+  obj_write_len(cmp_write_str, "Hey there", 9);
+  obj_to_str_test("Hey there");
+  obj_test_not(cmp_object_is_char, "char");
+  obj_test_not(cmp_object_is_short, "short");
+  obj_test_not(cmp_object_is_int, "int");
+  obj_test_not(cmp_object_is_long, "long");
+  obj_test_not(cmp_object_is_sinteger, "sinteger");
+  obj_test_not(cmp_object_is_uchar, "uchar");
+  obj_test_not(cmp_object_is_ushort, "ushort");
+  obj_test_not(cmp_object_is_uint, "uint");
+  obj_test_not(cmp_object_is_ulong, "ulong");
+  obj_test_not(cmp_object_is_uinteger, "uinteger");
+  obj_test_not(cmp_object_is_float, "float");
+  obj_test_not(cmp_object_is_double, "double");
+  obj_test_not(cmp_object_is_nil, "nil");
+  obj_test_not(cmp_object_is_bool, "bool");
+  obj_test_not(cmp_object_is_bin, "bin");
+  obj_test_not(cmp_object_is_array, "array");
+  obj_test_not(cmp_object_is_map, "map");
+  obj_test_not(cmp_object_is_ext, "ext");
+
+
   obj_write_len(cmp_write_bin, "Hey there", 9);
   obj_bin_test("Hey there", 9);
   obj_test_not(cmp_object_is_char, "char");
@@ -3124,6 +3219,30 @@ bool run_obj_tests(void) {
   obj_test_not(cmp_object_is_array, "array");
   obj_test_not(cmp_object_is_map, "map");
   obj_test_not(cmp_object_is_ext, "ext");
+
+  obj_write_len(cmp_write_bin, "Hey there", 9);
+  obj_to_bin_test("Hey there", 9);
+  obj_test_not(cmp_object_is_char, "char");
+  obj_test_not(cmp_object_is_short, "short");
+  obj_test_not(cmp_object_is_int, "int");
+  obj_test_not(cmp_object_is_long, "long");
+  obj_test_not(cmp_object_is_sinteger, "sinteger");
+  obj_test_not(cmp_object_is_uchar, "uchar");
+  obj_test_not(cmp_object_is_ushort, "ushort");
+  obj_test_not(cmp_object_is_uint, "uint");
+  obj_test_not(cmp_object_is_ulong, "ulong");
+  obj_test_not(cmp_object_is_uinteger, "uinteger");
+  obj_test_not(cmp_object_is_float, "float");
+  obj_test_not(cmp_object_is_double, "double");
+  obj_test_not(cmp_object_is_nil, "nil");
+  obj_test_not(cmp_object_is_bool, "bool");
+  obj_test_not(cmp_object_is_str, "string");
+  obj_test_not(cmp_object_is_array, "array");
+  obj_test_not(cmp_object_is_map, "map");
+  obj_test_not(cmp_object_is_ext, "ext");
+
+
+
 
   M_BufferSeek(&buf, 0);
   cmp_write_array(&cmp, 2);
