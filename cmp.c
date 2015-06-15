@@ -2667,7 +2667,7 @@ bool cmp_object_to_bin(cmp_ctx_t *ctx, cmp_object_t *obj, void *data, uint32_t b
     case CMP_TYPE_BIN16:
     case CMP_TYPE_BIN32:
       bin_size = obj->as.bin_size;
-      if ((bin_size + 1) > buf_size) {
+      if (bin_size > buf_size) {
         ctx->error = BIN_DATA_LENGTH_TOO_LONG_ERROR;
         return false;
       }
