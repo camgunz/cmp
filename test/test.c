@@ -2406,6 +2406,26 @@ bool run_number_tests(void) {
     9
   );
 
+  test_format(
+    cmp_write_decimal,
+    cmp_read_decimal,
+    flt,
+    double,
+    2.0f,
+    "\xca\x40\x00\x00\x00",
+    5
+  );
+
+  test_format(
+    cmp_write_decimal,
+    cmp_read_decimal,
+    dbl,
+    double,
+    1111111111111111.125000,
+    "\xcb\x43\x0f\x94\x65\xb8\xab\x8e\x39",
+    9
+  );
+
   return true;
 }
 

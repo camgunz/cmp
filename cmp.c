@@ -28,7 +28,7 @@ THE SOFTWARE.
 
 #include "cmp.h"
 
-static const uint32_t version = 13;
+static const uint32_t version = 14;
 static const uint32_t mp_version = 5;
 
 enum {
@@ -417,6 +417,16 @@ bool cmp_write_double(cmp_ctx_t *ctx, double d) {
   d = bedouble(d);
 
   return ctx->write(ctx, &d, sizeof(double));
+}
+
+bool cmp_write_decimal(cmp_ctx_t *ctx, double d) {
+  float f = (float)d;
+  float df = (double)f;
+
+  if (df == d)
+    return cmp_write_float(ctx, f);
+  else
+    return cmp_write_double(ctx, d);
 }
 
 bool cmp_write_nil(cmp_ctx_t *ctx) {
@@ -1583,6 +1593,25 @@ bool cmp_read_double(cmp_ctx_t *ctx, double *d) {
   *d = obj.as.dbl;
 
   return true;
+}
+
+bool cmp_read_decimal(cmp_ctx_t *ctx, double *d) {
+  cmp_object_t obj;
+
+  if (!cmp_read_object(ctx, &obj))
+    return false;
+
+  switch (obj.type) {
+    case CMP_TYPE_FLOAT:
+      *d = (double)obj.as.flt;
+      return true;
+    case CMP_TYPE_DOUBLE:
+      *d = obj.as.dbl;
+      return true;
+    default:
+      ctx->error = INVALID_TYPE_ERROR;
+      return false;
+  }
 }
 
 bool cmp_read_nil(cmp_ctx_t *ctx) {

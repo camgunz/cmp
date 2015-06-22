@@ -133,11 +133,11 @@ bool cmp_write_integer(cmp_ctx_t *ctx, int64_t d);
 /* Writes an unsigned integer to the backend */
 bool cmp_write_uinteger(cmp_ctx_t *ctx, uint64_t u);
 
-/* Writes a single-precision float to the backend */
-bool cmp_write_float(cmp_ctx_t *ctx, float f);
-
-/* Writes a double-precision float to the backend */
-bool cmp_write_double(cmp_ctx_t *ctx, double d);
+/*
+ * Writes a floating-point value (either single or double-precision) to the
+ * backend
+ */
+bool cmp_write_decimal(cmp_ctx_t *ctx, double d);
 
 /* Writes NULL to the backend */
 bool cmp_write_nil(cmp_ctx_t *ctx);
@@ -251,11 +251,11 @@ bool cmp_read_ulong(cmp_ctx_t *ctx, uint64_t *u);
 /* Reads an unsigned integer */
 bool cmp_read_uinteger(cmp_ctx_t *ctx, uint64_t *u);
 
-/* Reads a single-precision float from the backend */
-bool cmp_read_float(cmp_ctx_t *ctx, float *f);
-
-/* Reads a double-precision float from the backend */
-bool cmp_read_double(cmp_ctx_t *ctx, double *d);
+/*
+ * Reads a floating point value (either single or double-precision) from the
+ * backend
+ */
+bool cmp_read_decimal(cmp_ctx_t *ctx, double *d);
 
 /* "Reads" (more like "skips") a NULL value from the backend */
 bool cmp_read_nil(cmp_ctx_t *ctx);
@@ -320,6 +320,9 @@ bool cmp_write_u16(cmp_ctx_t *ctx, uint16_t s);
 bool cmp_write_u32(cmp_ctx_t *ctx, uint32_t i);
 bool cmp_write_u64(cmp_ctx_t *ctx, uint64_t l);
 
+bool cmp_write_float(cmp_ctx_t *ctx, float f);
+bool cmp_write_double(cmp_ctx_t *ctx, double d);
+
 bool cmp_write_fixstr_marker(cmp_ctx_t *ctx, uint8_t size);
 bool cmp_write_fixstr(cmp_ctx_t *ctx, const char *data, uint8_t size);
 bool cmp_write_str8_marker(cmp_ctx_t *ctx, uint8_t size);
@@ -379,6 +382,9 @@ bool cmp_read_u8(cmp_ctx_t *ctx, uint8_t *c);
 bool cmp_read_u16(cmp_ctx_t *ctx, uint16_t *s);
 bool cmp_read_u32(cmp_ctx_t *ctx, uint32_t *i);
 bool cmp_read_u64(cmp_ctx_t *ctx, uint64_t *l);
+
+bool cmp_read_float(cmp_ctx_t *ctx, float *f);
+bool cmp_read_double(cmp_ctx_t *ctx, double *d);
 
 bool cmp_read_fixext1_marker(cmp_ctx_t *ctx, int8_t *type);
 bool cmp_read_fixext1(cmp_ctx_t *ctx, int8_t *type, void *data);
