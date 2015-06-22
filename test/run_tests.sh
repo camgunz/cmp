@@ -14,8 +14,11 @@ CFLAGS="$CFLAGS -Wwrite-strings"
 CFLAGS="$CFLAGS -Wshadow"
 CFLAGS="$CFLAGS -Wenum-compare"
 CFLAGS="$CFLAGS -Wempty-body"
-CFLAGS="$CFLAGS -Wsizeof-array-argument" # GCC does not support this
-CFLAGS="$CFLAGS -Wstring-conversion"     # GCC does not support this
+if [ $CC = 'clang' ]
+then
+  CFLAGS="$CFLAGS -Wsizeof-array-argument" # GCC does not support this
+  CFLAGS="$CFLAGS -Wstring-conversion"     # GCC does not support this
+fi
 CFLAGS="$CFLAGS -Wparentheses"
 CFLAGS="$CFLAGS -Wcast-align"
 CFLAGS="$CFLAGS -Wstrict-aliasing"

@@ -128,10 +128,10 @@ uint32_t cmp_mp_version(void);
 const char* cmp_strerror(cmp_ctx_t *ctx);
 
 /* Writes a signed integer to the backend */
-bool cmp_write_sint(cmp_ctx_t *ctx, int64_t d);
+bool cmp_write_integer(cmp_ctx_t *ctx, int64_t d);
 
 /* Writes an unsigned integer to the backend */
-bool cmp_write_uint(cmp_ctx_t *ctx, uint64_t u);
+bool cmp_write_uinteger(cmp_ctx_t *ctx, uint64_t u);
 
 /* Writes a single-precision float to the backend */
 bool cmp_write_float(cmp_ctx_t *ctx, float f);
@@ -210,7 +210,7 @@ bool cmp_read_int(cmp_ctx_t *ctx, int32_t *i);
 bool cmp_read_long(cmp_ctx_t *ctx, int64_t *d);
 
 /* Reads a signed integer */
-bool cmp_read_sinteger(cmp_ctx_t *ctx, int64_t *d);
+bool cmp_read_integer(cmp_ctx_t *ctx, int64_t *d);
 
 /* Reads an unsigned integer that fits inside an unsigned char */
 bool cmp_read_uchar(cmp_ctx_t *ctx, uint8_t *c);
@@ -419,13 +419,24 @@ bool cmp_object_as_array(cmp_object_t *obj, uint32_t *size);
 bool cmp_object_as_map(cmp_object_t *obj, uint32_t *size);
 bool cmp_object_as_ext(cmp_object_t *obj, int8_t *type, uint32_t *size);
 
-
 bool cmp_object_to_str(cmp_ctx_t *ctx, cmp_object_t *obj, char *data, uint32_t buf_size);
 bool cmp_object_to_bin(cmp_ctx_t *ctx, cmp_object_t *obj, void *data, uint32_t buf_size);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
+/*
+ * ============================================================================
+ * === Backwards compatibility defines
+ * ============================================================================
+ */
+
+#define cmp_write_int      cmp_write_integer
+#define cmp_write_sint     cmp_write_integer
+#define cmp_write_sinteger cmp_write_integer
+#define cmp_write_uint     cmp_write_uinteger
+#define cmp_read_sinteger  cmp_read_integer
 
 #endif /* CMP_H__ */
 

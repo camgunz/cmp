@@ -335,9 +335,9 @@ bool cmp_write_s64(cmp_ctx_t *ctx, int64_t l) {
   return ctx->write(ctx, &l, sizeof(int64_t));
 }
 
-bool cmp_write_sint(cmp_ctx_t *ctx, int64_t d) {
+bool cmp_write_integer(cmp_ctx_t *ctx, int64_t d) {
   if (d >= 0)
-    return cmp_write_uint(ctx, d);
+    return cmp_write_uinteger(ctx, d);
   if (d >= -32)
     return cmp_write_nfix(ctx, d);
   if (d >= -128)
@@ -388,7 +388,7 @@ bool cmp_write_u64(cmp_ctx_t *ctx, uint64_t l) {
   return ctx->write(ctx, &l, sizeof(uint64_t));
 }
 
-bool cmp_write_uint(cmp_ctx_t *ctx, uint64_t u) {
+bool cmp_write_uinteger(cmp_ctx_t *ctx, uint64_t u) {
   if (u <= 0x7F)
     return cmp_write_pfix(ctx, u);
   if (u <= 0xFF)
@@ -1299,7 +1299,7 @@ bool cmp_read_long(cmp_ctx_t *ctx, int64_t *d) {
   }
 }
 
-bool cmp_read_sinteger(cmp_ctx_t *ctx, int64_t *d) {
+bool cmp_read_integer(cmp_ctx_t *ctx, int64_t *d) {
   return cmp_read_long(ctx, d);
 }
 
