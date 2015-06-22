@@ -164,10 +164,27 @@ bool cmp_write_u8_as_bool(cmp_ctx_t *ctx, uint8_t b);
 bool cmp_write_str(cmp_ctx_t *ctx, const char *data, uint32_t size);
 
 /*
+ * Writes a string to the backend.  This avoids using the STR8 marker, which
+ * is unsupported by MessagePack v4, the version implemented by many other
+ * MessagePack libraries.  No encoding is assumed in this case, not that it
+ * matters.
+ */
+bool cmp_write_str_v4(cmp_ctx_t *ctx, const char *data, uint32_t size);
+
+/*
  * Writes the string marker to the backend.  This is useful if you are writing
  * data in chunks instead of a single shot.
  */
 bool cmp_write_str_marker(cmp_ctx_t *ctx, uint32_t size);
+
+/*
+ * Writes the string marker to the backend.  This is useful if you are writing
+ * data in chunks instead of a single shot.  This avoids using the STR8
+ * marker, which is unsupported by MessagePack v4, the version implemented by
+ * many other MessagePack libraries.  No encoding is assumed in this case, not
+ * that it matters.
+ */
+bool cmp_write_str_marker_v4(cmp_ctx_t *ctx, uint32_t size);
 
 /* Writes binary data to the backend */
 bool cmp_write_bin(cmp_ctx_t *ctx, const void *data, uint32_t size);
@@ -196,6 +213,13 @@ bool cmp_write_ext_marker(cmp_ctx_t *ctx, int8_t type, uint32_t size);
 
 /* Writes an object to the backend */
 bool cmp_write_object(cmp_ctx_t *ctx, cmp_object_t *obj);
+
+/*
+ * Writes an object to the backend. This avoids using the STR8 marker, which
+ * is unsupported by MessagePack v4, the version implemented by many other
+ * MessagePack libraries.
+ */
+bool cmp_write_object_v4(cmp_ctx_t *ctx, cmp_object_t *obj);
 
 /* Reads a signed integer that fits inside a signed char */
 bool cmp_read_char(cmp_ctx_t *ctx, int8_t *c);

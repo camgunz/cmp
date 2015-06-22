@@ -2580,6 +2580,15 @@ bool run_string_tests(void) {
     "\xaaHey there\n",
     11
   );
+  test_format_with_length(
+    cmp_write_str_v4,
+    cmp_read_str,
+    str_size,
+    "With your feet on the air and your head on the ground\n",
+    54,
+    "\xda\x00\x36With your feet on the air and your head on the ground\n",
+    57
+  );
 
   return true;
 }

@@ -557,11 +557,29 @@ bool cmp_write_str_marker(cmp_ctx_t *ctx, uint32_t size) {
   return cmp_write_str32_marker(ctx, size);
 }
 
+bool cmp_write_str_marker_v4(cmp_ctx_t *ctx, uint32_t size) {
+  if (size <= FIXSTR_SIZE)
+    return cmp_write_fixstr_marker(ctx, size);
+  if (size <= 0xFFFF)
+    return cmp_write_str16_marker(ctx, size);
+
+  return cmp_write_str32_marker(ctx, size);
+}
+
 bool cmp_write_str(cmp_ctx_t *ctx, const char *data, uint32_t size) {
   if (size <= FIXSTR_SIZE)
     return cmp_write_fixstr(ctx, data, size);
   if (size <= 0xFF)
     return cmp_write_str8(ctx, data, size);
+  if (size <= 0xFFFF)
+    return cmp_write_str16(ctx, data, size);
+
+  return cmp_write_str32(ctx, data, size);
+}
+
+bool cmp_write_str_v4(cmp_ctx_t *ctx, const char *data, uint32_t size) {
+  if (size <= FIXSTR_SIZE)
+    return cmp_write_fixstr(ctx, data, size);
   if (size <= 0xFFFF)
     return cmp_write_str16(ctx, data, size);
 
@@ -1044,6 +1062,84 @@ bool cmp_write_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
       return cmp_write_fixext16_marker(ctx, obj->as.ext.type);
     case CMP_TYPE_STR8:
       return cmp_write_str8_marker(ctx, obj->as.str_size);
+    case CMP_TYPE_STR16:
+      return cmp_write_str16_marker(ctx, obj->as.str_size);
+    case CMP_TYPE_STR32:
+      return cmp_write_str32_marker(ctx, obj->as.str_size);
+    case CMP_TYPE_ARRAY16:
+      return cmp_write_array16(ctx, obj->as.array_size);
+    case CMP_TYPE_ARRAY32:
+      return cmp_write_array32(ctx, obj->as.array_size);
+    case CMP_TYPE_MAP16:
+      return cmp_write_map16(ctx, obj->as.map_size);
+    case CMP_TYPE_MAP32:
+      return cmp_write_map32(ctx, obj->as.map_size);
+    case CMP_TYPE_NEGATIVE_FIXNUM:
+      return cmp_write_nfix(ctx, obj->as.s8);
+    default:
+      ctx->error = INVALID_TYPE_ERROR;
+      return false;
+  }
+}
+
+bool cmp_write_object_v4(cmp_ctx_t *ctx, cmp_object_t *obj) {
+  switch(obj->type) {
+    case CMP_TYPE_POSITIVE_FIXNUM:
+      return cmp_write_pfix(ctx, obj->as.u8);
+    case CMP_TYPE_FIXMAP:
+      return cmp_write_fixmap(ctx, obj->as.map_size);
+    case CMP_TYPE_FIXARRAY:
+      return cmp_write_fixarray(ctx, obj->as.array_size);
+    case CMP_TYPE_FIXSTR:
+      return cmp_write_fixstr_marker(ctx, obj->as.str_size);
+    case CMP_TYPE_NIL:
+      return cmp_write_nil(ctx);
+    case CMP_TYPE_BOOLEAN:
+      if (obj->as.boolean)
+        return cmp_write_true(ctx);
+      return cmp_write_false(ctx);
+    case CMP_TYPE_BIN8:
+      return cmp_write_bin8_marker(ctx, obj->as.bin_size);
+    case CMP_TYPE_BIN16:
+      return cmp_write_bin16_marker(ctx, obj->as.bin_size);
+    case CMP_TYPE_BIN32:
+      return cmp_write_bin32_marker(ctx, obj->as.bin_size);
+    case CMP_TYPE_EXT8:
+      return cmp_write_ext8_marker(ctx, obj->as.ext.type, obj->as.ext.size);
+    case CMP_TYPE_EXT16:
+      return cmp_write_ext16_marker(ctx, obj->as.ext.type, obj->as.ext.size);
+    case CMP_TYPE_EXT32:
+      return cmp_write_ext32_marker(ctx, obj->as.ext.type, obj->as.ext.size);
+    case CMP_TYPE_FLOAT:
+      return cmp_write_float(ctx, obj->as.flt);
+    case CMP_TYPE_DOUBLE:
+      return cmp_write_double(ctx, obj->as.dbl);
+    case CMP_TYPE_UINT8:
+      return cmp_write_u8(ctx, obj->as.u8);
+    case CMP_TYPE_UINT16:
+      return cmp_write_u16(ctx, obj->as.u16);
+    case CMP_TYPE_UINT32:
+      return cmp_write_u32(ctx, obj->as.u32);
+    case CMP_TYPE_UINT64:
+      return cmp_write_u64(ctx, obj->as.u64);
+    case CMP_TYPE_SINT8:
+      return cmp_write_s8(ctx, obj->as.s8);
+    case CMP_TYPE_SINT16:
+      return cmp_write_s16(ctx, obj->as.s16);
+    case CMP_TYPE_SINT32:
+      return cmp_write_s32(ctx, obj->as.s32);
+    case CMP_TYPE_SINT64:
+      return cmp_write_s64(ctx, obj->as.s64);
+    case CMP_TYPE_FIXEXT1:
+      return cmp_write_fixext1_marker(ctx, obj->as.ext.type);
+    case CMP_TYPE_FIXEXT2:
+      return cmp_write_fixext2_marker(ctx, obj->as.ext.type);
+    case CMP_TYPE_FIXEXT4:
+      return cmp_write_fixext4_marker(ctx, obj->as.ext.type);
+    case CMP_TYPE_FIXEXT8:
+      return cmp_write_fixext8_marker(ctx, obj->as.ext.type);
+    case CMP_TYPE_FIXEXT16:
+      return cmp_write_fixext16_marker(ctx, obj->as.ext.type);
     case CMP_TYPE_STR16:
       return cmp_write_str16_marker(ctx, obj->as.str_size);
     case CMP_TYPE_STR32:

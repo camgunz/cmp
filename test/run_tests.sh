@@ -25,7 +25,7 @@ CFLAGS="$CFLAGS -Wstrict-aliasing"
 CFLAGS="$CFLAGS --pedantic-errors"
 CFLAGS="$CFLAGS -g"
 
-$CC $CFLAGS -I../ -o $EXE_NAME ../cmp.c buf.c utils.c test.c || exit -1
+$CC $CFLAGS -I../ -o $EXE_NAME ../cmp.c buf.c utils.c test.c || exit 1
 
 # gdb -ex run --args ./$EXE_NAME
 ./$EXE_NAME

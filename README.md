@@ -108,7 +108,7 @@ See the `examples` folder.
 CMP uses no internal buffers; conversions, encoding and decoding are done on
 the fly.
 
-CMP's source and header file together are ~3,100 LOC.
+CMP's source and header file together are ~3,300 LOC.
 
 CMP makes no heap allocations.
 
@@ -149,10 +149,38 @@ validation.
 CMP's API is designed to be clear, convenient and unsurprising.  Strings are
 null-terminated, binary data is not, error codes are clear, and so on.
 
+CMP provides optional backwards compatibility for use with other MessagePack
+implementations that only implement version 4 of the spec.
+
 ## Building
 
 There is no build system for CMP.  The programmer can drop `cmp.c` and `cmp.h`
 in their source tree and modify as necessary.  No special compiler settings are
 required to build it, and it generates no compilation errors in either clang or
 gcc.
+
+## Backwards Compatibility
+
+Version 4 of the MessagePack spec has no `BIN` type, and provides no `STR8`
+marker.  In order to remain backwards compatible with version 4 of MessagePack,
+do the following:
+
+Avoid these functions:
+
+  - `cmp_write_bin`
+  - `cmp_write_bin_marker`
+  - `cmp_write_str8_marker`
+  - `cmp_write_str8`
+  - `cmp_write_bin8_marker`
+  - `cmp_write_bin8`
+  - `cmp_write_bin16_marker`
+  - `cmp_write_bin16`
+  - `cmp_write_bin32_marker`
+  - `cmp_write_bin32`
+
+Use these functions in lieu of their v5 counterparts:
+
+  - `cmp_write_str_marker_v4` instead of `cmp_write_str_marker`
+  - `cmp_write_str_v4` instead of `cmp_write_str`
+  - `cmp_write_object_v4` instead of `cmp_write_object`
 
