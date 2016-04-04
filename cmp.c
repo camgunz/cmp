@@ -339,11 +339,11 @@ bool cmp_write_integer(cmp_ctx_t *ctx, int64_t d) {
   if (d >= 0)
     return cmp_write_uinteger(ctx, d);
   if (d >= -32)
-    return cmp_write_nfix(ctx, d);
+    return cmp_write_nfix(ctx, (int8_t)d);
   if (d >= -128)
-    return cmp_write_s8(ctx, d);
+    return cmp_write_s8(ctx, (int8_t)d);
   if (d >= -32768)
-    return cmp_write_s16(ctx, d);
+    return cmp_write_s16(ctx, (int16_t)d);
   if (d >= (-2147483647 - 1))
     return cmp_write_s32(ctx, (int32_t) d);
 
@@ -390,11 +390,11 @@ bool cmp_write_u64(cmp_ctx_t *ctx, uint64_t l) {
 
 bool cmp_write_uinteger(cmp_ctx_t *ctx, uint64_t u) {
   if (u <= 0x7F)
-    return cmp_write_pfix(ctx, u);
+    return cmp_write_pfix(ctx, (uint8_t)u);
   if (u <= 0xFF)
-    return cmp_write_u8(ctx, u);
+    return cmp_write_u8(ctx, (uint8_t)u);
   if (u <= 0xFFFF)
-    return cmp_write_u16(ctx, u);
+    return cmp_write_u16(ctx, (uint16_t)u);
   if (u <= 0xFFFFFFFF)
     return cmp_write_u32(ctx, (uint32_t) u);
 
@@ -421,7 +421,7 @@ bool cmp_write_double(cmp_ctx_t *ctx, double d) {
 
 bool cmp_write_decimal(cmp_ctx_t *ctx, double d) {
   float f = (float)d;
-  float df = (double)f;
+  double df = f;
 
   if (df == d)
     return cmp_write_float(ctx, f);
