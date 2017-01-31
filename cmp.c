@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2015 Charles Gunyon
+Copyright (c) 2017 Charles Gunyon
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@ THE SOFTWARE.
 
 #include "cmp.h"
 
-static const uint32_t version = 15;
+static const uint32_t version = 16;
 static const uint32_t mp_version = 5;
 
 enum {
@@ -177,9 +177,7 @@ static uint64_t be64(uint64_t x) {
   return x;
 }
 
-static float befloat(float x) {
-  char *b = (char *)&x;
-
+static void decode_befloat(char *b) {
   if (!is_bigendian()) {
     char swap = 0;
 
@@ -191,13 +189,9 @@ static float befloat(float x) {
     b[1] = b[2];
     b[2] = swap;
   }
-
-  return x;
 }
 
-static double bedouble(double x) {
-  char *b = (char *)&x;
-
+static void decode_bedouble(char *b) {
   if (!is_bigendian()) {
     char swap = 0;
 
@@ -217,8 +211,6 @@ static double bedouble(double x) {
     b[3] = b[4];
     b[4] = swap;
   }
-
-  return x;
 }
 
 static bool read_byte(cmp_ctx_t *ctx, uint8_t *x) {
@@ -405,7 +397,20 @@ bool cmp_write_float(cmp_ctx_t *ctx, float f) {
   if (!write_type_marker(ctx, FLOAT_MARKER))
     return false;
 
-  f = befloat(f);
+  /*
+   * We may need to swap the float's bytes, but we can't just swap them inside
+   * the float because the swapped bytes may not constitute a valid float.
+   * Therefore, we have to create a buffer and swap the bytes there.
+   */
+  if (!is_bigendian()) {
+    char swapped[sizeof(float)];
+    char *fbuf = (char *)&f;
+
+    for (size_t i = 0; i < sizeof(float); i++)
+      swapped[i] = fbuf[sizeof(float) - i - 1];
+
+    return ctx->write(ctx, swapped, sizeof(float));
+  }
 
   return ctx->write(ctx, &f, sizeof(float));
 }
@@ -414,7 +419,16 @@ bool cmp_write_double(cmp_ctx_t *ctx, double d) {
   if (!write_type_marker(ctx, DOUBLE_MARKER))
     return false;
 
-  d = bedouble(d);
+  /* Same deal for doubles */
+  if (!is_bigendian()) {
+    char swapped[sizeof(double)];
+    char *dbuf = (char *)&d;
+
+    for (size_t i = 0; i < sizeof(double); i++)
+      swapped[i] = dbuf[sizeof(double) - i - 1];
+
+    return ctx->write(ctx, swapped, sizeof(double));
+  }
 
   return ctx->write(ctx, &d, sizeof(double));
 }
@@ -2137,20 +2151,26 @@ bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
     obj->as.ext.type = ext_type;
   }
   else if (type_marker == FLOAT_MARKER) {
+    char bytes[sizeof(float)];
+
     obj->type = CMP_TYPE_FLOAT;
-    if (!ctx->read(ctx, &obj->as.flt, sizeof(float))) {
+    if (!ctx->read(ctx, bytes, sizeof(float))) {
       ctx->error = DATA_READING_ERROR;
       return false;
     }
-    obj->as.flt = befloat(obj->as.flt);
+    decode_befloat(bytes);
+    obj->as.flt = *(float *)(void *)bytes;
   }
   else if (type_marker == DOUBLE_MARKER) {
+    char bytes[sizeof(double)];
+
     obj->type = CMP_TYPE_DOUBLE;
-    if (!ctx->read(ctx, &obj->as.dbl, sizeof(double))) {
+    if (!ctx->read(ctx, bytes, sizeof(double))) {
       ctx->error = DATA_READING_ERROR;
       return false;
     }
-    obj->as.dbl = bedouble(obj->as.dbl);
+    decode_bedouble(bytes);
+    obj->as.dbl = *(double *)(void *)bytes;
   }
   else if (type_marker == U8_MARKER) {
     obj->type = CMP_TYPE_UINT8;
