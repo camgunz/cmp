@@ -2782,13 +2782,13 @@ bool run_float_flip_tests(void) {
   // Writing and reading a float's bytes using cmp mangles one of the bytes
   // for certain floats.  This is one of them.
 
-  // Specify the binary representation of a problematic float
+  /* Specify the binary representation of a problematic float */
   init[0] = -1;
   init[1] = -121;
   init[2] = -95;
   init[3] = -66;
 
-  // construct the float from the memory, should be -0.315490693
+  /* construct the float from the memory, should be -0.315490693 */
   memcpy(&in, init, sizeof(in));
 
   error_clear();
@@ -2801,8 +2801,10 @@ bool run_float_flip_tests(void) {
     return false;
   }
 
-  // cmp writes the float header, then the bytes of the float in reversed order
-  // (endianness)
+  /*
+   * cmp writes the float header, then the bytes of the float in reversed order
+   * (endianness)
+   */
 
   if (buf.data[1] != init[3]) {
     error_printf("run_float_flip_test:%d ", __LINE__);
@@ -2816,7 +2818,11 @@ bool run_float_flip_tests(void) {
     return false;
   }
 
-  // asserts for 3rd output byte below
+  if (buf.data[3] != init[1]) {
+    error_printf("run_float_flip_test:%d ", __LINE__);
+    error_printf("[3] 0x%02x != 0x%02x\n", buf.data[3], init[1]);
+    return false;
+  }
 
   if (buf.data[4] != init[0]) {
     error_printf("run_float_flip_test:%d ", __LINE__);
@@ -2824,25 +2830,9 @@ bool run_float_flip_tests(void) {
     return false;
   }
 
-  // serialization flips the 2nd byte in this case
-
-#if 0
-  if (buf.data[3] == init[1]) {
-    error_printf("run_float_flip_test:%d ", __LINE__);
-    error_printf("[3] 0x%02x == 0x%02x\n", buf.data[3], init[1]);
-    return false;
-  }
-
-  if (((signed char )buf.data[3]) != -57) {
-    error_printf("run_float_flip_test:%d ", __LINE__);
-    error_printf("[3] 0x%02x != -57\n", buf.data[3]);
-    return false;
-  }
-#endif
-
   M_BufferSeek(&buf, 0);
 
-  // read in the float using cmp.
+  /* read in the float using cmp. */
   if (!cmp_read_float(&cmp, &out)) {
     error_printf("run_float_flip_test:%d ", __LINE__);
     error_printf("cmp_read_float(&cmp, &out) failed: %s\n",
@@ -2853,7 +2843,7 @@ bool run_float_flip_tests(void) {
 
   memcpy(outnit, &out, sizeof(out));
 
-  // The reader reads in exactly what was in the buffer
+  /* The reader reads in exactly what was in the buffer */
   if (buf.data[1] != outnit[3]) {
     error_printf("run_float_flip_test:%d ", __LINE__);
     error_printf("[1] 0x%02x != 0x%02x\n", buf.data[1], outnit[3]);
@@ -2878,19 +2868,25 @@ bool run_float_flip_tests(void) {
     return false;
   }
 
-  // The reader only seems ok.  The issue happens when you fiddle with the float's bits
-  // in the first place.  By the time you write, it's a "valid" float (though has the wrong
-  // contents), so when you read it, you're reading a seemingly ok float.  When you fix
-  // the writer to write out the correct bytes, the reader then makes the same mistake.
+  /*
+   * The reader only seems ok.  The issue happens when you fiddle with the
+   * float's bits in the first place.  By the time you write, it's a "valid"
+   * float (though has the wrong contents), so when you read it, you're reading
+   * a seemingly ok float.  When you fix the writer to write out the correct
+   * bytes, the reader then makes the same mistake.
+   */
   if (in != out) {
     error_printf("run_float_flip_test:%d ", __LINE__);
     error_printf("%f != %f\n", in, out);
     return false;
   }
 
-  // The fix is to write the flipped bytes to a buffer and then write that buffer out.
-  // On the read end, you read into a buffer, then write the flipped bytes into a float.
-  // This way, the float is never populated with invalid bytes.
+  /*
+   * The fix is to write the flipped bytes to a buffer and then write that
+   * buffer out.  On the read end, you read into a buffer, then write the
+   * flipped bytes into a float.  This way, the float is never populated with
+   * invalid bytes.
+   */
 
   return true;
 }
