@@ -2151,26 +2151,32 @@ bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
     obj->as.ext.type = ext_type;
   }
   else if (type_marker == FLOAT_MARKER) {
-    char bytes[sizeof(float)];
+    union {
+      float flt;
+      char bytes[sizeof(float)];
+    } buffer;
 
     obj->type = CMP_TYPE_FLOAT;
-    if (!ctx->read(ctx, bytes, sizeof(float))) {
+    if (!ctx->read(ctx, buffer.bytes, sizeof(float))) {
       ctx->error = DATA_READING_ERROR;
       return false;
     }
-    decode_befloat(bytes);
-    obj->as.flt = *(float *)(void *)bytes;
+    decode_befloat(buffer.bytes);
+    obj->as.flt = buffer.flt;
   }
   else if (type_marker == DOUBLE_MARKER) {
-    char bytes[sizeof(double)];
+    union {
+      double dbl;
+      char bytes[sizeof(double)];
+    } buffer;
 
     obj->type = CMP_TYPE_DOUBLE;
-    if (!ctx->read(ctx, bytes, sizeof(double))) {
+    if (!ctx->read(ctx, buffer.bytes, sizeof(double))) {
       ctx->error = DATA_READING_ERROR;
       return false;
     }
-    decode_bedouble(bytes);
-    obj->as.dbl = *(double *)(void *)bytes;
+    decode_bedouble(buffer.bytes);
+    obj->as.dbl = buffer.dbl;
   }
   else if (type_marker == U8_MARKER) {
     obj->type = CMP_TYPE_UINT8;
