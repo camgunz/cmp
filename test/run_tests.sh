@@ -3,7 +3,8 @@
 EXE_NAME='test-cmp'
 CC=clang
 # CC=gcc
-CFLAGS="--std=c99 -Werror -Wall -Wextra"
+CFLAGS="--std=c99"
+CFLAGS="$CFLAGS -Werror -Wall -Wextra"
 CFLAGS="$CFLAGS -funsigned-char"
 CFLAGS="$CFLAGS -fwrapv"
 CFLAGS="$CFLAGS -Wmissing-format-attribute"
@@ -21,9 +22,11 @@ then
 fi
 CFLAGS="$CFLAGS -Wparentheses"
 CFLAGS="$CFLAGS -Wcast-align"
-CFLAGS="$CFLAGS -Wstrict-aliasing"
+CFLAGS="$CFLAGS -Werror=strict-aliasing"
 CFLAGS="$CFLAGS --pedantic-errors"
 CFLAGS="$CFLAGS -g"
+
+rm -f "$EXE_NAME"
 
 $CC $CFLAGS -I../ -o $EXE_NAME ../cmp.c buf.c utils.c test.c || exit 1
 

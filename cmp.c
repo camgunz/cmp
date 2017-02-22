@@ -177,40 +177,52 @@ static uint64_t be64(uint64_t x) {
   return x;
 }
 
-static void decode_befloat(char *b) {
-  if (!is_bigendian()) {
-    char swap = 0;
+static float decode_befloat(char *b) {
+  float f = 0.;
+  char *fb = (char *)&f;
 
-    swap = b[0];
-    b[0] = b[3];
-    b[3] = swap;
-
-    swap = b[1];
-    b[1] = b[2];
-    b[2] = swap;
+  if (is_bigendian()) {
+    fb[0] = b[0];
+    fb[1] = b[1];
+    fb[2] = b[2];
+    fb[3] = b[3];
   }
+  else {
+    fb[0] = b[3];
+    fb[1] = b[2];
+    fb[2] = b[1];
+    fb[3] = b[0];
+  }
+
+  return f;
 }
 
-static void decode_bedouble(char *b) {
-  if (!is_bigendian()) {
-    char swap = 0;
+static double decode_bedouble(char *b) {
+  double d = 0.;
+  char *db = (char *)&d;
 
-    swap = b[0];
-    b[0] = b[7];
-    b[7] = swap;
-
-    swap = b[1];
-    b[1] = b[6];
-    b[6] = swap;
-
-    swap = b[2];
-    b[2] = b[5];
-    b[5] = swap;
-
-    swap = b[3];
-    b[3] = b[4];
-    b[4] = swap;
+  if (is_bigendian()) {
+    db[0] = b[0];
+    db[1] = b[1];
+    db[2] = b[2];
+    db[3] = b[3];
+    db[4] = b[4];
+    db[5] = b[5];
+    db[6] = b[6];
+    db[7] = b[7];
   }
+  else {
+    db[0] = b[7];
+    db[1] = b[6];
+    db[2] = b[5];
+    db[3] = b[4];
+    db[4] = b[3];
+    db[5] = b[2];
+    db[6] = b[1];
+    db[7] = b[0];
+  }
+
+  return d;
 }
 
 static bool read_byte(cmp_ctx_t *ctx, uint8_t *x) {
@@ -2158,8 +2170,7 @@ bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
       ctx->error = DATA_READING_ERROR;
       return false;
     }
-    decode_befloat(bytes);
-    obj->as.flt = *(float *)(void *)bytes;
+    obj->as.flt = decode_befloat(bytes);
   }
   else if (type_marker == DOUBLE_MARKER) {
     char bytes[sizeof(double)];
@@ -2169,8 +2180,7 @@ bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
       ctx->error = DATA_READING_ERROR;
       return false;
     }
-    decode_bedouble(bytes);
-    obj->as.dbl = *(double *)(void *)bytes;
+    obj->as.dbl = decode_bedouble(bytes);
   }
   else if (type_marker == U8_MARKER) {
     obj->type = CMP_TYPE_UINT8;
