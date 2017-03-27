@@ -417,8 +417,9 @@ bool cmp_write_float(cmp_ctx_t *ctx, float f) {
   if (!is_bigendian()) {
     char swapped[sizeof(float)];
     char *fbuf = (char *)&f;
+    size_t i;
 
-    for (size_t i = 0; i < sizeof(float); i++)
+    for (i = 0; i < sizeof(float); i++)
       swapped[i] = fbuf[sizeof(float) - i - 1];
 
     return ctx->write(ctx, swapped, sizeof(float));
@@ -435,8 +436,9 @@ bool cmp_write_double(cmp_ctx_t *ctx, double d) {
   if (!is_bigendian()) {
     char swapped[sizeof(double)];
     char *dbuf = (char *)&d;
+    size_t i;
 
-    for (size_t i = 0; i < sizeof(double); i++)
+    for (i = 0; i < sizeof(double); i++)
       swapped[i] = dbuf[sizeof(double) - i - 1];
 
     return ctx->write(ctx, swapped, sizeof(double));
