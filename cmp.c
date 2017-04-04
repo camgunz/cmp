@@ -2354,6 +2354,91 @@ bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
   return true;
 }
 
+bool cmp_skip_object(cmp_ctx_t *ctx) {
+  cmp_object_t obj;
+  uint32_t obj_skip_count = 1;
+  uint8_t dummy_byte;
+
+  while (obj_skip_count > 0) {
+    if (!cmp_read_object(ctx, &obj)) {
+      return false;
+    }
+
+    obj_skip_count--;
+
+    switch (obj.type) {
+      case CMP_TYPE_POSITIVE_FIXNUM:
+      case CMP_TYPE_NIL:
+      case CMP_TYPE_BOOLEAN:
+      case CMP_TYPE_FLOAT:
+      case CMP_TYPE_DOUBLE:
+      case CMP_TYPE_UINT8:
+      case CMP_TYPE_UINT16:
+      case CMP_TYPE_UINT32:
+      case CMP_TYPE_UINT64:
+      case CMP_TYPE_SINT8:
+      case CMP_TYPE_SINT16:
+      case CMP_TYPE_SINT32:
+      case CMP_TYPE_SINT64:
+      case CMP_TYPE_NEGATIVE_FIXNUM:
+        break;
+
+      case CMP_TYPE_FIXMAP:
+      case CMP_TYPE_MAP16:
+      case CMP_TYPE_MAP32:
+        obj_skip_count += obj.as.map_size * 2;
+        break;
+
+      case CMP_TYPE_FIXARRAY:
+      case CMP_TYPE_ARRAY16:
+      case CMP_TYPE_ARRAY32:
+        obj_skip_count += obj.as.array_size;
+        break;
+
+      case CMP_TYPE_FIXSTR:
+      case CMP_TYPE_STR8:
+      case CMP_TYPE_STR16:
+      case CMP_TYPE_STR32:
+        for (uint32_t i = 0; i < obj.as.str_size; i++) {
+          if (!ctx->read(ctx, &dummy_byte, 1)) {
+            ctx->error = DATA_READING_ERROR;
+            return false;
+          }
+        }
+        break;
+
+      case CMP_TYPE_BIN8:
+      case CMP_TYPE_BIN16:
+      case CMP_TYPE_BIN32:
+        for (uint32_t i = 0; i < obj.as.bin_size; i++) {
+          if (!ctx->read(ctx, &dummy_byte, 1)) {
+            ctx->error = DATA_READING_ERROR;
+            return false;
+          }
+        }
+        break;
+
+      case CMP_TYPE_EXT8:
+      case CMP_TYPE_EXT16:
+      case CMP_TYPE_EXT32:
+      case CMP_TYPE_FIXEXT1:
+      case CMP_TYPE_FIXEXT2:
+      case CMP_TYPE_FIXEXT4:
+      case CMP_TYPE_FIXEXT8:
+      case CMP_TYPE_FIXEXT16:
+        for (uint32_t i = 0; i < obj.as.ext.size; i++) {
+          if (!ctx->read(ctx, &dummy_byte, 1)) {
+            ctx->error = DATA_READING_ERROR;
+            return false;
+          }
+        }
+        break;
+    }
+  }
+
+  return true;
+}
+
 bool cmp_object_is_char(cmp_object_t *obj) {
   switch (obj->type) {
     case CMP_TYPE_NEGATIVE_FIXNUM:
