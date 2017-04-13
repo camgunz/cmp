@@ -1,0 +1,7 @@
+language: cpp
+compiler: clang
+
+script:
+  - examples/build_examples.sh
+  - examples/example1
+  - examples/example2
