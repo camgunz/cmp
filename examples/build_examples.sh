@@ -1,5 +1,9 @@
 #!/bin/sh
 
+set -e
+set -u
+cd $(dirname $0)
+
 CC=clang
 CFLAGS="--std=c89 -Werror -Wall -Wextra"
 CFLAGS="$CFLAGS -funsigned-char"
