@@ -1,5 +1,7 @@
 # cmp
 
+[![Build Status](https://travis-ci.org/camgunz/cmp.svg?branch=master)](https://travis-ci.org/camgunz/cmp)
+
 CMP is a C implementation of the MessagePack serialization format.  It
 currently implements version 5 of the [MessagePack
 Spec](http://github.com/msgpack/msgpack/blob/master/spec.md).
