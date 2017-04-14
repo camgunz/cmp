@@ -172,7 +172,7 @@ int main(void) {
       unit_test(test_fixedint)
     };
 
-    if (!run_tests(tests)) {
+    if (run_tests(tests)) {
         return EXIT_FAILURE;
     }
 
