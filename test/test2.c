@@ -168,7 +168,7 @@ static void test_fixedint(void **state) {
 int main(void) {
     int failed_test_count = 0;
 
-    const struct CMUnitTest tests[] = {
+    const struct CMUnitTest tests[2] = {
         cmocka_unit_test(test_msgpack),
         cmocka_unit_test(test_fixedint),
     };
