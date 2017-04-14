@@ -9,13 +9,13 @@ all: cmptest example1 example2
 test: cmptest
 	@./cmptest
 
-cmptest: cmp.o
+cmptest:
 	$(CC) $(CFLAGS) --std=c99 -I. -o cmptest cmp.o test/test.c test/buf.c test/utils.c
 
-example1: cmp.o
+example1:
 	$(CC) $(CFLAGS) --std=c89 -I. -o example1 cmp.c examples/example1.c
 
-example2: cmp.o
+example2:
 	$(CC) $(CFLAGS) --std=c89 -I. -o example2 cmp.c examples/example2.c
 
 clean:
