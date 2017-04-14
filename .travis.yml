@@ -14,8 +14,6 @@ before_install:
 
 script:
   - make
-  - ./example1
-  - ./example2
   - ./cmptest
 
 after_success:
