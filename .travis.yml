@@ -1,14 +1,32 @@
 language: c
-compiler: gcc
+compiler:
+  - gcc
+  - clang
 
 before_install:
   - pip install --user cpp-coveralls
 
 script:
   - make
-  - ./cmptest
   - ./example1
   - ./example2
+  - ./cmptest
 
 after_success:
   - coveralls --exclude lib --exclude tests --gcov-options '\-lp'
+
+matrix:
+  include:
+
+    - os: osx
+      compiler: clang
+
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - build-essential
+            - python-dev
+            - libffi-dev
+            - libssl-dev
+
