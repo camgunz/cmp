@@ -166,16 +166,13 @@ static void test_fixedint(void **state) {
 }
 
 int main(void) {
-    int failed_test_count = 0;
-
-    const struct CMUnitTest tests[2] = {
-        cmocka_unit_test(test_msgpack),
-        cmocka_unit_test(test_fixedint),
+    /* Use the old CMocka API because Travis' latest Ubuntu is Trusty */
+    const UnitTest tests[2] = {
+      unit_test(test_msgpack),
+      unit_test(test_fixedint)
     };
 
-    failed_test_count = cmocka_run_group_tests(tests, NULL, NULL);
-
-    if (failed_test_count > 0) {
+    if (!run_tests(tests)) {
         return EXIT_FAILURE;
     }
 

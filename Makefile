@@ -19,7 +19,7 @@ cmptest: cmp.o
 	$(CC) $(CFLAGS) --std=c99 -I. -fprofile-arcs -ftest-coverage -g -O0 -o cmptest cmp.o test/test.c test/buf.c test/utils.c
 
 cmptest2: cmp.o
-	$(CC) $(CFLAGS) --std=c99 -I. -fprofile-arcs -ftest-coverage -g -O0 -o cmptest2 cmp.o test/test2.c test/buf.c test/utils.c -lcmocka
+	$(CC) $(CFLAGS) -Wno-error=deprecated-declarations --std=c99 -I. -fprofile-arcs -ftest-coverage -g -O0 -o cmptest2 cmp.o test/test2.c test/buf.c test/utils.c -lcmocka
 
 example1:
 	$(CC) $(CFLAGS) --std=c89 -O3 -I. -o example1 cmp.c examples/example1.c
