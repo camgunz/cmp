@@ -1,6 +1,6 @@
 CC ?= gcc
 
-CFLAGS ?= -Werror -Wall -Wextra -funsigned-char -fwrapv -Wmissing-format-attribute -Wpointer-arith -Wformat-nonliteral -Winit-self -Wwrite-strings -Wshadow -Wenum-compare -Wempty-body -Wsizeof-array-argument -Wparentheses -Wcast-align -Wstrict-aliasing --pedantic-errors -g -O0 -fprofile-arcs -ftest-coverage
+CFLAGS ?= -Werror -Wall -Wextra -funsigned-char -fwrapv -Wmissing-format-attribute -Wpointer-arith -Wformat-nonliteral -Winit-self -Wwrite-strings -Wshadow -Wenum-compare -Wempty-body -Wparentheses -Wcast-align -Wstrict-aliasing --pedantic-errors -g -O0 -fprofile-arcs -ftest-coverage
 
 .PHONY: all clean
 
