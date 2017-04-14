@@ -324,6 +324,7 @@ static void error_printf(const char *msg, ...);
     return false;                                                             \
   }                                                                           \
   if (obj.as.ext.type != etype || obj.as.ext.size != esize) {                 \
+    puts("Error 1"); \
     error_printf("Input/Output mismatch: %s(&cmp, %d, %u, ",                  \
       #wfunc, etype, esize                                                    \
     );                                                                        \
@@ -350,6 +351,7 @@ static void error_printf(const char *msg, ...);
       );                                                                      \
       error_printbin(in, esize);                                              \
       error_printf("): %d != %d.\n", dummy_type, etype);                      \
+      return false;                                                           \
     }                                                                         \
     if (dummy_size != esize) {                                                \
       error_printf("Error reading object written by %s(&cmp, %d, %u, ",       \
@@ -357,8 +359,10 @@ static void error_printf(const char *msg, ...);
       );                                                                      \
       error_printbin(in, esize);                                              \
       error_printf("): %u != %u.\n", dummy_size, esize);                      \
+      return false;                                                           \
     }                                                                         \
     if (memcmp(edata, in, esize) != 0) {                                      \
+      puts("Error 2"); \
       error_printf("Input/Output mismatch: %s(&cmp, %d, %u, ",                \
         #wfunc, etype, esize                                                  \
       );                                                                      \
@@ -684,7 +688,13 @@ static buf_t error_message;
 static bool buf_reader(cmp_ctx_t *ctx, void *data, size_t limit) {
   buf_t *buf = (buf_t *)ctx->buf;
 
-  return M_BufferRead(buf, data, limit);
+  bool res = M_BufferRead(buf, data, limit);
+
+  if (!res) {
+    puts("M_BufferRead failed!!");
+  }
+
+  return res;
 }
 
 static size_t buf_writer(cmp_ctx_t *ctx, const void *data, size_t sz) {
@@ -696,9 +706,15 @@ static size_t buf_writer(cmp_ctx_t *ctx, const void *data, size_t sz) {
   return M_BufferGetCursor(buf) - pos;
 }
 
+static bool buf_skipper(cmp_ctx_t *ctx, size_t count) {
+  buf_t *buf = (buf_t *)ctx->buf;
+
+  return M_BufferSeekForward(buf, count);
+}
+
 static void setup_cmp_and_buf(cmp_ctx_t *cmp, buf_t *buf) {
   M_BufferInitWithCapacity(buf, 32);
-  cmp_init(cmp, buf, &buf_reader, &buf_writer);
+  cmp_init(cmp, buf, &buf_reader, &buf_skipper, &buf_writer);
 }
 
 static void error_clear(void) {
@@ -2779,8 +2795,12 @@ bool run_float_flip_tests(void) {
   char outnit[4];
 
   setup_cmp_and_buf(&cmp, &buf);
-  // Writing and reading a float's bytes using cmp mangles one of the bytes
-  // for certain floats.  This is one of them.
+
+  /*
+********************************************************************************
+   * Writing and reading a float's bytes using cmp mangles one of the bytes for
+   * certain floats.  This is one of them.
+   */
 
   /* Specify the binary representation of a problematic float */
   init[0] = -1;
@@ -3474,6 +3494,70 @@ bool run_obj_tests(void) {
   return true;
 }
 
+bool run_skip_tests(void) {
+  buf_t buf;
+  cmp_ctx_t cmp;
+  // cmp_object_t obj;
+
+  setup_cmp_and_buf(&cmp, &buf);
+
+  /* [80, {"a": "apple", "b": ["banana", "blackberry"], "c": "coconut"}, 8] */
+
+  if (!cmp_write_array(&cmp, 3)) {
+    return false;
+  }
+
+  if (!cmp_write_int(&cmp, 80)) {
+    return false;
+  }
+
+  if (!cmp_write_map(&cmp, 3)) {
+    return false;
+  }
+
+  if (!cmp_write_str(&cmp, "a", 1)) {
+    return false;
+  }
+
+  if (!cmp_write_str(&cmp, "apple", 5)) {
+    return false;
+  }
+
+  if (!cmp_write_str(&cmp, "b", 1)) {
+    return false;
+  }
+
+  if (!cmp_write_array(&cmp, 2)) {
+    return false;
+  }
+
+  if (!cmp_write_str(&cmp, "banana", 6)) {
+    return false;
+  }
+
+  if (!cmp_write_str(&cmp, "blackberry", 10)) {
+    return false;
+  }
+
+  if (!cmp_write_str(&cmp, "c", 1)) {
+    return false;
+  }
+
+  if (!cmp_write_str(&cmp, "coconut", 1)) {
+    return false;
+  }
+
+  if (!cmp_write_int(&cmp, 8)) {
+    return false;
+  }
+
+  /* [80, {"a": "apple", "b": ["banana", "blackberry"], "c": "coconut"}, 8] */
+
+  M_BufferSeek(&buf, 0);
+
+  return true;
+}
+
 int main(void) {
   printf("\n=== Testing CMP v%u (MessagePack v%u) ===\n\n",
     cmp_version(), cmp_mp_version()
@@ -3493,6 +3577,7 @@ int main(void) {
   run_tests(ext);
   run_tests(obj);
   run_tests(float_flip);
+  run_tests(skip);
 
   puts("\nAll tests pass!\n");
 

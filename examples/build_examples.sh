@@ -4,7 +4,7 @@ set -e
 set -u
 cd $(dirname $0)
 
-CC=clang
+CC=gcc
 CFLAGS="--std=c89 -Werror -Wall -Wextra"
 CFLAGS="$CFLAGS -funsigned-char"
 CFLAGS="$CFLAGS -fwrapv"
@@ -17,7 +17,7 @@ CFLAGS="$CFLAGS -Wshadow"
 CFLAGS="$CFLAGS -Wenum-compare"
 CFLAGS="$CFLAGS -Wempty-body"
 CFLAGS="$CFLAGS -Wsizeof-array-argument"
-CFLAGS="$CFLAGS -Wstring-conversion"
+# CFLAGS="$CFLAGS -Wstring-conversion"
 CFLAGS="$CFLAGS -Wparentheses"
 CFLAGS="$CFLAGS -Wcast-align"
 CFLAGS="$CFLAGS -Wstrict-aliasing"
