@@ -1,7 +1,13 @@
 language: c
-compiler:
-  - gcc
-  - clang
+compiler: gcc
+
+addons:
+  apt:
+    packages:
+      - build-essential
+      - python-dev
+      - libffi-dev
+      - libssl-dev
 
 before_install:
   - pip install --user cpp-coveralls
@@ -14,19 +20,3 @@ script:
 
 after_success:
   - coveralls --exclude lib --exclude tests --gcov-options '\-lp'
-
-matrix:
-  include:
-
-    - os: osx
-      compiler: clang
-
-    - os: linux
-      addons:
-        apt:
-          packages:
-            - build-essential
-            - python-dev
-            - libffi-dev
-            - libssl-dev
-
