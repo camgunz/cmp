@@ -28,11 +28,25 @@ THE SOFTWARE.
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <cmocka.h>
 
 #include "buf.h"
 #include "cmp.h"
+
+#define test_int_format(wfunc, rfunc, otype, ctype, in, fmt) do { \
+  ctype value;                                                    \
+  M_BufferSeek(&buf, 0);                                          \
+  assert_true(wfunc(&cmp, in));                                   \
+  assert_memory_equal(buf.data, fmt, strlen(fmt));                \
+  M_BufferSeek(&buf, 0);                                          \
+  assert_true(cmp_read_object(&cmp, &obj));                       \
+  assert_int_equal(obj.as.otype, in);                             \
+  M_BufferSeek(&buf, 0);                                          \
+  assert_true(rfunc(&cmp, &value));                               \
+  assert_int_equal(in, value);                                    \
+} while (0)
 
 static bool buf_reader(cmp_ctx_t *ctx, void *data, size_t limit) {
   buf_t *buf = (buf_t *)ctx->buf;
@@ -87,11 +101,76 @@ static void test_msgpack(void **state) {
   M_BufferFree(&out_buf);
 }
 
+static void test_fixedint(void **state) {
+  buf_t buf;
+  cmp_ctx_t cmp;
+  cmp_object_t obj;
+
+  (void)state;
+
+  setup_cmp_and_buf(&cmp, &buf);
+
+  assert_false(cmp_write_pfix(&cmp, 128));
+  cmp.error = 0;
+
+  assert_false(cmp_write_pfix(&cmp, 200));
+  cmp.error = 0;
+
+  assert_false(cmp_write_pfix(&cmp, -1));
+  cmp.error = 0;
+
+  assert_false(cmp_write_pfix(&cmp, -31));
+  cmp.error = 0;
+
+  assert_false(cmp_write_pfix(&cmp, -32));
+  cmp.error = 0;
+
+  assert_false(cmp_write_pfix(&cmp, -127));
+  cmp.error = 0;
+
+  assert_false(cmp_write_pfix(&cmp, -128));
+  cmp.error = 0;
+
+  assert_false(cmp_write_ufix(&cmp, -128));
+  cmp.error = 0;
+
+  assert_false(cmp_write_ufix(&cmp, -1));
+  cmp.error = 0;
+
+  assert_false(cmp_write_ufix(&cmp, -128));
+  cmp.error = 0;
+
+  assert_false(cmp_write_sfix(&cmp, -33));
+  cmp.error = 0;
+
+  assert_false(cmp_write_nfix(&cmp, 0));
+  cmp.error = 0;
+
+  assert_false(cmp_write_nfix(&cmp, 1));
+  cmp.error = 0;
+
+  assert_false(cmp_write_nfix(&cmp, -33));
+  cmp.error = 0;
+
+  test_int_format(cmp_write_ufix, cmp_read_uinteger, u8, uint64_t, 0, "\x00");
+  test_int_format(cmp_write_ufix, cmp_read_uinteger, u8, uint64_t, -0, "\x00");
+  test_int_format(cmp_write_sfix, cmp_read_uinteger, u8, uint64_t, 0, "\x00");
+  test_int_format(cmp_write_sfix, cmp_read_sinteger, s8, int64_t, -0, "\x00");
+  test_int_format(cmp_write_sfix, cmp_read_uinteger, u8, uint64_t, 127, "\x7f");
+  test_int_format(cmp_write_sfix, cmp_read_sinteger, s8, int64_t, -32, "\xe0");
+  test_int_format(cmp_write_pfix, cmp_read_uinteger, u8, uint64_t, 0, "\x00");
+  test_int_format(cmp_write_pfix, cmp_read_uinteger, u8, uint64_t, 1, "\x01");
+  test_int_format(cmp_write_pfix, cmp_read_uinteger, u8, uint64_t, 127, "\x7f");
+  test_int_format(cmp_write_nfix, cmp_read_sinteger, s8, int64_t, -1, "\xff");
+  test_int_format(cmp_write_nfix, cmp_read_sinteger, s8, int64_t, -32, "\xe0");
+}
+
 int main(void) {
     int failed_test_count = 0;
 
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_msgpack),
+        cmocka_unit_test(test_fixedint),
     };
 
     failed_test_count = cmocka_run_group_tests(tests, NULL, NULL);
