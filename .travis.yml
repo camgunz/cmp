@@ -10,7 +10,6 @@ addons:
       - libssl-dev
 
 before_install:
-  - pip install --user urllib[secure]
   - pip install --user cpp-coveralls
 
 script:
