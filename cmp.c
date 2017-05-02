@@ -449,7 +449,7 @@ bool cmp_write_double(cmp_ctx_t *ctx, double d) {
 
 bool cmp_write_decimal(cmp_ctx_t *ctx, double d) {
   float f = (float)d;
-  float df = (double)f;
+  double df = f;
 
   if (df == d)
     return cmp_write_float(ctx, f);
