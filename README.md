@@ -110,22 +110,21 @@ See the `examples` folder.
 CMP uses no internal buffers; conversions, encoding and decoding are done on
 the fly.
 
-CMP's source and header file together are ~3,300 LOC.
+CMP's source and header file together are ~4k LOC.
 
 CMP makes no heap allocations.
 
 CMP uses standardized types rather than declaring its own, and it depends only
-on `stdbool.h`, `stdint.h` and `string.h`.  It has no link-time dependencies,
-not even the C Standard Library.
+on `stdbool.h`, `stdint.h` and `string.h`.
 
 CMP is written using C89 (ANSI C), aside, of course, from its use of
 fixed-width integer types and `bool`.
 
-On the other hand, CMP's test suite depends upon the C Standard Library and
-requires C99.
+On the other hand, CMP's test suite requires C99.
 
-CMP only requires the programmer supply a read function and a write function.
-In this way, the programmer can use CMP on memory, files, sockets, etc.
+CMP only requires the programmer supply a read function, a write function, and
+an optional skip function.  In this way, the programmer can use CMP on memory,
+files, sockets, etc.
 
 CMP is portable.  It uses fixed-width integer types, and checks the endianness
 of the machine at runtime before swapping bytes (MessagePack is big-endian).
@@ -133,13 +132,13 @@ of the machine at runtime before swapping bytes (MessagePack is big-endian).
 CMP provides a fairly comprehensive error reporting mechanism modeled after
 `errno` and `strerror`.
 
-CMP is threadsafe; while contexts cannot be shared between threads, each thread
-may use its own context freely.
+CMP is thread aware; while contexts cannot be shared between threads, each
+thread may use its own context freely.
 
 CMP is tested using the MessagePack test suite as well as a large set of custom
 test cases.  Its small test program is compiled with clang using `-Wall -Werror
 -Wextra ...` along with several other flags, and generates no compilation
-errors.
+errors in either Clang or GCC.
 
 CMP's source is written as readably as possible, using explicit, descriptive
 variable names and a consistent, clear style.

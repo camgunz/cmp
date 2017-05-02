@@ -22,8 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <stdio.h>
-
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -403,7 +401,6 @@ static bool type_marker_to_cmp_type(uint8_t type_marker, uint8_t *cmp_type) {
       *cmp_type = CMP_TYPE_MAP32;
       return true;
     default:
-      printf("Type: %u\n", type_marker);
       return false;
   }
 }
