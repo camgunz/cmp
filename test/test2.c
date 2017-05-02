@@ -2857,7 +2857,7 @@ void test_float_flip(void **state) {
 void test_skipping(void **state) {
   buf_t buf;
   cmp_ctx_t cmp;
-  // cmp_object_t obj;
+  cmp_object_t obj;
 
   (void)state;
 
@@ -2884,6 +2884,8 @@ void test_skipping(void **state) {
   assert_true(cmp_write_int(&cmp, 8));
 
   M_BufferSeek(&buf, 0);
+
+  assert_true(cmp_skip_object_limit(&cmp, &obj, 3));
 }
 
 int main(void) {

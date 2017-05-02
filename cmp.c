@@ -2603,8 +2603,9 @@ bool cmp_skip_object_limit(cmp_ctx_t *ctx, cmp_object_t *obj, uint32_t limit) {
     uint8_t cmp_type;
     uint32_t size = 0;
 
-    if (!read_type_marker(ctx, &type_marker))
+    if (!read_type_marker(ctx, &type_marker)) {
       return false;
+    }
 
     if (!type_marker_to_cmp_type(type_marker, &cmp_type)) {
       ctx->error = INVALID_TYPE_ERROR;
@@ -2618,25 +2619,29 @@ bool cmp_skip_object_limit(cmp_ctx_t *ctx, cmp_object_t *obj, uint32_t limit) {
       case CMP_TYPE_FIXMAP:
       case CMP_TYPE_MAP16:
       case CMP_TYPE_MAP32:
-        depth++;
-
         if (depth > limit) {
           obj->type = cmp_type;
 
-          if (!read_obj_data(ctx, type_marker, obj))
+          if (!read_obj_data(ctx, type_marker, obj)) {
             return false;
+          }
 
           ctx->error = SKIP_DEPTH_LIMIT_EXCEEDED_ERROR;
 
           return false;
         }
+
+        depth++;
+
         break;
       default:
-        if (!read_type_size(ctx, type_marker, cmp_type, &size))
+        if (!read_type_size(ctx, type_marker, cmp_type, &size)) {
           return false;
+        }
 
-        if (size)
+        if (size) {
           skip_bytes(ctx, size);
+        }
     }
 
     element_count--;
