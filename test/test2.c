@@ -2858,10 +2858,13 @@ void test_skipping(void **state) {
   buf_t buf;
   cmp_ctx_t cmp;
   cmp_object_t obj;
+  cmp_skipper skip;
 
   (void)state;
 
   setup_cmp_and_buf(&cmp, &buf);
+
+  skip = cmp.skip;
 
   /*
    * Essentially, write one of everything to a buffer and then skip it.
@@ -2917,6 +2920,14 @@ void test_skipping(void **state) {
   M_BufferSeek(&buf, 0);
 
   assert_true(cmp_skip_object(&cmp, &obj));
+
+  cmp.skip = NULL;
+
+  M_BufferSeek(&buf, 0);
+
+  assert_true(cmp_skip_object(&cmp, &obj));
+
+  cmp.skip = skip;
 
   M_BufferSeek(&buf, 0);
   assert_true(cmp_skip_object_no_limit(&cmp));
