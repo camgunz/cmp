@@ -2868,10 +2868,42 @@ void test_skipping(void **state) {
    * Probably have to do some permutations of nested types too.
    */
 
-  /* [80, {"a": "apple", "b": ["banana", "blackberry"], "c": "coconut"}, 8] */
+  /*
+   *  -8,
+   *  [
+   *    8,
+   *    -200,
+   *    200,
+   *    -32000,
+   *    64000,
+   *    -33000,
+   *    66000,
+   *    -2150000000,
+   *    4130000000,
+   *    -9223372036854775800,
+   *    18446744073709551616,
+   *    {
+   *      "a": "apple",
+   *      "b": ["banana", "blackberry"],
+   *      "c": "coconut"
+   *    },
+   *    { ... big map ... }
+   *  ]
+   */
 
-  assert_true(cmp_write_array(&cmp, 3));
-  assert_true(cmp_write_int(&cmp, 80));
+  assert_true(cmp_write_integer(&cmp, -8));
+  assert_true(cmp_write_array(&cmp, 12));
+  assert_true(cmp_write_uinteger(&cmp, 8));
+  assert_true(cmp_write_integer(&cmp, -200));
+  assert_true(cmp_write_uinteger(&cmp, 200));
+  assert_true(cmp_write_integer(&cmp, -32000));
+  assert_true(cmp_write_uinteger(&cmp, 64000));
+  assert_true(cmp_write_integer(&cmp, -33000));
+  assert_true(cmp_write_uinteger(&cmp, 66000));
+  assert_true(cmp_write_integer(&cmp, -2150000000));
+  assert_true(cmp_write_uinteger(&cmp, 4130000000));
+  assert_true(cmp_write_integer(&cmp, -9223372036854775800));
+  assert_true(cmp_write_uinteger(&cmp, 18446744073709551615UL));
   assert_true(cmp_write_map(&cmp, 3));
   assert_true(cmp_write_str(&cmp, "a", 1));
   assert_true(cmp_write_str(&cmp, "apple", 5));
@@ -2881,11 +2913,15 @@ void test_skipping(void **state) {
   assert_true(cmp_write_str(&cmp, "blackberry", 10));
   assert_true(cmp_write_str(&cmp, "c", 1));
   assert_true(cmp_write_str(&cmp, "coconut", 1));
-  assert_true(cmp_write_int(&cmp, 8));
 
   M_BufferSeek(&buf, 0);
 
-  assert_true(cmp_skip_object_limit(&cmp, &obj, 3));
+  assert_true(cmp_skip_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_false(cmp_skip_object_no_limit(&cmp));
 }
 
 int main(void) {
