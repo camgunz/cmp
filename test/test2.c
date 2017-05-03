@@ -2153,6 +2153,58 @@ static void test_map(void **state) {
   test_format(
     cmp_write_map, cmp_read_map, map_size, uint32_t, 10, "\x8a", 1
   );
+
+  M_BufferSeek(&buf, 0);
+
+  assert_true(cmp_write_map(&cmp, 3));
+  assert_true(cmp_write_str(&cmp, "a", 1));
+  assert_true(cmp_write_str(&cmp, "apple", 5));
+  assert_true(cmp_write_str(&cmp, "b", 1));
+  assert_true(cmp_write_str(&cmp, "banana", 6));
+  assert_true(cmp_write_str(&cmp, "c", 1));
+  assert_true(cmp_write_str(&cmp, "coconut", 7));
+
+  M_BufferSeek(&buf, 0);
+
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXMAP);
+  assert_int_equal(obj.as.map_size, 3);
+
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXSTR);
+  assert_int_equal(obj.as.str_size, 1);
+  assert_memory_equal(M_BufferGetDataAtCursor(&buf), "a", 1);
+  M_BufferSeekForward(&buf, 1);
+
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXSTR);
+  assert_int_equal(obj.as.str_size, 5);
+  assert_memory_equal(M_BufferGetDataAtCursor(&buf), "apple", 5);
+  M_BufferSeekForward(&buf, 5);
+
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXSTR);
+  assert_int_equal(obj.as.str_size, 1);
+  assert_memory_equal(M_BufferGetDataAtCursor(&buf), "b", 1);
+  M_BufferSeekForward(&buf, 1);
+
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXSTR);
+  assert_int_equal(obj.as.str_size, 6);
+  assert_memory_equal(M_BufferGetDataAtCursor(&buf), "banana", 6);
+  M_BufferSeekForward(&buf, 6);
+
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXSTR);
+  assert_int_equal(obj.as.str_size, 1);
+  assert_memory_equal(M_BufferGetDataAtCursor(&buf), "c", 1);
+  M_BufferSeekForward(&buf, 1);
+
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXSTR);
+  assert_int_equal(obj.as.str_size, 7);
+  assert_memory_equal(M_BufferGetDataAtCursor(&buf), "coconut", 7);
+  M_BufferSeekForward(&buf, 7);
 }
 
 static void test_ext(void **state) {
@@ -2854,6 +2906,8 @@ void test_float_flip(void **state) {
   assert_true(in == out);
 }
 
+#define MAP_SIZE 66000
+
 void test_skipping(void **state) {
   buf_t buf;
   cmp_ctx_t cmp;
@@ -2890,46 +2944,104 @@ void test_skipping(void **state) {
    *      "b": ["banana", "blackberry"],
    *      "c": "coconut"
    *    },
-   *    { ... big map ... }
-   *  ]
+   *  ],
+   *  { ... big map ... }
    */
 
+  M_BufferEnsureCapacity(&buf, (MAP_SIZE * 2) + 32);
+
   assert_true(cmp_write_integer(&cmp, -8));
-  assert_true(cmp_write_array(&cmp, 12));
-  assert_true(cmp_write_uinteger(&cmp, 8));
-  assert_true(cmp_write_integer(&cmp, -200));
-  assert_true(cmp_write_uinteger(&cmp, 200));
-  assert_true(cmp_write_integer(&cmp, -32000));
-  assert_true(cmp_write_uinteger(&cmp, 64000));
-  assert_true(cmp_write_integer(&cmp, -33000));
-  assert_true(cmp_write_uinteger(&cmp, 66000));
-  assert_true(cmp_write_integer(&cmp, -2150000000));
-  assert_true(cmp_write_uinteger(&cmp, 4130000000));
-  assert_true(cmp_write_integer(&cmp, -9223372036854775800));
-  assert_true(cmp_write_uinteger(&cmp, 18446744073709551615UL));
-  assert_true(cmp_write_map(&cmp, 3));
-  assert_true(cmp_write_str(&cmp, "a", 1));
-  assert_true(cmp_write_str(&cmp, "apple", 5));
-  assert_true(cmp_write_str(&cmp, "b", 1));
-  assert_true(cmp_write_array(&cmp, 2));
-  assert_true(cmp_write_str(&cmp, "banana", 6));
-  assert_true(cmp_write_str(&cmp, "blackberry", 10));
-  assert_true(cmp_write_str(&cmp, "c", 1));
-  assert_true(cmp_write_str(&cmp, "coconut", 1));
+  assert_true(cmp_write_array(&cmp, 10));
+    assert_true(cmp_write_uinteger(&cmp, 8));
+    assert_true(cmp_write_integer(&cmp, -120));
+    assert_true(cmp_write_uinteger(&cmp, 200));
+    assert_true(cmp_write_integer(&cmp, -32000));
+    assert_true(cmp_write_uinteger(&cmp, 64000));
+    assert_true(cmp_write_integer(&cmp, -33000));
+    assert_true(cmp_write_uinteger(&cmp, 66000));
+    assert_true(cmp_write_integer(&cmp, -2150000000));
+    assert_true(cmp_write_uinteger(&cmp, 4300000000));
+    assert_true(cmp_write_map(&cmp, 3));
+      assert_true(cmp_write_str(&cmp, "a", 1));
+      assert_true(cmp_write_str(&cmp, "apple", 5));
+      assert_true(cmp_write_str(&cmp, "b", 1));
+      assert_true(cmp_write_array(&cmp, 2));
+        assert_true(cmp_write_str(&cmp, "banana", 6));
+        assert_true(cmp_write_str(&cmp, "blackberry", 10));
+      assert_true(cmp_write_str(&cmp, "c", 1));
+      assert_true(cmp_write_str(&cmp, "coconut", 7));
+  assert_true(cmp_write_map(&cmp, MAP_SIZE));
+
+  for (uint32_t i = 0; i < MAP_SIZE; i++) {
+    cmp_write_integer(&cmp, 1);
+    cmp_write_integer(&cmp, 1);
+  }
 
   M_BufferSeek(&buf, 0);
-
   assert_true(cmp_skip_object(&cmp, &obj));
 
   cmp.skip = NULL;
-
   M_BufferSeek(&buf, 0);
-
   assert_true(cmp_skip_object(&cmp, &obj));
-
   cmp.skip = skip;
 
   M_BufferSeek(&buf, 0);
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_false(cmp_skip_object_limit(&cmp, &obj, 1));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_NEGATIVE_FIXNUM);
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXARRAY);
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_POSITIVE_FIXNUM); /* 8 */
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_SINT8); /* -120 */
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_UINT8); /* 200 */
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_SINT16); /* -32000 */
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_UINT16); /* 64000 */
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_SINT32); /* -33000 */
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_UINT32); /* 66000 */
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_SINT64); /* -2150000000 */
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_UINT64); /* 41300000000 */
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXMAP);
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXSTR); /* "a" */
+  M_BufferSeekForward(&buf, 1);
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXSTR); /* "apple" */
+  M_BufferSeekForward(&buf, 5);
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXSTR); /* "b" */
+  M_BufferSeekForward(&buf, 1);
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXARRAY);
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXSTR); /* "banana" */
+  M_BufferSeekForward(&buf, 6);
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXSTR); /* "blackberry" */
+  M_BufferSeekForward(&buf, 10);
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXSTR); /* "c" */
+  M_BufferSeekForward(&buf, 1);
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXSTR); /* "coconut" */
+  M_BufferSeekForward(&buf, 7);
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_MAP32);
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_false(cmp_skip_object_no_limit(&cmp));
