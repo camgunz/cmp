@@ -3416,7 +3416,6 @@ void test_errors(void **state) {
   char *ext16 = malloc(0x7FFF);
   char *ext32 = malloc(0x10000);
 
-  (void)obj;
   (void)state;
 
   setup_cmp_and_buf(&cmp, &buf);
@@ -3633,6 +3632,388 @@ void test_errors(void **state) {
   assert_false(cmp_write_ext(&cmp, 8, 0x7FFF, ext16));
   writer_successes = 2;
   assert_false(cmp_write_ext(&cmp, 9, 0x10000, ext32));
+
+  writer_successes = -1;
+  reader_successes = 0;
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_nil(&cmp));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_true(&cmp));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_false(&cmp));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_uinteger(&cmp, 1));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_uinteger(&cmp, 200));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_uinteger(&cmp, 300));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_uinteger(&cmp, 70000));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_uinteger(&cmp, 0x100000002));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_integer(&cmp, -1));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_integer(&cmp, -100));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_integer(&cmp, -200));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_integer(&cmp, -33000));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_integer(&cmp, 0x80000002));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_float(&cmp, 1.1f));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_double(&cmp, 1.1));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_map(&cmp, 1));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_str(&cmp, "a", 1));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_str(&cmp, "apple", 5));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_map(&cmp, 0x100));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_map(&cmp, 0x10000));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_array(&cmp, 2));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_str(&cmp, "banana", 6));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_str(&cmp, "blackberry", 10));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_array(&cmp, 0x100));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_bin(&cmp, bin8, 200));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_bin(&cmp, bin16, 300));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_bin(&cmp, bin32, 70000));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_str(&cmp, str8, 200));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_str(&cmp, str16, 300));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_str(&cmp, str32, 70000));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_ext(&cmp, 2, 1, "C"));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_ext(&cmp, 3, 2, "CC"));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_ext(&cmp, 4, 4, "CCCC"));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_ext(&cmp, 5, 8, "CCCCCCCC"));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_ext(&cmp, 6, 16, "CCCCCCCCCCCCCCCC"));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_ext(&cmp, 7, 0x7F, ext8));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_ext(&cmp, 8, 0x7FFF, ext16));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_ext(&cmp, 9, 0x10000, ext32));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  reader_successes = 1;
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_uinteger(&cmp, 200));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_uinteger(&cmp, 300));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_uinteger(&cmp, 70000));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_uinteger(&cmp, 0x100000002));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_integer(&cmp, -1));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_integer(&cmp, -100));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_integer(&cmp, -200));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_integer(&cmp, -33000));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_integer(&cmp, 0x80000002));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_float(&cmp, 1.1f));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_double(&cmp, 1.1));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_map(&cmp, 1));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_str(&cmp, "a", 1));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_str(&cmp, "apple", 5));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_map(&cmp, 0x100));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_map(&cmp, 0x10000));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_array(&cmp, 2));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_str(&cmp, "banana", 6));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_str(&cmp, "blackberry", 10));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_array(&cmp, 0x100));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_bin(&cmp, bin8, 200));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_bin(&cmp, bin16, 300));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_bin(&cmp, bin32, 70000));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_str(&cmp, str8, 200));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_str(&cmp, str16, 300));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_str(&cmp, str32, 70000));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_ext(&cmp, 2, 1, "C"));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_ext(&cmp, 3, 2, "CC"));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_ext(&cmp, 4, 4, "CCCC"));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_ext(&cmp, 5, 8, "CCCCCCCC"));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_ext(&cmp, 6, 16, "CCCCCCCCCCCCCCCC"));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_ext(&cmp, 7, 0x7F, ext8));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_ext(&cmp, 8, 0x7FFF, ext16));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_ext(&cmp, 9, 0x10000, ext32));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  reader_successes = 2;
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_ext(&cmp, 7, 0x7F, ext8));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_ext(&cmp, 8, 0x7FFF, ext16));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_ext(&cmp, 9, 0x10000, ext32));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_object(&cmp, &obj));
 }
 
 int main(void) {
