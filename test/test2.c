@@ -2211,9 +2211,23 @@ static void test_ext(void **state) {
   buf_t buf;
   cmp_ctx_t cmp;
   cmp_object_t obj;
+  int8_t etype;
+  uint8_t esize8;
+  uint16_t esize16;
+  uint32_t esize32;
+  char outfixedbuf1[1];
+  char outfixedbuf2[2];
+  char outfixedbuf4[4];
+  char outfixedbuf8[8];
+  char outfixedbuf16[16];
+  char *buf8 = malloc(0x7F);
+  char *outbuf8 = malloc(0x7F);
   char *buf16 = malloc(0x7FFF);
+  char *outbuf16 = malloc(0x7FFF);
   char *buf32 = malloc(0x10000);
+  char *outbuf32 = malloc(0x10000);
 
+  memset(buf8, 'C', 0x7F);
   memset(buf16, 'C', 0x7FFF);
   memset(buf32, 'C', 0x10000);
 
@@ -2268,8 +2282,9 @@ static void test_ext(void **state) {
   assert_true(cmp_write_ext(&cmp, 4, 4, "CCCC"));
   assert_true(cmp_write_ext(&cmp, 5, 8, "CCCCCCCC"));
   assert_true(cmp_write_ext(&cmp, 6, 16, "CCCCCCCCCCCCCCCC"));
-  assert_true(cmp_write_ext(&cmp, 7, 0x7FFF, buf16));
-  assert_true(cmp_write_ext(&cmp, 8, 0x10000, buf32));
+  assert_true(cmp_write_ext(&cmp, 7, 0x7F, buf8));
+  assert_true(cmp_write_ext(&cmp, 8, 0x7FFF, buf16));
+  assert_true(cmp_write_ext(&cmp, 9, 0x10000, buf32));
 
   M_BufferSeek(&buf, 0);
 
@@ -2309,21 +2324,69 @@ static void test_ext(void **state) {
   M_BufferSeekForward(&buf, 16);
 
   assert_true(cmp_read_object(&cmp, &obj));
-  assert_int_equal(obj.type, CMP_TYPE_EXT16);
+  assert_int_equal(obj.type, CMP_TYPE_EXT8);
   assert_int_equal(obj.as.ext.type, 7);
+  assert_int_equal(obj.as.ext.size, 0x7F);
+  assert_memory_equal(M_BufferGetDataAtCursor(&buf), buf8, 0x7F);
+  M_BufferSeekForward(&buf, 0x7F);
+
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_EXT16);
+  assert_int_equal(obj.as.ext.type, 8);
   assert_int_equal(obj.as.ext.size, 0x7FFF);
   assert_memory_equal(M_BufferGetDataAtCursor(&buf), buf16, 0x7FFF);
   M_BufferSeekForward(&buf, 0x7FFF);
 
   assert_true(cmp_read_object(&cmp, &obj));
   assert_int_equal(obj.type, CMP_TYPE_EXT32);
-  assert_int_equal(obj.as.ext.type, 8);
+  assert_int_equal(obj.as.ext.type, 9);
   assert_int_equal(obj.as.ext.size, 0x10000);
   assert_memory_equal(M_BufferGetDataAtCursor(&buf), buf32, 0x10000);
   M_BufferSeekForward(&buf, 0x100000);
 
+  M_BufferSeek(&buf, 0);
+
+  assert_true(cmp_read_fixext1(&cmp, &etype, outfixedbuf1));
+  assert_int_equal(etype, 2);
+  assert_memory_equal(outfixedbuf1, "C", 1);
+
+  assert_true(cmp_read_fixext2(&cmp, &etype, outfixedbuf2));
+  assert_int_equal(etype, 3);
+  assert_memory_equal(outfixedbuf2, "CC", 2);
+
+  assert_true(cmp_read_fixext4(&cmp, &etype, outfixedbuf4));
+  assert_int_equal(etype, 4);
+  assert_memory_equal(outfixedbuf4, "CCCC", 4);
+
+  assert_true(cmp_read_fixext8(&cmp, &etype, outfixedbuf8));
+  assert_int_equal(etype, 5);
+  assert_memory_equal(outfixedbuf8, "CCCCCCCC", 8);
+
+  assert_true(cmp_read_fixext16(&cmp, &etype, outfixedbuf16));
+  assert_int_equal(etype, 6);
+  assert_memory_equal(outfixedbuf16, "CCCCCCCCCCCCCCCC", 16);
+
+  assert_true(cmp_read_ext8(&cmp, &etype, &esize8, outbuf8));
+  assert_int_equal(etype, 7);
+  assert_int_equal(esize8, 0x7F);
+  assert_memory_equal(outbuf8, buf8, 0x7F);
+
+  assert_true(cmp_read_ext16(&cmp, &etype, &esize16, outbuf16));
+  assert_int_equal(etype, 8);
+  assert_int_equal(esize16, 0x7FFF);
+  assert_memory_equal(outbuf16, buf16, 0x7FFF);
+
+  assert_true(cmp_read_ext32(&cmp, &etype, &esize32, outbuf32));
+  assert_int_equal(etype, 9);
+  assert_int_equal(esize32, 0x10000);
+  assert_memory_equal(outbuf32, buf32, 16);
+
+  free(buf8);
+  free(outbuf8);
   free(buf16);
+  free(outbuf16);
   free(buf32);
+  free(outbuf32);
 }
 
 static void test_obj(void **state) {
