@@ -2204,6 +2204,10 @@ static void test_string(void **state) {
   assert_true(cmp_write_str(&cmp, str16, 300));
   assert_true(cmp_write_str(&cmp, str32, 70000));
 
+  assert_true(cmp_write_str_v4(&cmp, str8, 200));
+  assert_true(cmp_write_str_v4(&cmp, str16, 300));
+  assert_true(cmp_write_str_v4(&cmp, str32, 70000));
+
   free(str8);
   free(str16);
   free(str32);
@@ -2602,6 +2606,17 @@ static void test_ext(void **state) {
   assert_int_equal(etype, 9);
   assert_int_equal(esize32, 0x10000);
   assert_memory_equal(outbuf32, buf32, 16);
+
+  M_BufferSeek(&buf, 0);
+
+  assert_true(cmp_write_ext_marker(&cmp, 2, 1));
+  assert_true(cmp_write_ext_marker(&cmp, 3, 2));
+  assert_true(cmp_write_ext_marker(&cmp, 4, 4));
+  assert_true(cmp_write_ext_marker(&cmp, 5, 8));
+  assert_true(cmp_write_ext_marker(&cmp, 6, 16));
+  assert_true(cmp_write_ext_marker(&cmp, 7, 0x7F));
+  assert_true(cmp_write_ext_marker(&cmp, 8, 0x7FFF));
+  assert_true(cmp_write_ext_marker(&cmp, 9, 0x10000));
 
   free(buf8);
   free(outbuf8);
@@ -3192,6 +3207,8 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_bin, "bin");
   obj_test_not(cmp_object_is_array, "array");
   obj_test_not(cmp_object_is_ext, "ext");
+
+  /* [TODO] cmp_write_object, cmp_write_object_v4 */
 }
 
 /* Thanks to andreyvps for this test */
@@ -3271,34 +3288,6 @@ void test_skipping(void **state) {
   setup_cmp_and_buf(&cmp, &buf);
 
   skip = cmp.skip;
-
-  /*
-   * Essentially, write one of everything to a buffer and then skip it.
-   * Probably have to do some permutations of nested types too.
-   */
-
-  /*
-   *  -8,
-   *  [
-   *    8,
-   *    -200,
-   *    200,
-   *    -32000,
-   *    64000,
-   *    -33000,
-   *    66000,
-   *    -2150000000,
-   *    4130000000,
-   *    -9223372036854775800,
-   *    18446744073709551616,
-   *    {
-   *      "a": "apple",
-   *      "b": ["banana", "blackberry"],
-   *      "c": "coconut"
-   *    },
-   *  ],
-   *  { ... big map ... }
-   */
 
   M_BufferEnsureCapacity(&buf, (66000 * 2) + 32);
 
@@ -3552,7 +3541,7 @@ void test_errors(void **state) {
   writer_successes = 1;
   assert_false(cmp_write_integer(&cmp, -33000));
   writer_successes = 1;
-  assert_false(cmp_write_integer(&cmp, 0x80000002));
+  assert_false(cmp_write_integer(&cmp, 0xFFFFFFFF2));
   writer_successes = 1;
   assert_false(cmp_write_float(&cmp, 1.1f));
   writer_successes = 1;
@@ -4014,6 +4003,12 @@ void test_errors(void **state) {
   assert_true(cmp_write_ext(&cmp, 9, 0x10000, ext32));
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_object(&cmp, &obj));
+
+  /*
+   * [TODO] Skipping things
+   *        read_obj_data
+   *        cmp_strerror
+   */
 }
 
 int main(void) {
