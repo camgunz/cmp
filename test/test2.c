@@ -3192,8 +3192,6 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_bin, "bin");
   obj_test_not(cmp_object_is_array, "array");
   obj_test_not(cmp_object_is_ext, "ext");
-
-
 }
 
 /* Thanks to andreyvps for this test */
@@ -3262,8 +3260,6 @@ void test_float_flip(void **state) {
   assert_true(in == out);
 }
 
-#define MAP_SIZE 66000
-
 void test_skipping(void **state) {
   buf_t buf;
   cmp_ctx_t cmp;
@@ -3304,31 +3300,31 @@ void test_skipping(void **state) {
    *  { ... big map ... }
    */
 
-  M_BufferEnsureCapacity(&buf, (MAP_SIZE * 2) + 32);
+  M_BufferEnsureCapacity(&buf, (66000 * 2) + 32);
 
   assert_true(cmp_write_integer(&cmp, -8));
   assert_true(cmp_write_array(&cmp, 10));
-    assert_true(cmp_write_uinteger(&cmp, 8));
-    assert_true(cmp_write_integer(&cmp, -120));
-    assert_true(cmp_write_uinteger(&cmp, 200));
-    assert_true(cmp_write_integer(&cmp, -32000));
-    assert_true(cmp_write_uinteger(&cmp, 64000));
-    assert_true(cmp_write_integer(&cmp, -33000));
-    assert_true(cmp_write_uinteger(&cmp, 66000));
-    assert_true(cmp_write_integer(&cmp, -2150000000));
-    assert_true(cmp_write_uinteger(&cmp, 4300000000));
-    assert_true(cmp_write_map(&cmp, 3));
-      assert_true(cmp_write_str(&cmp, "a", 1));
-      assert_true(cmp_write_str(&cmp, "apple", 5));
-      assert_true(cmp_write_str(&cmp, "b", 1));
-      assert_true(cmp_write_array(&cmp, 2));
-        assert_true(cmp_write_str(&cmp, "banana", 6));
-        assert_true(cmp_write_str(&cmp, "blackberry", 10));
-      assert_true(cmp_write_str(&cmp, "c", 1));
-      assert_true(cmp_write_str(&cmp, "coconut", 7));
-  assert_true(cmp_write_map(&cmp, MAP_SIZE));
+  assert_true(cmp_write_uinteger(&cmp, 8));
+  assert_true(cmp_write_integer(&cmp, -120));
+  assert_true(cmp_write_uinteger(&cmp, 200));
+  assert_true(cmp_write_integer(&cmp, -32000));
+  assert_true(cmp_write_uinteger(&cmp, 64000));
+  assert_true(cmp_write_integer(&cmp, -33000));
+  assert_true(cmp_write_uinteger(&cmp, 66000));
+  assert_true(cmp_write_integer(&cmp, -2150000000));
+  assert_true(cmp_write_uinteger(&cmp, 4300000000));
+  assert_true(cmp_write_map(&cmp, 3));
+  assert_true(cmp_write_str(&cmp, "a", 1));
+  assert_true(cmp_write_str(&cmp, "apple", 5));
+  assert_true(cmp_write_str(&cmp, "b", 1));
+  assert_true(cmp_write_array(&cmp, 2));
+  assert_true(cmp_write_str(&cmp, "banana", 6));
+  assert_true(cmp_write_str(&cmp, "blackberry", 10));
+  assert_true(cmp_write_str(&cmp, "c", 1));
+  assert_true(cmp_write_str(&cmp, "coconut", 7));
+  assert_true(cmp_write_map(&cmp, 66000));
 
-  for (uint32_t i = 0; i < MAP_SIZE; i++) {
+  for (uint32_t i = 0; i < 66000; i++) {
     cmp_write_integer(&cmp, 1);
     cmp_write_integer(&cmp, 1);
   }
@@ -3406,9 +3402,242 @@ void test_skipping(void **state) {
   assert_false(cmp_skip_object_no_limit(&cmp));
 }
 
+void test_errors(void **state) {
+  buf_t buf;
+  cmp_ctx_t cmp;
+  cmp_object_t obj;
+  char *bin8 = malloc(200);
+  char *bin16 = malloc(300);
+  char *bin32 = malloc(70000);
+  char *str8 = malloc(201);
+  char *str16 = malloc(301);
+  char *str32 = malloc(70001);
+  char *ext8 = malloc(0x7F);
+  char *ext16 = malloc(0x7FFF);
+  char *ext32 = malloc(0x10000);
+
+  (void)obj;
+  (void)state;
+
+  setup_cmp_and_buf(&cmp, &buf);
+
+  *(str8 + 200) = '\0';
+  *(str16 + 300) = '\0';
+  *(str32 + 70000) = '\0';
+
+  assert_true(cmp_write_nil(&cmp));
+  assert_true(cmp_write_true(&cmp));
+  assert_true(cmp_write_false(&cmp));
+  assert_true(cmp_write_uinteger(&cmp, 1));
+  assert_true(cmp_write_uinteger(&cmp, 200));
+  assert_true(cmp_write_uinteger(&cmp, 300));
+  assert_true(cmp_write_uinteger(&cmp, 70000));
+  assert_true(cmp_write_uinteger(&cmp, 0x100000002));
+  assert_true(cmp_write_integer(&cmp, -1));
+  assert_true(cmp_write_integer(&cmp, -100));
+  assert_true(cmp_write_integer(&cmp, -200));
+  assert_true(cmp_write_integer(&cmp, -33000));
+  assert_true(cmp_write_integer(&cmp, 0x80000002));
+  assert_true(cmp_write_float(&cmp, 1.1f));
+  assert_true(cmp_write_double(&cmp, 1.1));
+  assert_true(cmp_write_map(&cmp, 1));
+  assert_true(cmp_write_str(&cmp, "a", 1));
+  assert_true(cmp_write_str(&cmp, "apple", 5));
+  assert_true(cmp_write_map(&cmp, 0x100));
+  for (size_t i = 0; i < 0x100; i++) {
+    assert_true(cmp_write_integer(&cmp, 1));
+    assert_true(cmp_write_integer(&cmp, 1));
+  }
+  assert_true(cmp_write_map(&cmp, 0x10000));
+  for (size_t i = 0; i < 0x10000; i++) {
+    assert_true(cmp_write_integer(&cmp, 1));
+    assert_true(cmp_write_integer(&cmp, 1));
+  }
+  assert_true(cmp_write_array(&cmp, 2));
+  assert_true(cmp_write_str(&cmp, "banana", 6));
+  assert_true(cmp_write_str(&cmp, "blackberry", 10));
+  assert_true(cmp_write_array(&cmp, 0x100));
+  for (size_t i = 0; i < 0x100; i++) {
+    assert_true(cmp_write_integer(&cmp, 1));
+  }
+  assert_true(cmp_write_array(&cmp, 0x10000));
+  for (size_t i = 0; i < 0x10000; i++) {
+    assert_true(cmp_write_integer(&cmp, 1));
+  }
+  assert_true(cmp_write_bin(&cmp, bin8, 200));
+  assert_true(cmp_write_bin(&cmp, bin16, 300));
+  assert_true(cmp_write_bin(&cmp, bin32, 70000));
+  assert_true(cmp_write_str(&cmp, str8, 200));
+  assert_true(cmp_write_str(&cmp, str16, 300));
+  assert_true(cmp_write_str(&cmp, str32, 70000));
+  assert_true(cmp_write_ext(&cmp, 2, 1, "C"));
+  assert_true(cmp_write_ext(&cmp, 3, 2, "CC"));
+  assert_true(cmp_write_ext(&cmp, 4, 4, "CCCC"));
+  assert_true(cmp_write_ext(&cmp, 5, 8, "CCCCCCCC"));
+  assert_true(cmp_write_ext(&cmp, 6, 16, "CCCCCCCCCCCCCCCC"));
+  assert_true(cmp_write_ext(&cmp, 7, 0x7F, ext8));
+  assert_true(cmp_write_ext(&cmp, 8, 0x7FFF, ext16));
+  assert_true(cmp_write_ext(&cmp, 9, 0x10000, ext32));
+
+  M_BufferClear(&buf);
+
+  writer_successes = 0;
+  assert_false(cmp_write_nil(&cmp));
+  assert_false(cmp_write_true(&cmp));
+  assert_false(cmp_write_false(&cmp));
+  assert_false(cmp_write_uinteger(&cmp, 1));
+  assert_false(cmp_write_uinteger(&cmp, 200));
+  assert_false(cmp_write_uinteger(&cmp, 300));
+  assert_false(cmp_write_uinteger(&cmp, 70000));
+  assert_false(cmp_write_uinteger(&cmp, 0x100000002));
+  assert_false(cmp_write_integer(&cmp, -1));
+  assert_false(cmp_write_integer(&cmp, -100));
+  assert_false(cmp_write_integer(&cmp, -200));
+  assert_false(cmp_write_integer(&cmp, -33000));
+  assert_false(cmp_write_integer(&cmp, 0x80000002));
+  assert_false(cmp_write_float(&cmp, 1.1f));
+  assert_false(cmp_write_double(&cmp, 1.1));
+  assert_false(cmp_write_map(&cmp, 1));
+  assert_false(cmp_write_str(&cmp, "a", 1));
+  assert_false(cmp_write_str(&cmp, "apple", 5));
+  assert_false(cmp_write_map(&cmp, 0x100));
+  for (size_t i = 0; i < 0x100; i++) {
+    assert_false(cmp_write_integer(&cmp, 1));
+    assert_false(cmp_write_integer(&cmp, 1));
+  }
+  assert_false(cmp_write_map(&cmp, 0x10000));
+  for (size_t i = 0; i < 0x10000; i++) {
+    assert_false(cmp_write_integer(&cmp, 1));
+    assert_false(cmp_write_integer(&cmp, 1));
+  }
+  assert_false(cmp_write_array(&cmp, 2));
+  assert_false(cmp_write_str(&cmp, "banana", 6));
+  assert_false(cmp_write_str(&cmp, "blackberry", 10));
+  assert_false(cmp_write_array(&cmp, 0x100));
+  for (size_t i = 0; i < 0x100; i++) {
+    assert_false(cmp_write_integer(&cmp, 1));
+  }
+  assert_false(cmp_write_array(&cmp, 0x10000));
+  for (size_t i = 0; i < 0x10000; i++) {
+    assert_false(cmp_write_integer(&cmp, 1));
+  }
+  assert_false(cmp_write_bin(&cmp, bin8, 200));
+  assert_false(cmp_write_bin(&cmp, bin16, 300));
+  assert_false(cmp_write_bin(&cmp, bin32, 70000));
+  assert_false(cmp_write_str(&cmp, str8, 200));
+  assert_false(cmp_write_str(&cmp, str16, 300));
+  assert_false(cmp_write_str(&cmp, str32, 70000));
+  assert_false(cmp_write_ext(&cmp, 2, 1, "C"));
+  assert_false(cmp_write_ext(&cmp, 3, 2, "CC"));
+  assert_false(cmp_write_ext(&cmp, 4, 4, "CCCC"));
+  assert_false(cmp_write_ext(&cmp, 5, 8, "CCCCCCCC"));
+  assert_false(cmp_write_ext(&cmp, 6, 16, "CCCCCCCCCCCCCCCC"));
+  assert_false(cmp_write_ext(&cmp, 7, 0x7F, ext8));
+  assert_false(cmp_write_ext(&cmp, 8, 0x7FFF, ext16));
+  assert_false(cmp_write_ext(&cmp, 9, 0x10000, ext32));
+
+  M_BufferClear(&buf);
+
+  writer_successes = 1;
+  assert_false(cmp_write_uinteger(&cmp, 200));
+  writer_successes = 1;
+  assert_false(cmp_write_uinteger(&cmp, 300));
+  writer_successes = 1;
+  assert_false(cmp_write_uinteger(&cmp, 70000));
+  writer_successes = 1;
+  assert_false(cmp_write_uinteger(&cmp, 0x100000002));
+  writer_successes = 1;
+  assert_false(cmp_write_integer(&cmp, -100));
+  writer_successes = 1;
+  assert_false(cmp_write_integer(&cmp, -200));
+  writer_successes = 1;
+  assert_false(cmp_write_integer(&cmp, -33000));
+  writer_successes = 1;
+  assert_false(cmp_write_integer(&cmp, 0x80000002));
+  writer_successes = 1;
+  assert_false(cmp_write_float(&cmp, 1.1f));
+  writer_successes = 1;
+  assert_false(cmp_write_double(&cmp, 1.1));
+  writer_successes = 1;
+  assert_false(cmp_write_str(&cmp, "a", 1));
+  writer_successes = 1;
+  assert_false(cmp_write_str(&cmp, "apple", 5));
+  writer_successes = 1;
+  assert_false(cmp_write_map(&cmp, 0x100));
+  writer_successes = 1;
+  assert_false(cmp_write_map(&cmp, 0x10000));
+  writer_successes = 1;
+  assert_false(cmp_write_str(&cmp, "banana", 6));
+  writer_successes = 1;
+  assert_false(cmp_write_str(&cmp, "blackberry", 10));
+  writer_successes = 1;
+  assert_false(cmp_write_array(&cmp, 0x100));
+  writer_successes = 1;
+  assert_false(cmp_write_array(&cmp, 0x10000));
+  writer_successes = 1;
+  assert_false(cmp_write_bin(&cmp, bin8, 200));
+  writer_successes = 1;
+  assert_false(cmp_write_bin(&cmp, bin16, 300));
+  writer_successes = 1;
+  assert_false(cmp_write_bin(&cmp, bin32, 70000));
+  writer_successes = 1;
+  assert_false(cmp_write_str(&cmp, str8, 200));
+  writer_successes = 1;
+  assert_false(cmp_write_str(&cmp, str16, 300));
+  writer_successes = 1;
+  assert_false(cmp_write_str(&cmp, str32, 70000));
+  writer_successes = 1;
+  assert_false(cmp_write_ext(&cmp, 2, 1, "C"));
+  writer_successes = 1;
+  assert_false(cmp_write_ext(&cmp, 3, 2, "CC"));
+  writer_successes = 1;
+  assert_false(cmp_write_ext(&cmp, 4, 4, "CCCC"));
+  writer_successes = 1;
+  assert_false(cmp_write_ext(&cmp, 5, 8, "CCCCCCCC"));
+  writer_successes = 1;
+  assert_false(cmp_write_ext(&cmp, 6, 16, "CCCCCCCCCCCCCCCC"));
+  writer_successes = 1;
+  assert_false(cmp_write_ext(&cmp, 7, 0x7F, ext8));
+  writer_successes = 1;
+  assert_false(cmp_write_ext(&cmp, 8, 0x7FFF, ext16));
+  writer_successes = 1;
+  assert_false(cmp_write_ext(&cmp, 9, 0x10000, ext32));
+
+  M_BufferClear(&buf);
+
+  writer_successes = 2;
+  assert_false(cmp_write_bin(&cmp, bin8, 200));
+  writer_successes = 2;
+  assert_false(cmp_write_bin(&cmp, bin16, 300));
+  writer_successes = 2;
+  assert_false(cmp_write_bin(&cmp, bin32, 70000));
+  writer_successes = 2;
+  assert_false(cmp_write_str(&cmp, str8, 200));
+  writer_successes = 2;
+  assert_false(cmp_write_str(&cmp, str16, 300));
+  writer_successes = 2;
+  assert_false(cmp_write_str(&cmp, str32, 70000));
+  writer_successes = 2;
+  assert_false(cmp_write_ext(&cmp, 2, 1, "C"));
+  writer_successes = 2;
+  assert_false(cmp_write_ext(&cmp, 3, 2, "CC"));
+  writer_successes = 2;
+  assert_false(cmp_write_ext(&cmp, 4, 4, "CCCC"));
+  writer_successes = 2;
+  assert_false(cmp_write_ext(&cmp, 5, 8, "CCCCCCCC"));
+  writer_successes = 2;
+  assert_false(cmp_write_ext(&cmp, 6, 16, "CCCCCCCCCCCCCCCC"));
+  writer_successes = 2;
+  assert_false(cmp_write_ext(&cmp, 7, 0x7F, ext8));
+  writer_successes = 2;
+  assert_false(cmp_write_ext(&cmp, 8, 0x7FFF, ext16));
+  writer_successes = 2;
+  assert_false(cmp_write_ext(&cmp, 9, 0x10000, ext32));
+}
+
 int main(void) {
   /* Use the old CMocka API because Travis' latest Ubuntu is Trusty */
-  const UnitTest tests[13] = {
+  const UnitTest tests[14] = {
     unit_test(test_msgpack),
     unit_test(test_fixedint),
     unit_test(test_numbers),
@@ -3421,7 +3650,8 @@ int main(void) {
     unit_test(test_ext),
     unit_test(test_obj),
     unit_test(test_float_flip),
-    unit_test(test_skipping)
+    unit_test(test_skipping),
+    unit_test(test_errors)
   };
 
   if (run_tests(tests)) {
