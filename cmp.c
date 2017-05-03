@@ -185,13 +185,7 @@ static float decode_befloat(char *b) {
   float f = 0.;
   char *fb = (char *)&f;
 
-  if (is_bigendian()) {
-    fb[0] = b[0];
-    fb[1] = b[1];
-    fb[2] = b[2];
-    fb[3] = b[3];
-  }
-  else {
+  if (!is_bigendian()) {
     fb[0] = b[3];
     fb[1] = b[2];
     fb[2] = b[1];
@@ -205,17 +199,7 @@ static double decode_bedouble(char *b) {
   double d = 0.;
   char *db = (char *)&d;
 
-  if (is_bigendian()) {
-    db[0] = b[0];
-    db[1] = b[1];
-    db[2] = b[2];
-    db[3] = b[3];
-    db[4] = b[4];
-    db[5] = b[5];
-    db[6] = b[6];
-    db[7] = b[7];
-  }
-  else {
+  if (!is_bigendian()) {
     db[0] = b[7];
     db[1] = b[6];
     db[2] = b[5];
