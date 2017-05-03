@@ -35,9 +35,9 @@ THE SOFTWARE.
 #include "buf.h"
 #include "cmp.h"
 
-static bool force_reader_to_fail = false;
-static bool force_writer_to_fail = false;
-static bool force_skipper_to_fail = false;
+static int reader_successes = -1;
+static int writer_successes = -1;
+static int skipper_successes = -1;
 
 #define assert_float_equal(f1, f2) \
   assert_memory_equal(&(f1), &(f2), sizeof(float))
@@ -275,8 +275,12 @@ static bool force_skipper_to_fail = false;
   } while (0)
 
 static bool buf_reader(cmp_ctx_t *ctx, void *data, size_t limit) {
-  if (force_reader_to_fail) {
+  if (!reader_successes) {
     return false;
+  }
+
+  if (reader_successes > 0) {
+    reader_successes--;
   }
 
   buf_t *buf = (buf_t *)ctx->buf;
@@ -285,8 +289,12 @@ static bool buf_reader(cmp_ctx_t *ctx, void *data, size_t limit) {
 }
 
 static size_t buf_writer(cmp_ctx_t *ctx, const void *data, size_t sz) {
-  if (force_writer_to_fail) {
+  if (!writer_successes) {
     return false;
+  }
+
+  if (writer_successes > 0) {
+    writer_successes--;
   }
 
   buf_t *buf = (buf_t *)ctx->buf;
@@ -298,8 +306,12 @@ static size_t buf_writer(cmp_ctx_t *ctx, const void *data, size_t sz) {
 }
 
 static bool buf_skipper(cmp_ctx_t *ctx, size_t count) {
-  if (force_skipper_to_fail) {
+  if (!skipper_successes) {
     return false;
+  }
+
+  if (skipper_successes > 0) {
+    skipper_successes--;
   }
 
   buf_t *buf = (buf_t *)ctx->buf;
@@ -309,7 +321,7 @@ static bool buf_skipper(cmp_ctx_t *ctx, size_t count) {
 
 static void setup_cmp_and_buf(cmp_ctx_t *cmp, buf_t *buf) {
   M_BufferInitWithCapacity(buf, 32);
-  cmp_init(cmp, buf, &buf_reader, &buf_skipper, &buf_writer);
+  cmp_init(cmp, buf, buf_reader, buf_skipper, buf_writer);
 }
 
 static void test_msgpack(void **state) {
@@ -1955,6 +1967,54 @@ static void test_bin(void **state) {
     "\xc4\x0aHey there\n",
     12
   );
+
+  M_BufferSeek(&buf, 0);
+
+  assert_true(cmp_write_bin_marker(&cmp, 100));
+  for (size_t i = 0; i < 100; i++) {
+    M_BufferWrite(&buf, "C", 1);
+  }
+
+  assert_true(cmp_write_bin_marker(&cmp, 300));
+  for (size_t i = 0; i < 300; i++) {
+    M_BufferWrite(&buf, "C", 1);
+  }
+
+  assert_true(cmp_write_bin_marker(&cmp, 70000));
+  for(size_t i = 0; i < 70000; i++) {
+    M_BufferWrite(&buf, "C", 1);
+  }
+
+  M_BufferSeek(&buf, 0);
+
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_BIN8);
+  assert_int_equal(obj.as.bin_size, 100);
+  M_BufferSeekForward(&buf, 100);
+
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_BIN16);
+  assert_int_equal(obj.as.bin_size, 300);
+  M_BufferSeekForward(&buf, 300);
+
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_BIN32);
+  assert_int_equal(obj.as.bin_size, 70000);
+  M_BufferSeekForward(&buf, 70000);
+
+  M_BufferSeek(&buf, 0);
+
+  char *bin8 = malloc(200);
+  char *bin16 = malloc(300);
+  char *bin32 = malloc(70000);
+
+  assert_true(cmp_write_bin(&cmp, bin8, 200));
+  assert_true(cmp_write_bin(&cmp, bin16, 300));
+  assert_true(cmp_write_bin(&cmp, bin32, 70000));
+
+  free(bin8);
+  free(bin16);
+  free(bin32);
 }
 
 static void test_string(void **state) {
@@ -2047,6 +2107,106 @@ static void test_string(void **state) {
     "\xda\x00\x36With your feet on the air and your head on the ground\n",
     57
   );
+
+  M_BufferSeek(&buf, 0);
+
+  assert_true(cmp_write_str_marker(&cmp, 7));
+  M_BufferWrite(&buf, "bananas", 7);
+
+  assert_true(cmp_write_str_marker(&cmp, 100));
+  for (size_t i = 0; i < 100; i++) {
+    M_BufferWrite(&buf, "C", 1);
+  }
+
+  assert_true(cmp_write_str_marker(&cmp, 300));
+  for (size_t i = 0; i < 300; i++) {
+    M_BufferWrite(&buf, "C", 1);
+  }
+
+  assert_true(cmp_write_str_marker(&cmp, 70000));
+  for(size_t i = 0; i < 70000; i++) {
+    M_BufferWrite(&buf, "C", 1);
+  }
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXSTR);
+  assert_int_equal(obj.as.str_size, 7);
+  M_BufferSeekForward(&buf, 7);
+
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_STR8);
+  assert_int_equal(obj.as.str_size, 100);
+  M_BufferSeekForward(&buf, 100);
+
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_STR16);
+  assert_int_equal(obj.as.str_size, 300);
+  M_BufferSeekForward(&buf, 300);
+
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_STR32);
+  assert_int_equal(obj.as.str_size, 70000);
+  M_BufferSeekForward(&buf, 70000);
+
+  M_BufferSeek(&buf, 0);
+
+  assert_true(cmp_write_str_marker_v4(&cmp, 7));
+  M_BufferWrite(&buf, "bananas", 7);
+
+  assert_true(cmp_write_str_marker_v4(&cmp, 100));
+  for (size_t i = 0; i < 100; i++) {
+    M_BufferWrite(&buf, "C", 1);
+  }
+
+  assert_true(cmp_write_str_marker_v4(&cmp, 300));
+  for (size_t i = 0; i < 300; i++) {
+    M_BufferWrite(&buf, "C", 1);
+  }
+
+  assert_true(cmp_write_str_marker_v4(&cmp, 70000));
+  for(size_t i = 0; i < 70000; i++) {
+    M_BufferWrite(&buf, "C", 1);
+  }
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXSTR);
+  assert_int_equal(obj.as.str_size, 7);
+  M_BufferSeekForward(&buf, 7);
+
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_STR16);
+  assert_int_equal(obj.as.str_size, 100);
+  M_BufferSeekForward(&buf, 100);
+
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_STR16);
+  assert_int_equal(obj.as.str_size, 300);
+  M_BufferSeekForward(&buf, 300);
+
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_STR32);
+  assert_int_equal(obj.as.str_size, 70000);
+  M_BufferSeekForward(&buf, 70000);
+
+  M_BufferSeek(&buf, 0);
+
+  char *str8 = malloc(201);
+  char *str16 = malloc(301);
+  char *str32 = malloc(70001);
+
+  *(str8 + 200) = '\0';
+  *(str16 + 300) = '\0';
+  *(str32 + 70000) = '\0';
+
+  assert_true(cmp_write_str(&cmp, str8, 200));
+  assert_true(cmp_write_str(&cmp, str16, 300));
+  assert_true(cmp_write_str(&cmp, str32, 70000));
+
+  free(str8);
+  free(str16);
+  free(str32);
 }
 
 static void test_array(void **state) {
@@ -2106,6 +2266,35 @@ static void test_array(void **state) {
   test_format(
     cmp_write_array, cmp_read_array, array_size, uint32_t, 10, "\x9a", 1
   );
+
+  M_BufferSeek(&buf, 0);
+
+  assert_true(cmp_write_array(&cmp, 0xFFFE));
+  for (size_t i = 0; i < 0xFFFE; i++) {
+    assert_true(cmp_write_uinteger(&cmp, 1));
+  }
+
+  assert_true(cmp_write_array(&cmp, 0x10000));
+  for (size_t i = 0; i < 0x10000; i++) {
+    assert_true(cmp_write_uinteger(&cmp, 1));
+  }
+
+  M_BufferSeek(&buf, 0);
+
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_ARRAY16);
+  assert_int_equal(obj.as.array_size, 0xFFFE);
+  for (size_t i = 0; i < 0xFFFE; i++) {
+    uint64_t n;
+    assert_true(cmp_read_uinteger(&cmp, &n));
+  }
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_ARRAY32);
+  assert_int_equal(obj.as.array_size, 0x10000);
+  for (size_t i = 0; i < 0x10000; i++) {
+    uint64_t n;
+    assert_true(cmp_read_uinteger(&cmp, &n));
+  }
 }
 
 static void test_map(void **state) {
@@ -2205,6 +2394,39 @@ static void test_map(void **state) {
   assert_int_equal(obj.as.str_size, 7);
   assert_memory_equal(M_BufferGetDataAtCursor(&buf), "coconut", 7);
   M_BufferSeekForward(&buf, 7);
+
+  M_BufferSeek(&buf, 0);
+
+  assert_true(cmp_write_map(&cmp, 0xFFFE));
+  for (size_t i = 0; i < 0xFFFE; i++) {
+    assert_true(cmp_write_uinteger(&cmp, 1));
+    assert_true(cmp_write_uinteger(&cmp, 1));
+  }
+
+  assert_true(cmp_write_map(&cmp, 0x10000));
+  for (size_t i = 0; i < 0x10000; i++) {
+    assert_true(cmp_write_uinteger(&cmp, 1));
+    assert_true(cmp_write_uinteger(&cmp, 1));
+  }
+
+  M_BufferSeek(&buf, 0);
+
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_MAP16);
+  assert_int_equal(obj.as.map_size, 0xFFFE);
+  for (size_t i = 0; i < 0xFFFE; i++) {
+    uint64_t n;
+    assert_true(cmp_read_uinteger(&cmp, &n));
+    assert_true(cmp_read_uinteger(&cmp, &n));
+  }
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_MAP32);
+  assert_int_equal(obj.as.map_size, 0x10000);
+  for (size_t i = 0; i < 0x10000; i++) {
+    uint64_t n;
+    assert_true(cmp_read_uinteger(&cmp, &n));
+    assert_true(cmp_read_uinteger(&cmp, &n));
+  }
 }
 
 static void test_ext(void **state) {
@@ -2970,6 +3192,8 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_bin, "bin");
   obj_test_not(cmp_object_is_array, "array");
   obj_test_not(cmp_object_is_ext, "ext");
+
+
 }
 
 /* Thanks to andreyvps for this test */
@@ -3114,7 +3338,10 @@ void test_skipping(void **state) {
 
   cmp.skip = NULL;
   M_BufferSeek(&buf, 0);
-  assert_true(cmp_skip_object(&cmp, &obj));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_false(cmp_skip_object_no_limit(&cmp));
   cmp.skip = skip;
 
   M_BufferSeek(&buf, 0);
