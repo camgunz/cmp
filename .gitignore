@@ -38,4 +38,9 @@ cmptest2
 # Example executables
 examples/example1
 examples/example2
+example1
+example2
+
+# Test data
+cmp_data.dat
 
