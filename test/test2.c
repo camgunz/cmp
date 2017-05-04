@@ -441,6 +441,14 @@ static void test_numbers(void **state) {
   buf_t buf;
   cmp_ctx_t cmp;
   cmp_object_t obj;
+  uint8_t u8;
+  uint16_t u16;
+  uint32_t u32;
+  uint64_t u64;
+  int8_t s8;
+  int16_t s16;
+  int32_t s32;
+  int64_t s64;
 
   (void)state;
 
@@ -1875,6 +1883,56 @@ static void test_numbers(void **state) {
     "\xcb\x43\x0f\x94\x65\xb8\xab\x8e\x39",
     9
   );
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_pfix(&cmp, 1));
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_pfix(&cmp, &u8));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_u8(&cmp, 200));
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_u8(&cmp, &u8));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_u16(&cmp, 300));
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_u16(&cmp, &u16));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_u32(&cmp, 70000));
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_u32(&cmp, &u32));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_u64(&cmp, 0x100000002));
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_u64(&cmp, &u64));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_nfix(&cmp, -1));
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_nfix(&cmp, &s8));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_s8(&cmp, -100));
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_s8(&cmp, &s8));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_s16(&cmp, -200));
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_s16(&cmp, &s16));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_s32(&cmp, -33000));
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_s32(&cmp, &s32));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_s64(&cmp, 0x80000002));
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_s64(&cmp, &s64));
 }
 
 static void test_nil(void **state) {
@@ -3395,6 +3453,14 @@ void test_errors(void **state) {
   buf_t buf;
   cmp_ctx_t cmp;
   cmp_object_t obj;
+  uint8_t u8;
+  uint16_t u16;
+  uint32_t u32;
+  uint64_t u64;
+  int8_t s8;
+  int16_t s16;
+  int32_t s32;
+  int64_t s64;
   char *bin8 = malloc(200);
   char *bin16 = malloc(300);
   char *bin32 = malloc(70000);
@@ -4009,6 +4075,59 @@ void test_errors(void **state) {
    *        read_obj_data
    *        cmp_strerror
    */
+
+  writer_successes = -1;
+  reader_successes = 0;
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_pfix(&cmp, 1));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_pfix(&cmp, &u8));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_u8(&cmp, 200));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_u8(&cmp, &u8));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_u16(&cmp, 300));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_u16(&cmp, &u16));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_u32(&cmp, 70000));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_u32(&cmp, &u32));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_u64(&cmp, 0x100000002));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_u64(&cmp, &u64));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_nfix(&cmp, -1));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_nfix(&cmp, &s8));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_s8(&cmp, -100));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_s8(&cmp, &s8));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_s16(&cmp, -200));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_s16(&cmp, &s16));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_s32(&cmp, -33000));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_s32(&cmp, &s32));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_s64(&cmp, 0x80000002));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_s64(&cmp, &s64));
 }
 
 int main(void) {
