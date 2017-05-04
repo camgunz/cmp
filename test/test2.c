@@ -1890,6 +1890,16 @@ static void test_numbers(void **state) {
   );
 
   M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_sfix(&cmp, 1));
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_sfix(&cmp, &s8));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_sfix(&cmp, -1));
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_sfix(&cmp, &s8));
+
+  M_BufferSeek(&buf, 0);
   assert_true(cmp_write_pfix(&cmp, 1));
   M_BufferSeek(&buf, 0);
   assert_true(cmp_read_pfix(&cmp, &u8));
@@ -4345,6 +4355,16 @@ void test_errors(void **state) {
 
   writer_successes = -1;
   reader_successes = 0;
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_sfix(&cmp, 1));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_sfix(&cmp, &s8));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_sfix(&cmp, -1));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_sfix(&cmp, &s8));
 
   M_BufferSeek(&buf, 0);
   assert_true(cmp_write_pfix(&cmp, 1));
