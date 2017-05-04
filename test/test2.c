@@ -2295,6 +2295,8 @@ static void test_string(void **state) {
   free(str8);
   free(str16);
   free(str32);
+
+  assert_false(cmp_write_fixstr_marker(&cmp, 200));
 }
 
 static void test_array(void **state) {
@@ -2356,6 +2358,8 @@ static void test_array(void **state) {
   );
 
   M_BufferSeek(&buf, 0);
+
+  assert_string_equal(cmp_strerror(&cmp), "");
 
   assert_false(cmp_write_fixarray(&cmp, 200));
 
@@ -3385,18 +3389,22 @@ static void test_obj(void **state) {
   /* [TODO] cmp_write_object, cmp_write_object_v4 */
   obj.type = CMP_TYPE_NIL;
   assert_true(cmp_write_object(&cmp, &obj));
+  assert_true(cmp_write_object_v4(&cmp, &obj));
 
   obj.type = CMP_TYPE_BOOLEAN;
   obj.as.boolean = true;
   assert_true(cmp_write_object(&cmp, &obj));
+  assert_true(cmp_write_object_v4(&cmp, &obj));
 
   obj.type = CMP_TYPE_BOOLEAN;
   obj.as.boolean = false;
   assert_true(cmp_write_object(&cmp, &obj));
+  assert_true(cmp_write_object_v4(&cmp, &obj));
 
   obj.type = CMP_TYPE_POSITIVE_FIXNUM;
   obj.as.u8 = 1;
   assert_true(cmp_write_object(&cmp, &obj));
+  assert_true(cmp_write_object_v4(&cmp, &obj));
 
   obj.type = CMP_TYPE_POSITIVE_FIXNUM;
   obj.as.u8 = 1;
@@ -4527,30 +4535,50 @@ void test_errors(void **state) {
   M_BufferSeek(&buf, 0);
   assert_true(cmp_read_pfix(&cmp, &u8));
 
+  M_BufferSeek(&buf, 0);
   assert_false(cmp_read_u8(&cmp, &u8));
+  M_BufferSeek(&buf, 0);
   assert_false(cmp_read_u16(&cmp, &u16));
+  M_BufferSeek(&buf, 0);
   assert_false(cmp_read_u32(&cmp, &u32));
+  M_BufferSeek(&buf, 0);
   assert_false(cmp_read_u64(&cmp, &u64));
+  M_BufferSeek(&buf, 0);
   assert_false(cmp_read_nfix(&cmp, &s8));
+  M_BufferSeek(&buf, 0);
   assert_false(cmp_read_s8(&cmp, &s8));
+  M_BufferSeek(&buf, 0);
   assert_false(cmp_read_s16(&cmp, &s16));
+  M_BufferSeek(&buf, 0);
   assert_false(cmp_read_s32(&cmp, &s32));
+  M_BufferSeek(&buf, 0);
   assert_false(cmp_read_s64(&cmp, &s64));
+  M_BufferSeek(&buf, 0);
   assert_false(cmp_read_float(&cmp, &f));
+  M_BufferSeek(&buf, 0);
   assert_false(cmp_read_double(&cmp, &d));
+  M_BufferSeek(&buf, 0);
   assert_false(cmp_read_str_size(&cmp, &size));
+  M_BufferSeek(&buf, 0);
   assert_false(cmp_read_str(&cmp, NULL, &size));
+  M_BufferSeek(&buf, 0);
   assert_false(cmp_read_bin_size(&cmp, &size));
+  M_BufferSeek(&buf, 0);
   assert_false(cmp_read_bin(&cmp, NULL, &size));
+  M_BufferSeek(&buf, 0);
   assert_false(cmp_read_array(&cmp, &size));
+  M_BufferSeek(&buf, 0);
   assert_false(cmp_read_map(&cmp, &size));
+  M_BufferSeek(&buf, 0);
   assert_false(cmp_read_ext_marker(&cmp, &type, &size));
+  M_BufferSeek(&buf, 0);
   assert_false(cmp_read_ext(&cmp, &type, &size, NULL));
 
   M_BufferClear(&buf);
   assert_true(cmp_write_nfix(&cmp, -1));
   M_BufferSeek(&buf, 0);
   assert_true(cmp_read_nfix(&cmp, &s8));
+  M_BufferSeek(&buf, 0);
   assert_false(cmp_read_pfix(&cmp, &u8));
 }
 
