@@ -22,6 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+/*
+ * [TODO]
+ *
+ * - Skipping things
+ * - read_obj_data
+ */
+
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -1903,6 +1910,8 @@ static void test_numbers(void **state) {
   assert_true(cmp_write_pfix(&cmp, 1));
   M_BufferSeek(&buf, 0);
   assert_true(cmp_read_pfix(&cmp, &u8));
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_ufix(&cmp, &u8));
 
   M_BufferSeek(&buf, 0);
   assert_true(cmp_write_u8(&cmp, 200));
@@ -1958,6 +1967,34 @@ static void test_numbers(void **state) {
   assert_true(cmp_write_double(&cmp, 1.1));
   M_BufferSeek(&buf, 0);
   assert_true(cmp_read_double(&cmp, &d));
+
+  M_BufferClear(&buf);
+  assert_true(cmp_write_s8(&cmp, -1));
+  assert_true(cmp_write_s8(&cmp, -100));
+  assert_true(cmp_write_s16(&cmp, -200));
+  assert_true(cmp_write_s32(&cmp, -33000));
+  assert_true(cmp_write_s64(&cmp, 0xFFFFFFFFF));
+  assert_true(cmp_write_u8(&cmp, 1));
+  assert_true(cmp_write_u8(&cmp, 200));
+  assert_true(cmp_write_u16(&cmp, 300));
+  assert_true(cmp_write_u32(&cmp, 70000));
+  assert_true(cmp_write_u64(&cmp, 0xFFFFFFFFF));
+  assert_true(cmp_write_decimal(&cmp, 1.1f));
+  assert_true(cmp_write_decimal(&cmp, 1.1));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_char(&cmp, &s8));
+  assert_true(cmp_read_char(&cmp, &s8));
+  assert_true(cmp_read_short(&cmp, &s16));
+  assert_true(cmp_read_int(&cmp, &s32));
+  assert_true(cmp_read_long(&cmp, &s64));
+  assert_true(cmp_read_uchar(&cmp, &u8));
+  assert_true(cmp_read_uchar(&cmp, &u8));
+  assert_true(cmp_read_ushort(&cmp, &u16));
+  assert_true(cmp_read_uint(&cmp, &u32));
+  assert_true(cmp_read_ulong(&cmp, &u64));
+  assert_true(cmp_read_decimal(&cmp, &d));
+  assert_true(cmp_read_decimal(&cmp, &d));
 }
 
 static void test_nil(void **state) {
@@ -1970,6 +2007,11 @@ static void test_nil(void **state) {
   setup_cmp_and_buf(&cmp, &buf);
 
   test_format_no_input(cmp_write_nil, u8, "\xc0", 1, 0);
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_write_nil(&cmp));
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_nil(&cmp));
 }
 
 static void test_boolean(void **state) {
@@ -3386,7 +3428,6 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_array, "array");
   obj_test_not(cmp_object_is_ext, "ext");
 
-  /* [TODO] cmp_write_object, cmp_write_object_v4 */
   obj.type = CMP_TYPE_NIL;
   assert_true(cmp_write_object(&cmp, &obj));
   assert_true(cmp_write_object_v4(&cmp, &obj));
@@ -4355,12 +4396,6 @@ void test_errors(void **state) {
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_object(&cmp, &obj));
 
-  /*
-   * [TODO] Skipping things
-   *        read_obj_data
-   *        cmp_strerror
-   */
-
   writer_successes = -1;
   reader_successes = 0;
 
@@ -4529,6 +4564,12 @@ void test_errors(void **state) {
 
   writer_successes = -1;
   reader_successes = -1;
+
+  M_BufferClear(&buf);
+  assert_true(cmp_write_u16(&cmp, 300));
+
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_sfix(&cmp, &s8));
 
   M_BufferClear(&buf);
   assert_true(cmp_write_pfix(&cmp, 1));

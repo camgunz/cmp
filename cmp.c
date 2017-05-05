@@ -1636,12 +1636,6 @@ bool cmp_write_object_v4(cmp_ctx_t *ctx, cmp_object_t *obj) {
       if (obj->as.boolean)
         return cmp_write_true(ctx);
       return cmp_write_false(ctx);
-    case CMP_TYPE_BIN8:
-      return cmp_write_bin8_marker(ctx, (uint8_t)obj->as.bin_size);
-    case CMP_TYPE_BIN16:
-      return cmp_write_bin16_marker(ctx, (uint16_t)obj->as.bin_size);
-    case CMP_TYPE_BIN32:
-      return cmp_write_bin32_marker(ctx, obj->as.bin_size);
     case CMP_TYPE_EXT8:
       return cmp_write_ext8_marker(ctx, obj->as.ext.type, (uint8_t)obj->as.ext.size);
     case CMP_TYPE_EXT16:
