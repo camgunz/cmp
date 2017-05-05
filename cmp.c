@@ -1847,10 +1847,13 @@ bool cmp_read_short(cmp_ctx_t *ctx, int16_t *s) {
         *s = obj.as.u16;
         return true;
       }
+      break;
     default:
-      ctx->error = INVALID_TYPE_ERROR;
-      return false;
+      break;
   }
+
+  ctx->error = INVALID_TYPE_ERROR;
+  return false;
 }
 
 bool cmp_read_int(cmp_ctx_t *ctx, int32_t *i) {
@@ -1882,10 +1885,13 @@ bool cmp_read_int(cmp_ctx_t *ctx, int32_t *i) {
         *i = obj.as.u32;
         return true;
       }
+      break;
     default:
-      ctx->error = INVALID_TYPE_ERROR;
-      return false;
+      break;
   }
+
+  ctx->error = INVALID_TYPE_ERROR;
+  return false;
 }
 
 bool cmp_read_long(cmp_ctx_t *ctx, int64_t *d) {
@@ -1923,10 +1929,13 @@ bool cmp_read_long(cmp_ctx_t *ctx, int64_t *d) {
         *d = obj.as.u64;
         return true;
       }
+      break;
     default:
-      ctx->error = INVALID_TYPE_ERROR;
-      return false;
+      break;
   }
+
+  ctx->error = INVALID_TYPE_ERROR;
+  return false;
 }
 
 bool cmp_read_integer(cmp_ctx_t *ctx, int64_t *d) {
@@ -2008,10 +2017,19 @@ bool cmp_read_uchar(cmp_ctx_t *ctx, uint8_t *c) {
     case CMP_TYPE_UINT8:
       *c = obj.as.u8;
       return true;
+    case CMP_TYPE_NEGATIVE_FIXNUM:
+    case CMP_TYPE_SINT8:
+      if (obj.as.s8 >= 0) {
+        *c = obj.as.s8;
+        return true;
+      }
+      break;
     default:
-      ctx->error = INVALID_TYPE_ERROR;
-      return false;
+      break;
   }
+
+  ctx->error = INVALID_TYPE_ERROR;
+  return false;
 }
 
 bool cmp_read_ushort(cmp_ctx_t *ctx, uint16_t *s) {
@@ -2028,10 +2046,25 @@ bool cmp_read_ushort(cmp_ctx_t *ctx, uint16_t *s) {
     case CMP_TYPE_UINT16:
       *s = obj.as.u16;
       return true;
+    case CMP_TYPE_NEGATIVE_FIXNUM:
+    case CMP_TYPE_SINT8:
+      if (obj.as.s8 >= 0) {
+        *s = obj.as.s8;
+        return true;
+      }
+      break;
+    case CMP_TYPE_SINT16:
+      if (obj.as.s16 >= 0) {
+        *s = obj.as.s16;
+        return true;
+      }
+      break;
     default:
-      ctx->error = INVALID_TYPE_ERROR;
-      return false;
+      break;
   }
+
+  ctx->error = INVALID_TYPE_ERROR;
+  return false;
 }
 
 bool cmp_read_uint(cmp_ctx_t *ctx, uint32_t *i) {
@@ -2051,10 +2084,31 @@ bool cmp_read_uint(cmp_ctx_t *ctx, uint32_t *i) {
     case CMP_TYPE_UINT32:
       *i = obj.as.u32;
       return true;
+    case CMP_TYPE_NEGATIVE_FIXNUM:
+    case CMP_TYPE_SINT8:
+      if (obj.as.s8 >= 0) {
+        *i = obj.as.s8;
+        return true;
+      }
+      break;
+    case CMP_TYPE_SINT16:
+      if (obj.as.s16 >= 0) {
+        *i = obj.as.s16;
+        return true;
+      }
+      break;
+    case CMP_TYPE_SINT32:
+      if (obj.as.s32 >= 0) {
+        *i = obj.as.s32;
+        return true;
+      }
+      break;
     default:
-      ctx->error = INVALID_TYPE_ERROR;
-      return false;
+      break;
   }
+
+  ctx->error = INVALID_TYPE_ERROR;
+  return false;
 }
 
 bool cmp_read_ulong(cmp_ctx_t *ctx, uint64_t *u) {
@@ -2077,10 +2131,37 @@ bool cmp_read_ulong(cmp_ctx_t *ctx, uint64_t *u) {
     case CMP_TYPE_UINT64:
       *u = obj.as.u64;
       return true;
+    case CMP_TYPE_NEGATIVE_FIXNUM:
+    case CMP_TYPE_SINT8:
+      if (obj.as.s8 >= 0) {
+        *u = obj.as.s8;
+        return true;
+      }
+      break;
+    case CMP_TYPE_SINT16:
+      if (obj.as.s16 >= 0) {
+        *u = obj.as.s16;
+        return true;
+      }
+      break;
+    case CMP_TYPE_SINT32:
+      if (obj.as.s32 >= 0) {
+        *u = obj.as.s32;
+        return true;
+      }
+      break;
+    case CMP_TYPE_SINT64:
+      if (obj.as.s64 >= 0) {
+        *u = obj.as.s64;
+        return true;
+      }
+      break;
     default:
-      ctx->error = INVALID_TYPE_ERROR;
-      return false;
+      break;
   }
+
+  ctx->error = INVALID_TYPE_ERROR;
+  return false;
 }
 
 bool cmp_read_uinteger(cmp_ctx_t *ctx, uint64_t *d) {

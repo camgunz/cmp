@@ -16,7 +16,6 @@ before_install:
   - pip install --user cpp-coveralls
 
 script:
-  - make test
   - make test2
 
 after_success:

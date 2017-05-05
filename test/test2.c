@@ -1969,17 +1969,20 @@ static void test_numbers(void **state) {
   assert_true(cmp_read_double(&cmp, &d));
 
   M_BufferClear(&buf);
+  assert_true(cmp_write_u8(&cmp, 1));
   assert_true(cmp_write_s8(&cmp, -1));
   assert_true(cmp_write_s8(&cmp, -100));
   assert_true(cmp_write_s8(&cmp, 100));
-  assert_true(cmp_write_s16(&cmp, -200));
-  assert_true(cmp_write_s32(&cmp, -33000));
-  assert_true(cmp_write_s64(&cmp, 0xFFFFFFFFF));
-  assert_true(cmp_write_u8(&cmp, 1));
   assert_true(cmp_write_u8(&cmp, 200));
+  assert_true(cmp_write_s16(&cmp, -200));
   assert_true(cmp_write_u16(&cmp, 300));
-  assert_true(cmp_write_u32(&cmp, 70000));
-  assert_true(cmp_write_u64(&cmp, 0xFFFFFFFFF));
+  assert_true(cmp_write_u16(&cmp, 33000));
+  assert_true(cmp_write_s32(&cmp, -33000));
+  assert_true(cmp_write_u32(&cmp, 33000));
+  assert_true(cmp_write_u32(&cmp, 0x81000000));
+  assert_true(cmp_write_s64(&cmp, 0xFFFFFFFFFFFFFFFC));
+  assert_true(cmp_write_s64(&cmp, 0x7FFFFFFFFFFFFFFC));
+  assert_true(cmp_write_u64(&cmp, 0x800000000000000C));
   assert_true(cmp_write_decimal(&cmp, 1.1f));
   assert_true(cmp_write_decimal(&cmp, 1.1));
 
@@ -1987,16 +1990,108 @@ static void test_numbers(void **state) {
   assert_true(cmp_read_char(&cmp, &s8));
   assert_true(cmp_read_char(&cmp, &s8));
   assert_true(cmp_read_char(&cmp, &s8));
+  assert_true(cmp_read_char(&cmp, &s8));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_uchar(&cmp, &u8));
+  assert_true(cmp_read_char(&cmp, &s8));
+  assert_true(cmp_read_char(&cmp, &s8));
+  assert_true(cmp_read_uchar(&cmp, &u8));
+  assert_true(cmp_read_uchar(&cmp, &u8));
+
+  M_BufferSeek(&buf, 0);
   assert_true(cmp_read_short(&cmp, &s16));
-  assert_true(cmp_read_int(&cmp, &s32));
-  assert_true(cmp_read_long(&cmp, &s64));
-  assert_true(cmp_read_uchar(&cmp, &u8));
-  assert_true(cmp_read_uchar(&cmp, &u8));
+  assert_true(cmp_read_short(&cmp, &s16));
+  assert_true(cmp_read_short(&cmp, &s16));
+  assert_true(cmp_read_short(&cmp, &s16));
+  assert_true(cmp_read_short(&cmp, &s16));
+  assert_true(cmp_read_short(&cmp, &s16));
+  assert_true(cmp_read_short(&cmp, &s16));
+
+  M_BufferSeek(&buf, 0);
   assert_true(cmp_read_ushort(&cmp, &u16));
+  assert_true(cmp_read_short(&cmp, &s16));
+  assert_true(cmp_read_short(&cmp, &s16));
+  assert_true(cmp_read_ushort(&cmp, &u16));
+  assert_true(cmp_read_ushort(&cmp, &u16));
+  assert_true(cmp_read_short(&cmp, &s16));
+  assert_true(cmp_read_ushort(&cmp, &u16));
+  assert_true(cmp_read_ushort(&cmp, &u16));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_int(&cmp, &s32));
+  assert_true(cmp_read_int(&cmp, &s32));
+  assert_true(cmp_read_int(&cmp, &s32));
+  assert_true(cmp_read_int(&cmp, &s32));
+  assert_true(cmp_read_int(&cmp, &s32));
+  assert_true(cmp_read_int(&cmp, &s32));
+  assert_true(cmp_read_int(&cmp, &s32));
+  assert_true(cmp_read_int(&cmp, &s32));
+  assert_true(cmp_read_int(&cmp, &s32));
+  assert_true(cmp_read_int(&cmp, &s32));
+
+  M_BufferSeek(&buf, 0);
   assert_true(cmp_read_uint(&cmp, &u32));
+  assert_true(cmp_read_int(&cmp, &s32));
+  assert_true(cmp_read_int(&cmp, &s32));
+  assert_true(cmp_read_uint(&cmp, &u32));
+  assert_true(cmp_read_uint(&cmp, &u32));
+  assert_true(cmp_read_int(&cmp, &s32));
+  assert_true(cmp_read_uint(&cmp, &u32));
+  assert_true(cmp_read_uint(&cmp, &u32));
+  assert_true(cmp_read_int(&cmp, &s32));
+  assert_true(cmp_read_uint(&cmp, &u32));
+  assert_true(cmp_read_uint(&cmp, &u32));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_long(&cmp, &s64));
+  assert_true(cmp_read_long(&cmp, &s64));
+  assert_true(cmp_read_long(&cmp, &s64));
+  assert_true(cmp_read_long(&cmp, &s64));
+  assert_true(cmp_read_long(&cmp, &s64));
+  assert_true(cmp_read_long(&cmp, &s64));
+  assert_true(cmp_read_long(&cmp, &s64));
+  assert_true(cmp_read_long(&cmp, &s64));
+  assert_true(cmp_read_long(&cmp, &s64));
+  assert_true(cmp_read_long(&cmp, &s64));
+  assert_true(cmp_read_long(&cmp, &s64));
+  assert_true(cmp_read_long(&cmp, &s64));
+  assert_true(cmp_read_long(&cmp, &s64));
+
+  M_BufferSeek(&buf, 0);
   assert_true(cmp_read_ulong(&cmp, &u64));
+  assert_true(cmp_read_long(&cmp, &s64));
+  assert_true(cmp_read_long(&cmp, &s64));
+  assert_true(cmp_read_ulong(&cmp, &u64));
+  assert_true(cmp_read_ulong(&cmp, &u64));
+  assert_true(cmp_read_long(&cmp, &s64));
+  assert_true(cmp_read_ulong(&cmp, &u64));
+  assert_true(cmp_read_ulong(&cmp, &u64));
+  assert_true(cmp_read_long(&cmp, &s64));
+  assert_true(cmp_read_ulong(&cmp, &u64));
+  assert_true(cmp_read_ulong(&cmp, &u64));
+  assert_true(cmp_read_long(&cmp, &s64));
+  assert_true(cmp_read_ulong(&cmp, &u64));
+  assert_true(cmp_read_ulong(&cmp, &u64));
+
   assert_true(cmp_read_decimal(&cmp, &d));
   assert_true(cmp_read_decimal(&cmp, &d));
+
+  M_BufferSeek(&buf, 0);
+  reader_successes = 0;
+  assert_false(cmp_read_char(&cmp, &s8));
+  assert_false(cmp_read_char(&cmp, &s8));
+  assert_false(cmp_read_char(&cmp, &s8));
+  assert_false(cmp_read_short(&cmp, &s16));
+  assert_false(cmp_read_int(&cmp, &s32));
+  assert_false(cmp_read_long(&cmp, &s64));
+  assert_false(cmp_read_uchar(&cmp, &u8));
+  assert_false(cmp_read_uchar(&cmp, &u8));
+  assert_false(cmp_read_ushort(&cmp, &u16));
+  assert_false(cmp_read_uint(&cmp, &u32));
+  assert_false(cmp_read_ulong(&cmp, &u64));
+  assert_false(cmp_read_decimal(&cmp, &d));
+  assert_false(cmp_read_decimal(&cmp, &d));
 
   M_BufferClear(&buf);
   assert_true(cmp_write_u8(&cmp, 200));
