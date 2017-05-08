@@ -2158,10 +2158,101 @@ static void test_numbers(void **state) {
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_decimal(&cmp, &d));
 
+  reader_successes = -1;
+
   M_BufferClear(&buf);
   assert_true(cmp_write_u8(&cmp, 200));
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_char(&cmp, &s8));
+
+  M_BufferClear(&buf);
+  assert_true(cmp_write_u64(&cmp, 0xFFFFFFFFFFFFFFFE));
+  assert_true(cmp_write_s64(&cmp, 0xFFFFFFFFFFFFFFFE));
+
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_char(&cmp, &s8));
+
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_uchar(&cmp, &u8));
+
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_short(&cmp, &s16));
+
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_ushort(&cmp, &u16));
+
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_int(&cmp, &s32));
+
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_uint(&cmp, &u32));
+
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_long(&cmp, &s64));
+
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_decimal(&cmp, &d));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_ulong(&cmp, &u64));
+  assert_false(cmp_read_ulong(&cmp, &u64));
+
+  M_BufferClear(&buf);
+  assert_true(cmp_write_s8(&cmp, 100));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_uchar(&cmp, &u8));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_ushort(&cmp, &u16));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_uint(&cmp, &u32));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_ulong(&cmp, &u64));
+
+  M_BufferClear(&buf);
+  assert_true(cmp_write_s16(&cmp, 300));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_ushort(&cmp, &u16));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_uint(&cmp, &u32));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_ulong(&cmp, &u64));
+
+  M_BufferClear(&buf);
+  assert_true(cmp_write_s32(&cmp, 40000));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_uint(&cmp, &u32));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_ulong(&cmp, &u64));
+
+  M_BufferClear(&buf);
+  assert_true(cmp_write_s64(&cmp, 0x6FFFFFFFFFFFFFFE));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_ulong(&cmp, &u64));
+
+  M_BufferClear(&buf);
+  assert_true(cmp_write_s8(&cmp, -100));
+
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_uchar(&cmp, &u8));
+
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_ushort(&cmp, &u16));
+
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_uint(&cmp, &u32));
+
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_ulong(&cmp, &u64));
 }
 
 static void test_nil(void **state) {
@@ -2177,14 +2268,29 @@ static void test_nil(void **state) {
 
   M_BufferSeek(&buf, 0);
   assert_true(cmp_write_nil(&cmp));
+
   M_BufferSeek(&buf, 0);
   assert_true(cmp_read_nil(&cmp));
+
+  reader_successes = 0;
+
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_nil(&cmp));
+
+  reader_successes = -1;
+
+  M_BufferClear(&buf);
+  assert_true(cmp_write_true(&cmp));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_nil(&cmp));
 }
 
 static void test_boolean(void **state) {
   buf_t buf;
   cmp_ctx_t cmp;
   cmp_object_t obj;
+  bool b;
+  uint8_t u8;
 
   (void)state;
 
@@ -2200,12 +2306,32 @@ static void test_boolean(void **state) {
   test_format(
     cmp_write_u8_as_bool, cmp_read_bool_as_u8, boolean, uint8_t, 1, "\xc3", 1
   );
+
+  M_BufferClear(&buf);
+
+  assert_true(cmp_write_true(&cmp));
+  reader_successes = 0;
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_bool(&cmp, &b));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_bool_as_u8(&cmp, &u8));
+
+  reader_successes = -1;
+
+  M_BufferClear(&buf);
+
+  assert_true(cmp_write_nil(&cmp));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_bool(&cmp, &b));
+  M_BufferSeek(&buf, 0);
+  assert_false(cmp_read_bool_as_u8(&cmp, &u8));
 }
 
 static void test_bin(void **state) {
   buf_t buf;
   cmp_ctx_t cmp;
   cmp_object_t obj;
+  uint32_t size;
 
   (void)state;
 
@@ -2304,6 +2430,25 @@ static void test_bin(void **state) {
   assert_true(cmp_write_bin(&cmp, bin16, 300));
   assert_true(cmp_write_bin(&cmp, bin32, 70000));
 
+  M_BufferClear(&buf);
+  assert_true(cmp_write_bin(&cmp, "Hello", 5));
+  M_BufferSeek(&buf, 0);
+  size = 5;
+  assert_true(cmp_read_bin(&cmp, bin8, &size));
+  M_BufferSeek(&buf, 0);
+  size = 4;
+  assert_false(cmp_read_bin(&cmp, bin8, &size));
+
+  reader_successes = 1;
+  M_BufferSeek(&buf, 0);
+  size = 5;
+  assert_false(cmp_read_bin(&cmp, bin8, &size));
+
+  reader_successes = 2;
+  M_BufferSeek(&buf, 0);
+  size = 5;
+  assert_false(cmp_read_bin(&cmp, bin8, &size));
+
   free(bin8);
   free(bin16);
   free(bin32);
@@ -2313,6 +2458,7 @@ static void test_string(void **state) {
   buf_t buf;
   cmp_ctx_t cmp;
   cmp_object_t obj;
+  uint32_t size;
 
   (void)state;
 
@@ -2506,6 +2652,20 @@ static void test_string(void **state) {
   free(str32);
 
   assert_false(cmp_write_fixstr_marker(&cmp, 200));
+
+  M_BufferClear(&buf);
+  assert_true(cmp_write_str(&cmp, "Hello", 5));
+  M_BufferSeek(&buf, 0);
+  size = 6;
+  assert_true(cmp_read_str(&cmp, str8, &size));
+  M_BufferSeek(&buf, 0);
+  size = 5;
+  assert_false(cmp_read_str(&cmp, str8, &size));
+
+  reader_successes = 1;
+  M_BufferSeek(&buf, 0);
+  size = 6;
+  assert_false(cmp_read_str(&cmp, str8, &size));
 }
 
 static void test_array(void **state) {
@@ -4816,9 +4976,18 @@ void test_errors(void **state) {
 
 }
 
+void test_version(void **state) {
+  uint32_t version = cmp_version();
+  uint32_t mp_version = cmp_mp_version();
+
+  (void)state;
+  (void)version;
+  (void)mp_version;
+}
+
 int main(void) {
   /* Use the old CMocka API because Travis' latest Ubuntu is Trusty */
-  const UnitTest tests[14] = {
+  const UnitTest tests[15] = {
     unit_test(test_msgpack),
     unit_test(test_fixedint),
     unit_test(test_numbers),
@@ -4832,7 +5001,8 @@ int main(void) {
     unit_test(test_obj),
     unit_test(test_float_flip),
     unit_test(test_skipping),
-    unit_test(test_errors)
+    unit_test(test_errors),
+    unit_test(test_version)
   };
 
   if (run_tests(tests)) {

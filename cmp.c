@@ -1818,10 +1818,13 @@ bool cmp_read_char(cmp_ctx_t *ctx, int8_t *c) {
         *c = obj.as.u8;
         return true;
       }
+      break;
     default:
-      ctx->error = INVALID_TYPE_ERROR;
-      return false;
+      break;
   }
+
+  ctx->error = INVALID_TYPE_ERROR;
+  return false;
 }
 
 bool cmp_read_short(cmp_ctx_t *ctx, int16_t *s) {
