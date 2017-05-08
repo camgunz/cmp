@@ -37,6 +37,10 @@ static bool file_reader(cmp_ctx_t *ctx, void *data, size_t limit) {
     return read_bytes(data, limit, (FILE *)ctx->buf);
 }
 
+static bool file_skipper(cmp_ctx_t *ctx, size_t count) {
+    return fseek((FILE *)ctx->buf, count, SEEK_CUR);
+}
+
 static size_t file_writer(cmp_ctx_t *ctx, const void *data, size_t count) {
     return fwrite(data, sizeof(uint8_t), count, (FILE *)ctx->buf);
 }
@@ -59,7 +63,7 @@ int main(void) {
     if (fh == NULL)
         error_and_exit("Error opening data.dat");
 
-    cmp_init(&cmp, fh, file_reader, file_writer);
+    cmp_init(&cmp, fh, file_reader, file_skipper, file_writer);
 
     if (!cmp_write_array(&cmp, 2))
         error_and_exit(cmp_strerror(&cmp));
