@@ -16,7 +16,7 @@ before_install:
   - pip install --user cpp-coveralls
 
 script:
-  - make test2
+  - make test
 
 after_success:
-  - coveralls --gcov-options '\-lp' -i cmp.c -i cmp.h -e test/utils.c -e test/buf.c -e test/test.c -e test/test2.c -e test/buf.h -e test/utils.h -e examples/example1.c -e examples/example2.c
+  - coveralls --gcov-options '\-lp' -i cmp.c -i cmp.h -e test/utils.c -e test/buf.c -e test/test.c -e test/buf.h -e test/utils.h -e examples/example1.c -e examples/example2.c

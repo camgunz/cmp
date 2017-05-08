@@ -9,17 +9,11 @@ all: cmptest example1 example2
 test: cmptest
 	@./cmptest
 
-test2: cmptest2
-	@./cmptest2
-
 cmp.o:
 	$(CC) $(CFLAGS) --std=c89 -fprofile-arcs -ftest-coverage -g -O0 -I. -c cmp.c
 
 cmptest: cmp.o
 	$(CC) $(CFLAGS) --std=c99 -I. -fprofile-arcs -ftest-coverage -g -O0 -o cmptest cmp.o test/test.c test/buf.c test/utils.c
-
-cmptest2: cmp.o
-	$(CC) $(CFLAGS) -Wno-error=deprecated-declarations -Wno-deprecated-declarations --std=c99 -I. -fprofile-arcs -ftest-coverage -g -O0 -o cmptest2 cmp.o test/test2.c test/buf.c test/utils.c -lcmocka
 
 example1:
 	$(CC) $(CFLAGS) --std=c89 -O3 -I. -o example1 cmp.c examples/example1.c
@@ -39,7 +33,6 @@ coverage:
 
 clean:
 	@rm -f cmptest
-	@rm -f cmptest2
 	@rm -f example1
 	@rm -f example2
 	@rm -f *.o
