@@ -22,11 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-
-#include "cmp.h"
+#include <cmp.h>
 
 static const uint32_t version = 17;
 static const uint32_t mp_version = 5;
