@@ -313,6 +313,9 @@ bool cmp_read_ext(cmp_ctx_t *ctx, int8_t *type, uint32_t *size, void *data);
 /* Reads an object from the backend */
 bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj);
 
+/* Skips an object from the backend */
+bool cmp_skip_object(cmp_ctx_t *ctx);
+
 /*
  * Skips the next object from the backend.  If that object is an array or map,
  * this function will:
