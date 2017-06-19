@@ -143,7 +143,7 @@ thread may use its own context freely.
 CMP is tested using the MessagePack test suite as well as a large set of custom
 test cases.  Its small test program is compiled with clang using `-Wall -Werror
 -Wextra ...` along with several other flags, and generates no compilation
-errors in either Clang or GCC.
+errors in either clang or GCC.
 
 CMP's source is written as readably as possible, using explicit, descriptive
 variable names and a consistent, clear style.
@@ -173,7 +173,7 @@ general, semantic versioning provides a false sense of security.  You should be
 evaluating compatibility yourself, not relying on some stranger's versioning
 convention.
 
-# Stability
+## Stability
 
 I only guarantee stability for versions released on
 [the releases page](releases).  While rare, both `master` and `develop`
