@@ -2996,6 +2996,9 @@ bool cmp_object_as_char(cmp_object_t *obj, int8_t *c) {
         *c = obj->as.s8;
         return true;
       }
+      else {
+        return false;
+      }
     default:
         return false;
   }
@@ -3018,6 +3021,9 @@ bool cmp_object_as_short(cmp_object_t *obj, int16_t *s) {
       if (obj->as.u16 <= 32767) {
         *s = obj->as.u16;
         return true;
+      }
+      else {
+        return false;
       }
     default:
         return false;
@@ -3047,6 +3053,9 @@ bool cmp_object_as_int(cmp_object_t *obj, int32_t *i) {
       if (obj->as.u32 <= 2147483647) {
         *i = obj->as.u32;
         return true;
+      }
+      else {
+        return false;
       }
     default:
         return false;
@@ -3082,6 +3091,9 @@ bool cmp_object_as_long(cmp_object_t *obj, int64_t *d) {
       if (obj->as.u64 <= 9223372036854775807) {
         *d = obj->as.u64;
         return true;
+      }
+      else {
+        return false;
       }
     default:
         return false;
