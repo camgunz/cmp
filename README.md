@@ -165,6 +165,20 @@ in their source tree and modify as necessary.  No special compiler settings are
 required to build it, and it generates no compilation errors in either clang or
 gcc.
 
+## Versioning
+
+CMP's versions are single integers.  I don't use semantic versioning because
+I don't guarantee that any version is completely compatible with any other.  In
+general, semantic versioning provides a false sense of security.  You should be
+evaluating compatibility yourself, not relying on some stranger's versioning
+convention.
+
+# Stability
+
+I only guarantee stability for versions released on
+[the releases page](releases).  While rare, both `master` and `develop`
+branches may have errors or mismatched versions.
+
 ## Backwards Compatibility
 
 Version 4 of the MessagePack spec has no `BIN` type, and provides no `STR8`
