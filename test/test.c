@@ -262,16 +262,16 @@ static int skipper_successes = -1;
   assert_memory_equal(buf.data, fmt, dlen);                                   \
   M_BufferSeek(&buf, 0);                                                      \
   assert_true(cmp_read_object(&cmp, &obj));                                   \
-  assert_true(obj.as.ext.type == etype);                                      \
-  assert_true(obj.as.ext.size == esize);                                      \
+  assert_int_equal(obj.as.ext.type, etype);                                   \
+  assert_int_equal(obj.as.ext.size, esize);                                   \
   M_BufferSeek(&buf, 0);                                                      \
   do {                                                                        \
     char edata[esize];                                                        \
     int8_t dummy_type = 0;                                                    \
     uint32_t dummy_size = 0;                                                  \
     assert_true(cmp_read_ext(&cmp, &dummy_type, &dummy_size, edata));         \
-    assert_true(dummy_type == etype);                                         \
-    assert_true(dummy_size == esize);                                         \
+    assert_int_equal(dummy_type, etype);                                      \
+    assert_int_equal(dummy_size, esize);                                      \
     assert_memory_equal(edata, in, esize);                                    \
   } while (0)
 
@@ -4308,7 +4308,81 @@ void test_skipping(void **state) {
   assert_true(cmp_write_fixext4(&cmp, 3, "CCCC"));
   assert_true(cmp_write_fixext8(&cmp, 4, "CCCCCCCC"));
   assert_true(cmp_write_fixext16(&cmp, 5, "CCCCCCCCCCCCCCCC"));
+  assert_true(cmp_write_ext8(&cmp, 6, 2, "CC"));
+  assert_true(cmp_write_ext16(&cmp, 7, 2, "CC"));
+  assert_true(cmp_write_ext32(&cmp, 8, 2, "CC"));
+  assert_true(cmp_write_nil(&cmp));
   assert_true(cmp_write_array32(&cmp, 4));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FLOAT);
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_DOUBLE);
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXEXT1);
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXEXT2);
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXEXT4);
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXEXT8);
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXEXT16);
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXEXT16);
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_EXT8);
 
   M_BufferSeek(&buf, 0);
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4319,6 +4393,50 @@ void test_skipping(void **state) {
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_EXT16);
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_EXT32);
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_NIL);
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_ARRAY32);
 }
 
 void test_errors(void **state) {
