@@ -3347,6 +3347,10 @@ static void test_ext(void **state) {
   assert_memory_equal(outbuf32, buf32, 16);
 
   M_BufferSeek(&buf, 0);
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_true(cmp_object_as_ext(&obj, &etype, &esize32));
+
+  M_BufferSeek(&buf, 0);
 
   assert_true(cmp_write_ext_marker(&cmp, 2, 1));
   assert_true(cmp_write_ext_marker(&cmp, 3, 2));
@@ -4193,30 +4197,32 @@ void test_skipping(void **state) {
   assert_true(cmp_write_nil(&cmp));
   assert_true(cmp_write_integer(&cmp, -8));
   assert_true(cmp_write_array(&cmp, 10));
-  assert_true(cmp_write_uinteger(&cmp, 8));
-  assert_true(cmp_write_integer(&cmp, -120));
-  assert_true(cmp_write_uinteger(&cmp, 200));
-  assert_true(cmp_write_integer(&cmp, -32000));
-  assert_true(cmp_write_uinteger(&cmp, 64000));
-  assert_true(cmp_write_integer(&cmp, -33000));
-  assert_true(cmp_write_uinteger(&cmp, 66000));
-  assert_true(cmp_write_integer(&cmp, -2150000000));
-  assert_true(cmp_write_uinteger(&cmp, 4300000000));
-  assert_true(cmp_write_map(&cmp, 3));
-  assert_true(cmp_write_str(&cmp, "a", 1));
-  assert_true(cmp_write_str(&cmp, "apple", 5));
-  assert_true(cmp_write_str(&cmp, "b", 1));
-  assert_true(cmp_write_array(&cmp, 2));
-  assert_true(cmp_write_str(&cmp, "banana", 6));
-  assert_true(cmp_write_str(&cmp, "blackberry", 10));
-  assert_true(cmp_write_str(&cmp, "c", 1));
-  assert_true(cmp_write_str(&cmp, "coconut", 7));
+    assert_true(cmp_write_uinteger(&cmp, 8));
+    assert_true(cmp_write_integer(&cmp, -120));
+    assert_true(cmp_write_uinteger(&cmp, 200));
+    assert_true(cmp_write_integer(&cmp, -32000));
+    assert_true(cmp_write_uinteger(&cmp, 64000));
+    assert_true(cmp_write_integer(&cmp, -33000));
+    assert_true(cmp_write_uinteger(&cmp, 66000));
+    assert_true(cmp_write_integer(&cmp, -2150000000));
+    assert_true(cmp_write_uinteger(&cmp, 4300000000));
+    assert_true(cmp_write_map(&cmp, 3));
+      assert_true(cmp_write_str(&cmp, "a", 1));
+        assert_true(cmp_write_str(&cmp, "apple", 5));
+      assert_true(cmp_write_str(&cmp, "b", 1));
+        assert_true(cmp_write_array(&cmp, 2));
+          assert_true(cmp_write_str(&cmp, "banana", 6));
+          assert_true(cmp_write_str(&cmp, "blackberry", 10));
+      assert_true(cmp_write_str(&cmp, "c", 1));
+        assert_true(cmp_write_str(&cmp, "coconut", 7));
   assert_true(cmp_write_map(&cmp, 66000));
 
   for (uint32_t i = 0; i < 66000; i++) {
-    cmp_write_integer(&cmp, 1);
-    cmp_write_integer(&cmp, 1);
+    assert_true(cmp_write_integer(&cmp, 1));
+    assert_true(cmp_write_integer(&cmp, 1));
   }
+
+  assert_true(cmp_write_nil(&cmp));
 
   M_BufferSeek(&buf, 0);
   assert_true(cmp_skip_object(&cmp, &obj));
@@ -4228,14 +4234,40 @@ void test_skipping(void **state) {
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_false(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
   cmp.skip = skip;
 
   M_BufferSeek(&buf, 0);
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_false(cmp_skip_object(&cmp, &obj));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
   assert_false(cmp_skip_object_limit(&cmp, &obj, 1));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_false(cmp_skip_object_limit(&cmp, &obj, 2));
+
+  M_BufferSeek(&buf, 0);
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_limit(&cmp, &obj, 3));
 
   M_BufferSeek(&buf, 0);
   assert_true(cmp_read_object(&cmp, &obj));
@@ -4291,14 +4323,6 @@ void test_skipping(void **state) {
   M_BufferSeekForward(&buf, 7);
   assert_true(cmp_read_object(&cmp, &obj));
   assert_int_equal(obj.type, CMP_TYPE_MAP32);
-
-  M_BufferSeek(&buf, 0);
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_false(cmp_skip_object_no_limit(&cmp));
 
   M_BufferClear(&buf);
   assert_true(cmp_write_float(&cmp, 1.1f));
