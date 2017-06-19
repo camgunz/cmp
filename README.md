@@ -176,7 +176,7 @@ convention.
 ## Stability
 
 I only guarantee stability for versions released on
-[the releases page](releases).  While rare, both `master` and `develop`
+[the releases page](../../releases).  While rare, both `master` and `develop`
 branches may have errors or mismatched versions.
 
 ## Backwards Compatibility
