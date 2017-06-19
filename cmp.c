@@ -2657,7 +2657,7 @@ bool cmp_skip_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
 }
 
 bool cmp_skip_object_limit(cmp_ctx_t *ctx, cmp_object_t *obj, uint32_t limit) {
-  uint64_t element_count = 1;
+  size_t element_count = 1;
   uint32_t depth = 0;
 
   while (element_count) {
@@ -2702,6 +2702,20 @@ bool cmp_skip_object_limit(cmp_ctx_t *ctx, cmp_object_t *obj, uint32_t limit) {
         }
 
         if (size) {
+          switch (cmp_type) {
+            case CMP_TYPE_FIXEXT1:
+            case CMP_TYPE_FIXEXT2:
+            case CMP_TYPE_FIXEXT4:
+            case CMP_TYPE_FIXEXT8:
+            case CMP_TYPE_FIXEXT16:
+            case CMP_TYPE_EXT8:
+            case CMP_TYPE_EXT16:
+            case CMP_TYPE_EXT32:
+              size++;
+            default:
+              break;
+          }
+
           skip_bytes(ctx, size);
         }
     }
@@ -2723,7 +2737,7 @@ bool cmp_skip_object_limit(cmp_ctx_t *ctx, cmp_object_t *obj, uint32_t limit) {
         if (!read_type_size(ctx, type_marker, cmp_type, &size)) {
           return false;
         }
-        element_count += ((uint64_t)size) * 2;
+        element_count += ((size_t)size) * 2;
         break;
       default:
         break;
@@ -2734,7 +2748,7 @@ bool cmp_skip_object_limit(cmp_ctx_t *ctx, cmp_object_t *obj, uint32_t limit) {
 }
 
 bool cmp_skip_object_no_limit(cmp_ctx_t *ctx) {
-  uint64_t element_count = 1;
+  size_t element_count = 1;
 
   while (element_count) {
     uint8_t type_marker = 0;
@@ -2763,8 +2777,23 @@ bool cmp_skip_object_no_limit(cmp_ctx_t *ctx) {
           return false;
         }
 
-        if (size)
+        if (size) {
+          switch (cmp_type) {
+            case CMP_TYPE_FIXEXT1:
+            case CMP_TYPE_FIXEXT2:
+            case CMP_TYPE_FIXEXT4:
+            case CMP_TYPE_FIXEXT8:
+            case CMP_TYPE_FIXEXT16:
+            case CMP_TYPE_EXT8:
+            case CMP_TYPE_EXT16:
+            case CMP_TYPE_EXT32:
+              size++;
+            default:
+              break;
+          }
+
           skip_bytes(ctx, size);
+        }
     }
 
     element_count--;
@@ -2784,7 +2813,7 @@ bool cmp_skip_object_no_limit(cmp_ctx_t *ctx) {
         if (!read_type_size(ctx, type_marker, cmp_type, &size)) {
           return false;
         }
-        element_count += ((uint64_t)size) * 2;
+        element_count += ((size_t)size) * 2;
         break;
       default:
         break;
@@ -2996,6 +3025,9 @@ bool cmp_object_as_char(cmp_object_t *obj, int8_t *c) {
         *c = obj->as.s8;
         return true;
       }
+      else {
+        return false;
+      }
     default:
         return false;
   }
@@ -3018,6 +3050,9 @@ bool cmp_object_as_short(cmp_object_t *obj, int16_t *s) {
       if (obj->as.u16 <= 32767) {
         *s = obj->as.u16;
         return true;
+      }
+      else {
+        return false;
       }
     default:
         return false;
@@ -3047,6 +3082,9 @@ bool cmp_object_as_int(cmp_object_t *obj, int32_t *i) {
       if (obj->as.u32 <= 2147483647) {
         *i = obj->as.u32;
         return true;
+      }
+      else {
+        return false;
       }
     default:
         return false;
@@ -3082,6 +3120,9 @@ bool cmp_object_as_long(cmp_object_t *obj, int64_t *d) {
       if (obj->as.u64 <= 9223372036854775807) {
         *d = obj->as.u64;
         return true;
+      }
+      else {
+        return false;
       }
     default:
         return false;
