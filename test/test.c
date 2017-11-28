@@ -2783,7 +2783,6 @@ static void test_string(void **state) {
   assert_true(cmp_write_str_v4(&cmp, str16, 300));
   assert_true(cmp_write_str_v4(&cmp, str32, 70000));
 
-  free(str8);
   free(str16);
   free(str32);
 
@@ -2817,6 +2816,8 @@ static void test_string(void **state) {
   assert_true(cmp_read_object(&cmp, &obj));
   assert_false(cmp_object_to_str(&cmp, &obj, str8, 5));
   assert_true(cmp_object_to_str(&cmp, &obj, str8, 6));
+
+  free(str8);
 }
 
 static void test_array(void **state) {
