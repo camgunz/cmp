@@ -2,8 +2,8 @@ CC ?= gcc
 CLANG ?= clang
 
 CFLAGS ?= -Werror -Wall -Wextra -funsigned-char -fwrapv -Wconversion -Wno-sign-conversion -Wmissing-format-attribute -Wpointer-arith -Wformat-nonliteral -Winit-self -Wwrite-strings -Wshadow -Wenum-compare -Wempty-body -Wparentheses -Wcast-align -Wstrict-aliasing --pedantic-errors
-CMPCFLAGS ?= '--std=c89'
-TESTCFLAGS ?= -Wno-error=deprecated-declarations -Wno-deprecated-declarations -O0
+CMPCFLAGS ?= -std=c89
+TESTCFLAGS ?= -std=c99 -Wno-error=deprecated-declarations -Wno-deprecated-declarations -O0
 
 ADDRCFLAGS ?= -fsanitize=address
 MEMCFLAGS ?= -fsanitize=memory -fno-omit-frame-pointer -fno-optimize-sibling-calls
