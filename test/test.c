@@ -328,6 +328,18 @@ static void setup_cmp_and_buf(cmp_ctx_t *cmp, buf_t *buf) {
   cmp_init(cmp, buf, buf_reader, buf_skipper, buf_writer);
 }
 
+static void teardown_cmp_and_buf(cmp_ctx_t *cmp, buf_t *buf) {
+  reader_successes = -1;
+  writer_successes = -1;
+  skipper_successes = -1;
+  M_BufferFree(buf);
+  cmp->error = 0;
+  cmp->buf = NULL;
+  cmp->read = NULL;
+  cmp->skip = NULL;
+  cmp->write = NULL;
+}
+
 static void test_msgpack(void **state) {
   buf_t in_buf;
   buf_t out_buf;
@@ -351,8 +363,8 @@ static void test_msgpack(void **state) {
 
   assert_memory_equal(in_buf.data, out_buf.data, out_buf.size);
 
-  M_BufferFree(&in_buf);
-  M_BufferFree(&out_buf);
+  teardown_cmp_and_buf(&in_cmp, &in_buf);
+  teardown_cmp_and_buf(&out_cmp, &out_buf);
 }
 
 static void test_fixedint(void **state) {
@@ -439,6 +451,8 @@ static void test_fixedint(void **state) {
   test_int_format(
     cmp_write_nfix, cmp_read_sinteger, s8, int64_t, -32, "\xe0", 1
   );
+
+  teardown_cmp_and_buf(&cmp, &buf);
 }
 
 static void test_numbers(void **state) {
@@ -2335,6 +2349,8 @@ static void test_numbers(void **state) {
   assert_false(cmp_object_as_short(&obj, &s16));
   assert_false(cmp_object_as_int(&obj, &s32));
   assert_false(cmp_object_as_long(&obj, &s64));
+
+  teardown_cmp_and_buf(&cmp, &buf);
 }
 
 static void test_conversions(void **state) {
@@ -2374,6 +2390,8 @@ static void test_conversions(void **state) {
 
   assert_false(cmp_object_to_str(&cmp, &obj, NULL, 0));
   assert_false(cmp_object_to_bin(&cmp, &obj, NULL, 0));
+
+  teardown_cmp_and_buf(&cmp, &buf);
 }
 
 static void test_nil(void **state) {
@@ -2404,6 +2422,8 @@ static void test_nil(void **state) {
   assert_true(cmp_write_true(&cmp));
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_nil(&cmp));
+
+  teardown_cmp_and_buf(&cmp, &buf);
 }
 
 static void test_boolean(void **state) {
@@ -2446,6 +2466,8 @@ static void test_boolean(void **state) {
   assert_false(cmp_read_bool(&cmp, &b));
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_bool_as_u8(&cmp, &u8));
+
+  teardown_cmp_and_buf(&cmp, &buf);
 }
 
 static void test_bin(void **state) {
@@ -2588,6 +2610,8 @@ static void test_bin(void **state) {
   free(bin8);
   free(bin16);
   free(bin32);
+
+  teardown_cmp_and_buf(&cmp, &buf);
 }
 
 static void test_string(void **state) {
@@ -2818,6 +2842,8 @@ static void test_string(void **state) {
   assert_true(cmp_object_to_str(&cmp, &obj, str8, 6));
 
   free(str8);
+
+  teardown_cmp_and_buf(&cmp, &buf);
 }
 
 static void test_array(void **state) {
@@ -2912,6 +2938,8 @@ static void test_array(void **state) {
     uint64_t n;
     assert_true(cmp_read_uinteger(&cmp, &n));
   }
+
+  teardown_cmp_and_buf(&cmp, &buf);
 }
 
 static void test_map(void **state) {
@@ -3048,6 +3076,8 @@ static void test_map(void **state) {
     assert_true(cmp_read_uinteger(&cmp, &n));
     assert_true(cmp_read_uinteger(&cmp, &n));
   }
+
+  teardown_cmp_and_buf(&cmp, &buf);
 }
 
 static void test_ext(void **state) {
@@ -3368,6 +3398,8 @@ static void test_ext(void **state) {
   free(outbuf16);
   free(buf32);
   free(outbuf32);
+
+  teardown_cmp_and_buf(&cmp, &buf);
 }
 
 static void test_obj(void **state) {
@@ -4112,6 +4144,8 @@ static void test_obj(void **state) {
   obj.type = 100;
   assert_false(cmp_write_object(&cmp, &obj));
   assert_false(cmp_write_object_v4(&cmp, &obj));
+
+  teardown_cmp_and_buf(&cmp, &buf);
 }
 
 /* Thanks to andreyvps for this test */
@@ -4178,6 +4212,8 @@ void test_float_flip(void **state) {
    */
 
   assert_true(in == out);
+
+  teardown_cmp_and_buf(&cmp, &buf);
 }
 
 void test_skipping(void **state) {
@@ -4462,6 +4498,8 @@ void test_skipping(void **state) {
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_read_object(&cmp, &obj));
   assert_int_equal(obj.type, CMP_TYPE_ARRAY32);
+
+  teardown_cmp_and_buf(&cmp, &buf);
 }
 
 void test_errors(void **state) {
@@ -5341,6 +5379,7 @@ void test_errors(void **state) {
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_pfix(&cmp, &u8));
 
+  teardown_cmp_and_buf(&cmp, &buf);
 }
 
 void test_version(void **state) {
