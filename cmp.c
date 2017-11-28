@@ -28,7 +28,7 @@ THE SOFTWARE.
 
 #include "cmp.h"
 
-static const uint32_t version = 17;
+static const uint32_t version = 18;
 static const uint32_t mp_version = 5;
 
 enum {
