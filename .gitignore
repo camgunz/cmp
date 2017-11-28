@@ -34,6 +34,9 @@
 test/test-cmp
 cmptest
 cmptest2
+cmpaddrtest
+cmpmemtest
+cmpubtest
 
 # Example executables
 examples/example1

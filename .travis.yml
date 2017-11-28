@@ -11,6 +11,7 @@ addons:
       - libffi-dev
       - libssl-dev
       - libcmocka-dev
+      - clang
 
 before_install:
   - pip install --user cpp-coveralls
