@@ -5379,6 +5379,16 @@ void test_errors(void **state) {
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_pfix(&cmp, &u8));
 
+  free(bin8);
+  free(bin16);
+  free(bin32);
+  free(str8);
+  free(str16);
+  free(str32);
+  free(ext8);
+  free(ext16);
+  free(ext32);
+
   teardown_cmp_and_buf(&cmp, &buf);
 }
 
