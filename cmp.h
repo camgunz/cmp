@@ -326,6 +326,27 @@ bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj);
 bool cmp_skip_object(cmp_ctx_t *ctx, cmp_object_t *obj);
 
 /*
+ * This is similar to `cmp_skip_object_flat`, except it tolerates flat arrays
+ * and maps.  If when skipping such an array or map this function encounteres
+ * another array/map, it will:
+ *   - If `obj` is not `NULL`, fill in `obj` with that (nested) object
+ *   - Set `ctx->error` to `SKIP_DEPTH_LIMIT_EXCEEDED_ERROR`
+ *   - Return `false`
+ * Otherwise:
+ *   - (Don't touch `obj`)
+ *   - Return `true`
+ */
+bool cmp_skip_object_flat(cmp_ctx_t *ctx, cmp_object_t *obj);
+
+/*
+ * WARNING: THIS FUNCTION IS DEPRECATED AND WILL BE REMOVED IN A FUTURE RELEASE
+ *
+ * There is no way to track depths across elements without allocation.  For
+ * example, an array constructed as: `[ [] [] [] [] [] [] [] [] [] [] ]`
+ * should be able to be skipped with `cmp_skip_object_limit(&cmp, &obj, 2)`.
+ * However, because we cannot track depth across the elements, there's no way
+ * to reset it after descending down into each element.
+ *
  * This is similar to `cmp_skip_object`, except it tolerates up to `limit`
  * levels of nesting.  For example, in order to skip an array that contains a
  * map, call `cmp_skip_object_limit(ctx, &obj, 2)`.  Or in other words,
@@ -338,7 +359,15 @@ bool cmp_skip_object(cmp_ctx_t *ctx, cmp_object_t *obj);
  * contains 4 arrays that each contain 1 string, you would still call
  * `cmp_skip_object_limit(ctx, &obj, 2).
  */
-bool cmp_skip_object_limit(cmp_ctx_t *ctx, cmp_object_t *obj, uint32_t limit);
+bool cmp_skip_object_limit(cmp_ctx_t *ctx, cmp_object_t *obj, uint32_t limit)
+#ifdef __GNUC__
+  __attribute__((deprecated))
+#endif
+;
+
+#ifdef _MSC_VER
+#pragma deprecated(cmp_skip_object_limit)
+#endif
 
 /*
  * This is similar to `cmp_skip_object`, except it will continually skip
