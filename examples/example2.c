@@ -54,7 +54,7 @@ static void error_and_exit(const char *msg) {
 }
 
 int main(void) {
-    FILE *fh = NULL;
+    FILE *fh;
     cmp_ctx_t cmp;
     uint16_t year = 1983;
     uint8_t month = 5;

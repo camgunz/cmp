@@ -51,7 +51,7 @@ static void error_and_exit(const char *msg) {
 }
 
 int main(void) {
-    FILE *fh = NULL;
+    FILE *fh;
     cmp_ctx_t cmp;
     uint32_t array_size = 0;
     uint32_t str_size = 0;
