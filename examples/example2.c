@@ -301,7 +301,7 @@ int main(void) {
 
     memset(sbuf, 0, sizeof(sbuf));
     binary_size = sizeof(sbuf);
-    if (!cmp_read_bin(&cmp, &sbuf, &binary_size))
+    if (!cmp_read_bin(&cmp, sbuf, &binary_size))
         error_and_exit(cmp_strerror(&cmp));
 
     if (memcmp(sbuf, "MessagePack", 11) != 0)
@@ -309,7 +309,7 @@ int main(void) {
 
     memset(sbuf, 0, sizeof(sbuf));
     binary_size = sizeof(sbuf);
-    if (!cmp_read_bin(&cmp, &sbuf, &binary_size))
+    if (!cmp_read_bin(&cmp, sbuf, &binary_size))
         error_and_exit(cmp_strerror(&cmp));
 
     if (memcmp(sbuf, "is great", 8) != 0)
