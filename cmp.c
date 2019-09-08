@@ -98,7 +98,7 @@ enum {
   ERROR_MAX
 };
 
-const char *cmp_error_messages[ERROR_MAX + 1] = {
+const char * const cmp_error_messages[ERROR_MAX + 1] = {
   "No Error",
   "Specified string data length is too long (> 0xFFFFFFFF)",
   "Specified binary data length is too long (> 0xFFFFFFFF)",
