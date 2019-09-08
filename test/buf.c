@@ -158,8 +158,8 @@ void M_BufferSetString(buf_t *buf, const char *data, size_t length) {
 }
 
 bool M_BufferSetFile(buf_t *buf, const char *filename) {
-  FILE *fp = NULL;
-  size_t length = 0;
+  FILE *fp;
+  size_t length;
   bool out = false;
 
   if ((fp = fopen(filename, "rb")) == NULL)
