@@ -181,7 +181,7 @@ static uint64_t be64(uint64_t x) {
   return x;
 }
 
-static float decode_befloat(char *b) {
+static float decode_befloat(const char *b) {
   float f = 0.;
   char *fb = (char *)&f;
 
@@ -195,7 +195,7 @@ static float decode_befloat(char *b) {
   return f;
 }
 
-static double decode_bedouble(char *b) {
+static double decode_bedouble(const char *b) {
   double d = 0.;
   char *db = (char *)&d;
 
