@@ -127,7 +127,7 @@ static uint16_t be16(uint16_t x) {
   char *b = (char *)&x;
 
   if (!is_bigendian()) {
-    char swap = 0;
+    char swap;
 
     swap = b[0];
     b[0] = b[1];
@@ -141,7 +141,7 @@ static uint32_t be32(uint32_t x) {
   char *b = (char *)&x;
 
   if (!is_bigendian()) {
-    char swap = 0;
+    char swap;
 
     swap = b[0];
     b[0] = b[3];
@@ -159,7 +159,7 @@ static uint64_t be64(uint64_t x) {
   char *b = (char *)&x;
 
   if (!is_bigendian()) {
-    char swap = 0;
+    char swap;
 
     swap = b[0];
     b[0] = b[7];
