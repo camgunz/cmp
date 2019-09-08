@@ -226,14 +226,14 @@ bool cmp_write_ext(cmp_ctx_t *ctx, int8_t type, uint32_t size,
 bool cmp_write_ext_marker(cmp_ctx_t *ctx, int8_t type, uint32_t size);
 
 /* Writes an object to the backend */
-bool cmp_write_object(cmp_ctx_t *ctx, cmp_object_t *obj);
+bool cmp_write_object(cmp_ctx_t *ctx, const cmp_object_t *obj);
 
 /*
  * Writes an object to the backend. This avoids using the STR8 marker, which
  * is unsupported by MessagePack v4, the version implemented by many other
  * MessagePack libraries.
  */
-bool cmp_write_object_v4(cmp_ctx_t *ctx, cmp_object_t *obj);
+bool cmp_write_object_v4(cmp_ctx_t *ctx, const cmp_object_t *obj);
 
 /* Reads a signed integer that fits inside a signed char */
 bool cmp_read_char(cmp_ctx_t *ctx, int8_t *c);
@@ -491,47 +491,47 @@ bool cmp_read_ext32(cmp_ctx_t *ctx, int8_t *type, uint32_t *size, void *data);
  * ============================================================================
  */
 
-bool cmp_object_is_char(cmp_object_t *obj);
-bool cmp_object_is_short(cmp_object_t *obj);
-bool cmp_object_is_int(cmp_object_t *obj);
-bool cmp_object_is_long(cmp_object_t *obj);
-bool cmp_object_is_sinteger(cmp_object_t *obj);
-bool cmp_object_is_uchar(cmp_object_t *obj);
-bool cmp_object_is_ushort(cmp_object_t *obj);
-bool cmp_object_is_uint(cmp_object_t *obj);
-bool cmp_object_is_ulong(cmp_object_t *obj);
-bool cmp_object_is_uinteger(cmp_object_t *obj);
-bool cmp_object_is_float(cmp_object_t *obj);
-bool cmp_object_is_double(cmp_object_t *obj);
-bool cmp_object_is_nil(cmp_object_t *obj);
-bool cmp_object_is_bool(cmp_object_t *obj);
-bool cmp_object_is_str(cmp_object_t *obj);
-bool cmp_object_is_bin(cmp_object_t *obj);
-bool cmp_object_is_array(cmp_object_t *obj);
-bool cmp_object_is_map(cmp_object_t *obj);
-bool cmp_object_is_ext(cmp_object_t *obj);
+bool cmp_object_is_char(const cmp_object_t *obj);
+bool cmp_object_is_short(const cmp_object_t *obj);
+bool cmp_object_is_int(const cmp_object_t *obj);
+bool cmp_object_is_long(const cmp_object_t *obj);
+bool cmp_object_is_sinteger(const cmp_object_t *obj);
+bool cmp_object_is_uchar(const cmp_object_t *obj);
+bool cmp_object_is_ushort(const cmp_object_t *obj);
+bool cmp_object_is_uint(const cmp_object_t *obj);
+bool cmp_object_is_ulong(const cmp_object_t *obj);
+bool cmp_object_is_uinteger(const cmp_object_t *obj);
+bool cmp_object_is_float(const cmp_object_t *obj);
+bool cmp_object_is_double(const cmp_object_t *obj);
+bool cmp_object_is_nil(const cmp_object_t *obj);
+bool cmp_object_is_bool(const cmp_object_t *obj);
+bool cmp_object_is_str(const cmp_object_t *obj);
+bool cmp_object_is_bin(const cmp_object_t *obj);
+bool cmp_object_is_array(const cmp_object_t *obj);
+bool cmp_object_is_map(const cmp_object_t *obj);
+bool cmp_object_is_ext(const cmp_object_t *obj);
 
-bool cmp_object_as_char(cmp_object_t *obj, int8_t *c);
-bool cmp_object_as_short(cmp_object_t *obj, int16_t *s);
-bool cmp_object_as_int(cmp_object_t *obj, int32_t *i);
-bool cmp_object_as_long(cmp_object_t *obj, int64_t *d);
-bool cmp_object_as_sinteger(cmp_object_t *obj, int64_t *d);
-bool cmp_object_as_uchar(cmp_object_t *obj, uint8_t *c);
-bool cmp_object_as_ushort(cmp_object_t *obj, uint16_t *s);
-bool cmp_object_as_uint(cmp_object_t *obj, uint32_t *i);
-bool cmp_object_as_ulong(cmp_object_t *obj, uint64_t *u);
-bool cmp_object_as_uinteger(cmp_object_t *obj, uint64_t *u);
-bool cmp_object_as_float(cmp_object_t *obj, float *f);
-bool cmp_object_as_double(cmp_object_t *obj, double *d);
-bool cmp_object_as_bool(cmp_object_t *obj, bool *b);
-bool cmp_object_as_str(cmp_object_t *obj, uint32_t *size);
-bool cmp_object_as_bin(cmp_object_t *obj, uint32_t *size);
-bool cmp_object_as_array(cmp_object_t *obj, uint32_t *size);
-bool cmp_object_as_map(cmp_object_t *obj, uint32_t *size);
-bool cmp_object_as_ext(cmp_object_t *obj, int8_t *type, uint32_t *size);
+bool cmp_object_as_char(const cmp_object_t *obj, int8_t *c);
+bool cmp_object_as_short(const cmp_object_t *obj, int16_t *s);
+bool cmp_object_as_int(const cmp_object_t *obj, int32_t *i);
+bool cmp_object_as_long(const cmp_object_t *obj, int64_t *d);
+bool cmp_object_as_sinteger(const cmp_object_t *obj, int64_t *d);
+bool cmp_object_as_uchar(const cmp_object_t *obj, uint8_t *c);
+bool cmp_object_as_ushort(const cmp_object_t *obj, uint16_t *s);
+bool cmp_object_as_uint(const cmp_object_t *obj, uint32_t *i);
+bool cmp_object_as_ulong(const cmp_object_t *obj, uint64_t *u);
+bool cmp_object_as_uinteger(const cmp_object_t *obj, uint64_t *u);
+bool cmp_object_as_float(const cmp_object_t *obj, float *f);
+bool cmp_object_as_double(const cmp_object_t *obj, double *d);
+bool cmp_object_as_bool(const cmp_object_t *obj, bool *b);
+bool cmp_object_as_str(const cmp_object_t *obj, uint32_t *size);
+bool cmp_object_as_bin(const cmp_object_t *obj, uint32_t *size);
+bool cmp_object_as_array(const cmp_object_t *obj, uint32_t *size);
+bool cmp_object_as_map(const cmp_object_t *obj, uint32_t *size);
+bool cmp_object_as_ext(const cmp_object_t *obj, int8_t *type, uint32_t *size);
 
-bool cmp_object_to_str(cmp_ctx_t *ctx, cmp_object_t *obj, char *data, uint32_t buf_size);
-bool cmp_object_to_bin(cmp_ctx_t *ctx, cmp_object_t *obj, void *data, uint32_t buf_size);
+bool cmp_object_to_str(cmp_ctx_t *ctx, const cmp_object_t *obj, char *data, uint32_t buf_size);
+bool cmp_object_to_bin(cmp_ctx_t *ctx, const cmp_object_t *obj, void *data, uint32_t buf_size);
 
 #ifdef __cplusplus
 } /* extern "C" */
