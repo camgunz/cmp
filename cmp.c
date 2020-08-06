@@ -181,6 +181,7 @@ static uint64_t be64(uint64_t x) {
   return x;
 }
 
+#ifndef NO_FPU
 static float decode_befloat(char *b) {
   float f = 0.;
   char *fb = (char *)&f;
@@ -212,6 +213,7 @@ static double decode_bedouble(char *b) {
 
   return d;
 }
+#endif // NO_FPU
 
 static bool read_byte(cmp_ctx_t *ctx, uint8_t *x) {
   return ctx->read(ctx, x, sizeof(uint8_t));
@@ -641,6 +643,7 @@ static bool read_obj_data(cmp_ctx_t *ctx, uint8_t type_marker,
       return true;
     case CMP_TYPE_FLOAT:
     {
+#ifndef NO_FPU
       char bytes[4];
 
       if (!ctx->read(ctx, bytes, 4)) {
@@ -649,9 +652,13 @@ static bool read_obj_data(cmp_ctx_t *ctx, uint8_t type_marker,
       }
       obj->as.flt = decode_befloat(bytes);
       return true;
+#else // NO_FPU
+      return false;
+#endif // NO_FPU
     }
     case CMP_TYPE_DOUBLE:
     {
+#ifndef NO_FPU
       char bytes[8];
 
       if (!ctx->read(ctx, bytes, 8)) {
@@ -660,6 +667,9 @@ static bool read_obj_data(cmp_ctx_t *ctx, uint8_t type_marker,
       }
       obj->as.dbl = decode_bedouble(bytes);
       return true;
+#else // NO_FPU
+      return false;
+#endif // NO_FPU
     }
     case CMP_TYPE_BIN8:
     case CMP_TYPE_BIN16:
@@ -901,6 +911,7 @@ bool cmp_write_uinteger(cmp_ctx_t *ctx, uint64_t u) {
   return cmp_write_u64(ctx, u);
 }
 
+#ifndef NO_FPU
 bool cmp_write_float(cmp_ctx_t *ctx, float f) {
   if (!write_type_marker(ctx, FLOAT_MARKER))
     return false;
@@ -952,6 +963,7 @@ bool cmp_write_decimal(cmp_ctx_t *ctx, double d) {
   else
     return cmp_write_double(ctx, d);
 }
+#endif // NO_FPU
 
 bool cmp_write_nil(cmp_ctx_t *ctx) {
   return write_type_marker(ctx, NIL_MARKER);
@@ -1569,9 +1581,17 @@ bool cmp_write_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
     case CMP_TYPE_EXT32:
       return cmp_write_ext32_marker(ctx, obj->as.ext.type, obj->as.ext.size);
     case CMP_TYPE_FLOAT:
+#ifndef NO_FPU
       return cmp_write_float(ctx, obj->as.flt);
+#else // NO_FPU
+      return false;
+#endif // NO_FPU
     case CMP_TYPE_DOUBLE:
+#ifndef NO_FPU
       return cmp_write_double(ctx, obj->as.dbl);
+#else // NO_FPU
+      return false;
+#endif
     case CMP_TYPE_UINT8:
       return cmp_write_u8(ctx, obj->as.u8);
     case CMP_TYPE_UINT16:
@@ -1645,9 +1665,17 @@ bool cmp_write_object_v4(cmp_ctx_t *ctx, cmp_object_t *obj) {
     case CMP_TYPE_EXT32:
       return cmp_write_ext32_marker(ctx, obj->as.ext.type, obj->as.ext.size);
     case CMP_TYPE_FLOAT:
+#ifndef NO_FPU
       return cmp_write_float(ctx, obj->as.flt);
+#else // NO_FPU
+        return false;
+#endif
     case CMP_TYPE_DOUBLE:
+#ifndef NO_FPU
       return cmp_write_double(ctx, obj->as.dbl);
+#else
+      return false;
+#endif
     case CMP_TYPE_UINT8:
       return cmp_write_u8(ctx, obj->as.u8);
     case CMP_TYPE_UINT16:
@@ -2171,6 +2199,7 @@ bool cmp_read_uinteger(cmp_ctx_t *ctx, uint64_t *d) {
   return cmp_read_ulong(ctx, d);
 }
 
+#ifndef NO_FPU
 bool cmp_read_float(cmp_ctx_t *ctx, float *f) {
   cmp_object_t obj;
 
@@ -2221,6 +2250,7 @@ bool cmp_read_decimal(cmp_ctx_t *ctx, double *d) {
       return false;
   }
 }
+#endif // NO_FPU
 
 bool cmp_read_nil(cmp_ctx_t *ctx) {
   cmp_object_t obj;
@@ -3342,6 +3372,7 @@ bool cmp_object_as_uinteger(cmp_object_t *obj, uint64_t *d) {
   return cmp_object_as_ulong(obj, d);
 }
 
+#ifndef NO_FPU
 bool cmp_object_as_float(cmp_object_t *obj, float *f) {
   if (obj->type == CMP_TYPE_FLOAT) {
     *f = obj->as.flt;
@@ -3359,6 +3390,7 @@ bool cmp_object_as_double(cmp_object_t *obj, double *d) {
 
   return false;
 }
+#endif // NO_FPU
 
 bool cmp_object_as_bool(cmp_object_t *obj, bool *b) {
   if (obj->type == CMP_TYPE_BOOLEAN) {
