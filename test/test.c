@@ -4550,29 +4550,37 @@ void test_skipping(void **state) {
 #endif
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_read_object(&cmp, &obj));
   assert_int_equal(obj.type, CMP_TYPE_FIXEXT1);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_read_object(&cmp, &obj));
   assert_int_equal(obj.type, CMP_TYPE_FIXEXT2);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_read_object(&cmp, &obj));
   assert_int_equal(obj.type, CMP_TYPE_FIXEXT4);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4580,18 +4588,10 @@ void test_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_FIXEXT8);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_read_object(&cmp, &obj));
-  assert_int_equal(obj.type, CMP_TYPE_FIXEXT16);
-
-  M_BufferSeek(&buf, 0);
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4600,8 +4600,22 @@ void test_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_FIXEXT16);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXEXT16);
+
+  M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4611,8 +4625,10 @@ void test_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_EXT8);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4623,8 +4639,10 @@ void test_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_EXT16);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4636,8 +4654,10 @@ void test_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_EXT32);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4650,8 +4670,10 @@ void test_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_NIL);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4856,29 +4878,37 @@ void test_deprecated_limited_skipping(void **state) {
 #endif
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_read_object(&cmp, &obj));
   assert_int_equal(obj.type, CMP_TYPE_FIXEXT1);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_read_object(&cmp, &obj));
   assert_int_equal(obj.type, CMP_TYPE_FIXEXT2);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_read_object(&cmp, &obj));
   assert_int_equal(obj.type, CMP_TYPE_FIXEXT4);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4886,18 +4916,10 @@ void test_deprecated_limited_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_FIXEXT8);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_read_object(&cmp, &obj));
-  assert_int_equal(obj.type, CMP_TYPE_FIXEXT16);
-
-  M_BufferSeek(&buf, 0);
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4906,8 +4928,22 @@ void test_deprecated_limited_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_FIXEXT16);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXEXT16);
+
+  M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4917,8 +4953,10 @@ void test_deprecated_limited_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_EXT8);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4929,8 +4967,10 @@ void test_deprecated_limited_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_EXT16);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4942,8 +4982,10 @@ void test_deprecated_limited_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_EXT32);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4956,8 +4998,10 @@ void test_deprecated_limited_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_NIL);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
