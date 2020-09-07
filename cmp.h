@@ -332,8 +332,8 @@ bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj);
 bool cmp_skip_object(cmp_ctx_t *ctx, cmp_object_t *obj);
 
 /*
- * This is similar to `cmp_skip_object_flat`, except it tolerates flat arrays
- * and maps.  If when skipping such an array or map this function encounters
+ * This is similar to `cmp_skip_object`, except it tolerates flat arrays and
+ * maps.  If when skipping such an array or map this function encounters
  * another array/map, it will:
  *   - If `obj` is not `NULL`, fill in `obj` with that (nested) object
  *   - Set `ctx->error` to `SKIP_DEPTH_LIMIT_EXCEEDED_ERROR`
