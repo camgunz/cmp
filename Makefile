@@ -14,10 +14,7 @@ UBCFLAGS ?= -fsanitize=undefined
 
 all: cmptest example1 example2
 
-test: addrtest memtest ubtest unittest nofpucmptest
-
-unittest: cmptest
-	@./cmptest
+test: addrtest memtest nofloattest ubtest unittest
 
 addrtest: cmpaddrtest
 	@./cmpaddrtest
@@ -25,11 +22,15 @@ addrtest: cmpaddrtest
 memtest: cmpmemtest
 	@./cmpmemtest
 
+nofloattest: cmpnofloattest
+	@./cmpnofloattest
+	@rm -f *.gcno *.gcda *.info
+
 ubtest: cmpubtest
 	@./cmpubtest
 
-nofloattest: cmpnofloattest
-	@./cmpnofloattest
+unittest: cmptest
+	@./cmptest
 
 cmp.o:
 	$(CC) $(CFLAGS) $(CMPCFLAGS) -fprofile-arcs -ftest-coverage -g -I. -c cmp.c
@@ -79,6 +80,7 @@ clean:
 	@rm -f cmpaddrtest
 	@rm -f cmpmemtest
 	@rm -f cmpubtest
+	@rm -f cmpnofloattest
 	@rm -f example1
 	@rm -f example2
 	@rm -f *.o
