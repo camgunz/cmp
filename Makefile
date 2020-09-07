@@ -14,6 +14,11 @@ UBCFLAGS ?= -fsanitize=undefined
 
 all: cmptest example1 example2
 
+profile: cmpprof
+	@env LD_PRELOAD=/usr/lib/libprofiler.so CPUPROFILE=cmp.prof \
+		CPUPROFILE_FREQUENCY=1000 ./cmpprof
+	@pprof --web ./cmpprof cmp.prof
+
 test: addrtest memtest nofloattest ubtest unittest
 
 addrtest: cmpaddrtest
@@ -35,13 +40,19 @@ unittest: cmptest
 cmp.o:
 	$(CC) $(CFLAGS) $(CMPCFLAGS) -fprofile-arcs -ftest-coverage -g -I. -c cmp.c
 
+cmpprof: cmp.o
+	$(CC) $(CFLAGS) $(TESTCFLAGS) -fprofile-arcs -I. \
+		-o cmpprof cmp.o test/profile.c test/tests.c test/buf.c test/utils.c \
+		-lcmocka -lprofiler
+
 cmptest: cmp.o
 	$(CC) $(CFLAGS) $(TESTCFLAGS) -fprofile-arcs -ftest-coverage -g -I. \
-		-o cmptest cmp.o test/test.c test/buf.c test/utils.c -lcmocka
+		-o cmptest cmp.o test/test.c test/tests.c test/buf.c test/utils.c -lcmocka
 
 cmpnofloattest: cmp.o
 	$(CC) $(CFLAGS) $(NOFPUTESTCFLAGS) -fprofile-arcs -ftest-coverage -g -I. \
-		-o cmpnofloattest cmp.o test/test.c test/buf.c test/utils.c -lcmocka
+		-o cmpnofloattest cmp.o test/test.c test/tests.c test/buf.c test/utils.c \
+		-lcmocka
 
 clangcmp.o:
 	$(CLANG) $(CFLAGS) $(CMPCFLAGS) -fprofile-arcs -ftest-coverage -g -I. \
@@ -49,15 +60,15 @@ clangcmp.o:
 
 cmpaddrtest: clangcmp.o clean
 	$(CLANG) $(CFLAGS) $(TESTCFLAGS) $(ADDRCFLAGS) -I. -o cmpaddrtest cmp.c \
-		test/test.c test/buf.c test/utils.c -lcmocka
+		test/test.c test/tests.c test/buf.c test/utils.c -lcmocka
 
 cmpmemtest: clangcmp.o clean
 	$(CLANG) $(CFLAGS) $(TESTCFLAGS) $(MEMCFLAGS) -I. -o cmpmemtest cmp.c \
-		test/test.c test/buf.c test/utils.c -lcmocka
+		test/test.c test/tests.c test/buf.c test/utils.c -lcmocka
 
 cmpubtest: clangcmp.o clean
 	$(CLANG) $(CFLAGS) $(TESTCFLAGS) $(UBCFLAGS) -I. -o cmpubtest cmp.c \
-		test/test.c test/buf.c test/utils.c -lcmocka
+		test/test.c test/tests.c test/buf.c test/utils.c -lcmocka
 
 example1:
 	$(CC) $(CFLAGS) --std=c89 -O3 -I. -o example1 cmp.c examples/example1.c
@@ -76,11 +87,13 @@ coverage:
 	@genhtml -q -o coverage total_coverage.info
 
 clean:
+	@rm -f cmp.prof
 	@rm -f cmptest
 	@rm -f cmpaddrtest
 	@rm -f cmpmemtest
 	@rm -f cmpubtest
 	@rm -f cmpnofloattest
+	@rm -f cmpprof
 	@rm -f example1
 	@rm -f example2
 	@rm -f *.o

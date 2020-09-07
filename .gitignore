@@ -31,6 +31,9 @@
 *.gcno
 coverage/
 
+# Profiling files
+*.prof
+
 # Testing executable
 test/test-cmp
 cmptest
@@ -38,6 +41,7 @@ cmptest2
 cmpaddrtest
 cmpmemtest
 cmpnofloattest
+cmpprof
 cmpubtest
 
 # Example executables
@@ -48,4 +52,3 @@ example2
 
 # Test data
 cmp_data.dat
-

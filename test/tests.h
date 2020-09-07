@@ -24,43 +24,33 @@ THE SOFTWARE.
 
 #include <setjmp.h>
 #include <stdarg.h>
-#include <stddef.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <limits.h>
 
 #include <cmocka.h>
 
-#include "tests.h"
-
-int main(void) {
-  /* Use the old CMocka API because Travis' latest Ubuntu is Trusty */
-  const UnitTest tests[17] = {
-    unit_test(test_msgpack),
-    unit_test(test_fixedint),
-    unit_test(test_numbers),
-    unit_test(test_nil),
-    unit_test(test_boolean),
-    unit_test(test_bin),
-    unit_test(test_string),
-    unit_test(test_array),
-    unit_test(test_map),
-    unit_test(test_ext),
-    unit_test(test_obj),
-
+void test_msgpack(void **state);
+void test_fixedint(void **state);
+void test_numbers(void **state);
+void test_conversions(void **state);
+void test_nil(void **state);
+void test_boolean(void **state);
+void test_bin(void **state);
+void test_string(void **state);
+void test_array(void **state);
+void test_map(void **state);
+void test_ext(void **state);
+void test_obj(void **state);
 #ifndef CMP_NO_FLOAT
-    unit_test(test_float_flip),
+void test_float_flip(void **state);
 #endif
-
-    unit_test(test_skipping),
-    unit_test(test_deprecated_limited_skipping),
-    unit_test(test_errors),
-    unit_test(test_version),
-    unit_test(test_conversions),
-  };
-
-  if (run_tests(tests)) {
-    return EXIT_FAILURE;
-  }
-
-  return EXIT_SUCCESS;
-}
+void test_skipping(void **state);
+void test_deprecated_limited_skipping(void **state);
+void test_errors(void **state);
+void test_version(void **state);
 
 /* vi: set et ts=2 sw=2: */

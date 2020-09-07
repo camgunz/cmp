@@ -22,43 +22,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <setjmp.h>
 #include <stdarg.h>
-#include <stddef.h>
-
-#include <cmocka.h>
 
 #include "tests.h"
 
 int main(void) {
-  /* Use the old CMocka API because Travis' latest Ubuntu is Trusty */
-  const UnitTest tests[17] = {
-    unit_test(test_msgpack),
-    unit_test(test_fixedint),
-    unit_test(test_numbers),
-    unit_test(test_nil),
-    unit_test(test_boolean),
-    unit_test(test_bin),
-    unit_test(test_string),
-    unit_test(test_array),
-    unit_test(test_map),
-    unit_test(test_ext),
-    unit_test(test_obj),
+  test_msgpack(NULL);
+  test_fixedint(NULL);
+  test_numbers(NULL);
+  test_nil(NULL);
+  test_boolean(NULL);
+  test_bin(NULL);
+  test_string(NULL);
+  test_array(NULL);
+  test_map(NULL);
+  test_ext(NULL);
+  test_obj(NULL);
 
 #ifndef CMP_NO_FLOAT
-    unit_test(test_float_flip),
+  test_float_flip(NULL);
 #endif
 
-    unit_test(test_skipping),
-    unit_test(test_deprecated_limited_skipping),
-    unit_test(test_errors),
-    unit_test(test_version),
-    unit_test(test_conversions),
-  };
-
-  if (run_tests(tests)) {
-    return EXIT_FAILURE;
-  }
+  test_skipping(NULL);
+  test_deprecated_limited_skipping(NULL);
+  test_errors(NULL);
+  test_version(NULL);
+  test_conversions(NULL);
 
   return EXIT_SUCCESS;
 }
