@@ -19,8 +19,6 @@ The following examples use a file as the backend, and are modeled after the
 examples included with the msgpack-c project.
 
 ```C
-#include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
