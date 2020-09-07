@@ -2,8 +2,9 @@ CC ?= gcc
 CLANG ?= clang
 
 CFLAGS ?= -Werror -Wall -Wextra -funsigned-char -fwrapv -Wconversion -Wno-sign-conversion -Wmissing-format-attribute -Wpointer-arith -Wformat-nonliteral -Winit-self -Wwrite-strings -Wshadow -Wenum-compare -Wempty-body -Wparentheses -Wcast-align -Wstrict-aliasing --pedantic-errors
-CMPCFLAGS ?= -std=c89
+CMPCFLAGS ?= -std=c89 -Wno-c99-extensions
 TESTCFLAGS ?= -std=c99 -Wno-error=deprecated-declarations -Wno-deprecated-declarations -O0
+NOFPUTESTCFLAGS ?= $(TESTCFLAGS) -DCMP_NO_FLOAT
 
 ADDRCFLAGS ?= -fsanitize=address
 MEMCFLAGS ?= -fsanitize=memory -fno-omit-frame-pointer -fno-optimize-sibling-calls
@@ -13,7 +14,7 @@ UBCFLAGS ?= -fsanitize=undefined
 
 all: cmptest example1 example2
 
-test: addrtest memtest ubtest unittest
+test: addrtest memtest ubtest unittest nofpucmptest
 
 unittest: cmptest
 	@./cmptest
@@ -27,23 +28,35 @@ memtest: cmpmemtest
 ubtest: cmpubtest
 	@./cmpubtest
 
+nofloattest: cmpnofloattest
+	@./cmpnofloattest
+
 cmp.o:
 	$(CC) $(CFLAGS) $(CMPCFLAGS) -fprofile-arcs -ftest-coverage -g -I. -c cmp.c
 
 cmptest: cmp.o
-	$(CC) $(CFLAGS) $(TESTCFLAGS) -fprofile-arcs -ftest-coverage -g -I. -o cmptest cmp.o test/test.c test/buf.c test/utils.c -lcmocka
+	$(CC) $(CFLAGS) $(TESTCFLAGS) -fprofile-arcs -ftest-coverage -g -I. \
+		-o cmptest cmp.o test/test.c test/buf.c test/utils.c -lcmocka
+
+cmpnofloattest: cmp.o
+	$(CC) $(CFLAGS) $(NOFPUTESTCFLAGS) -fprofile-arcs -ftest-coverage -g -I. \
+		-o cmpnofloattest cmp.o test/test.c test/buf.c test/utils.c -lcmocka
 
 clangcmp.o:
-	$(CLANG) $(CFLAGS) $(CMPCFLAGS) -fprofile-arcs -ftest-coverage -g -I. -c cmp.c -o clangcmp.o
+	$(CLANG) $(CFLAGS) $(CMPCFLAGS) -fprofile-arcs -ftest-coverage -g -I. \
+		-c cmp.c -o clangcmp.o
 
 cmpaddrtest: clangcmp.o clean
-	$(CLANG) $(CFLAGS) $(TESTCFLAGS) $(ADDRCFLAGS) -I. -o cmpaddrtest cmp.c test/test.c test/buf.c test/utils.c -lcmocka
+	$(CLANG) $(CFLAGS) $(TESTCFLAGS) $(ADDRCFLAGS) -I. -o cmpaddrtest cmp.c \
+		test/test.c test/buf.c test/utils.c -lcmocka
 
 cmpmemtest: clangcmp.o clean
-	$(CLANG) $(CFLAGS) $(TESTCFLAGS) $(MEMCFLAGS) -I. -o cmpmemtest cmp.c test/test.c test/buf.c test/utils.c -lcmocka
+	$(CLANG) $(CFLAGS) $(TESTCFLAGS) $(MEMCFLAGS) -I. -o cmpmemtest cmp.c \
+		test/test.c test/buf.c test/utils.c -lcmocka
 
 cmpubtest: clangcmp.o clean
-	$(CLANG) $(CFLAGS) $(TESTCFLAGS) $(UBCFLAGS) -I. -o cmpubtest cmp.c test/test.c test/buf.c test/utils.c -lcmocka
+	$(CLANG) $(CFLAGS) $(TESTCFLAGS) $(UBCFLAGS) -I. -o cmpubtest cmp.c \
+		test/test.c test/buf.c test/utils.c -lcmocka
 
 example1:
 	$(CC) $(CFLAGS) --std=c89 -O3 -I. -o example1 cmp.c examples/example1.c

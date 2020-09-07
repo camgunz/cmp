@@ -82,10 +82,12 @@ void M_BufferWriteLong(buf_t *buf, int64_t l);
 void M_BufferWriteLongs(buf_t *buf, const int64_t *longs, size_t count);
 void M_BufferWriteULong(buf_t *buf, uint64_t l);
 void M_BufferWriteULongs(buf_t *buf, const uint64_t *longs, size_t count);
+#ifndef CMP_NO_FLOAT
 void M_BufferWriteFloat(buf_t *buf, float f);
 void M_BufferWriteFloats(buf_t *buf, const float *floats, size_t count);
 void M_BufferWriteDouble(buf_t *buf, double d);
 void M_BufferWriteDoubles(buf_t *buf, const double *doubles, size_t count);
+#endif
 void M_BufferWriteString(buf_t *buf, const char *string, size_t length);
 void M_BufferWriteZeros(buf_t *buf, size_t count);
 
@@ -111,10 +113,12 @@ bool M_BufferReadLong(buf_t *buf, int64_t *l);
 bool M_BufferReadLongs(buf_t *buf, int64_t *l, size_t count);
 bool M_BufferReadULong(buf_t *buf, uint64_t *l);
 bool M_BufferReadULongs(buf_t *buf, uint64_t *l, size_t count);
+#ifndef CMP_NO_FLOAT
 bool M_BufferReadFloat(buf_t *buf, float *f);
 bool M_BufferReadFloats(buf_t *buf, float *f, size_t count);
 bool M_BufferReadDouble(buf_t *buf, double *d);
 bool M_BufferReadDoubles(buf_t *buf, double *d, size_t count);
+#endif
 bool M_BufferReadString(buf_t *buf, char *s, size_t length);
 bool M_BufferReadStringDup(buf_t *buf, char **s);
 bool M_BufferCopyString(buf_t *dst, buf_t *src);

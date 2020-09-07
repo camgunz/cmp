@@ -85,10 +85,10 @@ union cmp_object_data_u {
   int16_t   s16;
   int32_t   s32;
   int64_t   s64;
-#ifndef NO_FPU
+#ifndef CMP_NO_FLOAT
   float     flt;
   double    dbl;
-#endif // NO_FPU
+#endif /* CMP_NO_FLOAT */
   uint32_t  array_size;
   uint32_t  map_size;
   uint32_t  str_size;
@@ -149,13 +149,13 @@ bool cmp_write_integer(cmp_ctx_t *ctx, int64_t d);
 /* Writes an unsigned integer to the backend */
 bool cmp_write_uinteger(cmp_ctx_t *ctx, uint64_t u);
 
-#ifndef NO_FPU
 /*
  * Writes a floating-point value (either single or double-precision) to the
  * backend
  */
+#ifndef CMP_NO_FLOAT
 bool cmp_write_decimal(cmp_ctx_t *ctx, double d);
-#endif // NO_FPU
+#endif /* CMP_NO_FLOAT */
 
 /* Writes NULL to the backend */
 bool cmp_write_nil(cmp_ctx_t *ctx);
@@ -269,13 +269,13 @@ bool cmp_read_ulong(cmp_ctx_t *ctx, uint64_t *u);
 /* Reads an unsigned integer */
 bool cmp_read_uinteger(cmp_ctx_t *ctx, uint64_t *u);
 
-#ifndef NO_FPU
 /*
  * Reads a floating point value (either single or double-precision) from the
  * backend
  */
+#ifndef CMP_NO_FLOAT
 bool cmp_read_decimal(cmp_ctx_t *ctx, double *d);
-#endif // NO_FPU
+#endif /* CMP_NO_FLOAT */
 
 /* "Reads" (more like "skips") a NULL value from the backend */
 bool cmp_read_nil(cmp_ctx_t *ctx);
@@ -333,7 +333,7 @@ bool cmp_skip_object(cmp_ctx_t *ctx, cmp_object_t *obj);
 
 /*
  * This is similar to `cmp_skip_object_flat`, except it tolerates flat arrays
- * and maps.  If when skipping such an array or map this function encounteres
+ * and maps.  If when skipping such an array or map this function encounters
  * another array/map, it will:
  *   - If `obj` is not `NULL`, fill in `obj` with that (nested) object
  *   - Set `ctx->error` to `SKIP_DEPTH_LIMIT_EXCEEDED_ERROR`
@@ -407,10 +407,10 @@ bool cmp_write_u16(cmp_ctx_t *ctx, uint16_t s);
 bool cmp_write_u32(cmp_ctx_t *ctx, uint32_t i);
 bool cmp_write_u64(cmp_ctx_t *ctx, uint64_t l);
 
-#ifndef NO_FPU
+#ifndef CMP_NO_FLOAT
 bool cmp_write_float(cmp_ctx_t *ctx, float f);
 bool cmp_write_double(cmp_ctx_t *ctx, double d);
-#endif // NO_FPU
+#endif /* CMP_NO_FLOAT */
 
 bool cmp_write_fixstr_marker(cmp_ctx_t *ctx, uint8_t size);
 bool cmp_write_fixstr(cmp_ctx_t *ctx, const char *data, uint8_t size);
@@ -472,10 +472,10 @@ bool cmp_read_u16(cmp_ctx_t *ctx, uint16_t *s);
 bool cmp_read_u32(cmp_ctx_t *ctx, uint32_t *i);
 bool cmp_read_u64(cmp_ctx_t *ctx, uint64_t *l);
 
-#ifndef NO_FPU
+#ifndef CMP_NO_FLOAT
 bool cmp_read_float(cmp_ctx_t *ctx, float *f);
 bool cmp_read_double(cmp_ctx_t *ctx, double *d);
-#endif // NO_FPU
+#endif /* CMP_NO_FLOAT */
 
 bool cmp_read_fixext1_marker(cmp_ctx_t *ctx, int8_t *type);
 bool cmp_read_fixext1(cmp_ctx_t *ctx, int8_t *type, void *data);
