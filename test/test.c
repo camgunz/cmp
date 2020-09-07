@@ -40,11 +40,19 @@ static int reader_successes = -1;
 static int writer_successes = -1;
 static int skipper_successes = -1;
 
+#ifndef CMP_NO_FLOAT
+
+#ifndef assert_float_equal
 #define assert_float_equal(f1, f2) \
   assert_memory_equal(&(f1), &(f2), sizeof(float))
+#endif
 
+#ifndef assert_double_equal
 #define assert_double_equal(d1, d2) \
   assert_memory_equal(&(d1), &(d2), sizeof(double))
+#endif
+
+#endif
 
 #define test_format(wfunc, rfunc, otype, ctype, in, fmt, dlen) do {           \
   M_BufferClear(&buf);                                                        \
@@ -93,6 +101,7 @@ static int skipper_successes = -1;
   assert_int_equal(in, value);                                         \
 } while (0)
 
+#ifndef CMP_NO_FLOAT
 #define test_float_format(wfunc, rfunc, otype, ctype, in, fmt, len) do { \
   ctype value;                                                           \
   M_BufferSeek(&buf, 0);                                                 \
@@ -118,6 +127,7 @@ static int skipper_successes = -1;
   assert_true(rfunc(&cmp, &value));                                       \
   assert_true(in == value);                                               \
 } while (0)
+#endif
 
 #define test_format_no_input(wfunc, otype, fmt, dlen, out) do {              \
   M_BufferClear(&buf);                                                       \
@@ -467,8 +477,11 @@ static void test_numbers(void **state) {
   int16_t s16;
   int32_t s32;
   int64_t s64;
+
+#ifndef CMP_NO_FLOAT
   float f;
   double d;
+#endif
 
   (void)state;
 
@@ -1738,6 +1751,7 @@ static void test_numbers(void **state) {
     9
   );
 
+#ifndef CMP_NO_FLOAT
   test_float_format(
     cmp_write_float,
     cmp_read_float,
@@ -1903,6 +1917,7 @@ static void test_numbers(void **state) {
     "\xcb\x43\x0f\x94\x65\xb8\xab\x8e\x39",
     9
   );
+#endif
 
   M_BufferSeek(&buf, 0);
   assert_true(cmp_write_sfix(&cmp, 1));
@@ -1966,6 +1981,7 @@ static void test_numbers(void **state) {
   M_BufferSeek(&buf, 0);
   assert_true(cmp_read_s64(&cmp, &s64));
 
+#ifndef CMP_NO_FLOAT
   M_BufferSeek(&buf, 0);
   assert_true(cmp_write_float(&cmp, 1.1f));
   M_BufferSeek(&buf, 0);
@@ -1975,6 +1991,7 @@ static void test_numbers(void **state) {
   assert_true(cmp_write_double(&cmp, 1.1));
   M_BufferSeek(&buf, 0);
   assert_true(cmp_read_double(&cmp, &d));
+#endif
 
   M_BufferClear(&buf);
   assert_true(cmp_write_s8(&cmp, -1));
@@ -2002,8 +2019,10 @@ static void test_numbers(void **state) {
   assert_true(cmp_write_u64(&cmp, 0x7FFFFFFFFFFFFFFC));
   assert_true(cmp_write_u64(&cmp, 0x800000000000000C));
 
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_write_decimal(&cmp, 1.1f));
   assert_true(cmp_write_decimal(&cmp, 1.1));
+#endif
 
   M_BufferSeek(&buf, 0);
   assert_true(cmp_read_char(&cmp, &s8));
@@ -2141,8 +2160,10 @@ static void test_numbers(void **state) {
   assert_true(cmp_read_ulong(&cmp, &u64));
   assert_true(cmp_read_ulong(&cmp, &u64));
 
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_read_decimal(&cmp, &d));
   assert_true(cmp_read_decimal(&cmp, &d));
+#endif
 
   reader_successes = 0;
   M_BufferSeek(&buf, 0);
@@ -2161,10 +2182,13 @@ static void test_numbers(void **state) {
   assert_false(cmp_read_long(&cmp, &s64));
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_ulong(&cmp, &u64));
+
+#ifndef CMP_NO_FLOAT
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_decimal(&cmp, &d));
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_decimal(&cmp, &d));
+#endif
 
   reader_successes = -1;
 
@@ -2198,8 +2222,10 @@ static void test_numbers(void **state) {
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_long(&cmp, &s64));
 
+#ifndef CMP_NO_FLOAT
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_decimal(&cmp, &d));
+#endif
 
   M_BufferSeek(&buf, 0);
   assert_true(cmp_read_ulong(&cmp, &u64));
@@ -2363,8 +2389,10 @@ static void test_conversions(void **state) {
   uint32_t u32;
   uint64_t u64;
   bool b;
+#ifndef CMP_NO_FLOAT
   float f;
   double d;
+#endif
 
   (void)state;
 
@@ -2379,8 +2407,10 @@ static void test_conversions(void **state) {
   assert_false(cmp_object_as_ushort(&obj, &u16));
   assert_false(cmp_object_as_uint(&obj, &u32));
   assert_false(cmp_object_as_ulong(&obj, &u64));
+#ifndef CMP_NO_FLOAT
   assert_false(cmp_object_as_float(&obj, &f));
   assert_false(cmp_object_as_double(&obj, &d));
+#endif
   assert_false(cmp_object_as_bool(&obj, &b));
   assert_false(cmp_object_as_str(&obj, &u32));
   assert_false(cmp_object_as_bin(&obj, &u32));
@@ -3424,8 +3454,10 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_uint, "uint");
   obj_test_not(cmp_object_is_ulong, "ulong");
   obj_test_not(cmp_object_is_uinteger, "uinteger");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_nil, "nil");
   obj_test_not(cmp_object_is_bool, "bool");
   obj_test_not(cmp_object_is_str, "str");
@@ -3447,8 +3479,10 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_uint, "uint");
   obj_test_not(cmp_object_is_ulong, "ulong");
   obj_test_not(cmp_object_is_uinteger, "uinteger");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_nil, "nil");
   obj_test_not(cmp_object_is_bool, "bool");
   obj_test_not(cmp_object_is_str, "str");
@@ -3470,8 +3504,10 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_uint, "uint");
   obj_test_not(cmp_object_is_ulong, "ulong");
   obj_test_not(cmp_object_is_uinteger, "uinteger");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_nil, "nil");
   obj_test_not(cmp_object_is_bool, "bool");
   obj_test_not(cmp_object_is_str, "str");
@@ -3498,8 +3534,10 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_uint, "uint");
   obj_test_not(cmp_object_is_ulong, "ulong");
   obj_test_not(cmp_object_is_uinteger, "uinteger");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_nil, "nil");
   obj_test_not(cmp_object_is_bool, "bool");
   obj_test_not(cmp_object_is_str, "str");
@@ -3521,8 +3559,10 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_int, "int");
   obj_test_not(cmp_object_is_long, "long");
   obj_test_not(cmp_object_is_sinteger, "sinteger");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_nil, "nil");
   obj_test_not(cmp_object_is_bool, "bool");
   obj_test_not(cmp_object_is_str, "str");
@@ -3546,8 +3586,10 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_int, "int");
   obj_test_not(cmp_object_is_long, "long");
   obj_test_not(cmp_object_is_sinteger, "sinteger");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_nil, "nil");
   obj_test_not(cmp_object_is_bool, "bool");
   obj_test_not(cmp_object_is_str, "str");
@@ -3571,8 +3613,10 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_long, "long");
   obj_test_not(cmp_object_is_sinteger, "sinteger");
   obj_test_not(cmp_object_is_uchar, "uchar");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_nil, "nil");
   obj_test_not(cmp_object_is_bool, "bool");
   obj_test_not(cmp_object_is_str, "str");
@@ -3599,8 +3643,10 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_long, "long");
   obj_test_not(cmp_object_is_sinteger, "sinteger");
   obj_test_not(cmp_object_is_uchar, "uchar");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_nil, "nil");
   obj_test_not(cmp_object_is_bool, "bool");
   obj_test_not(cmp_object_is_str, "str");
@@ -3626,8 +3672,10 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_sinteger, "sinteger");
   obj_test_not(cmp_object_is_uchar, "uchar");
   obj_test_not(cmp_object_is_ushort, "ushort");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_nil, "nil");
   obj_test_not(cmp_object_is_bool, "bool");
   obj_test_not(cmp_object_is_str, "str");
@@ -3657,8 +3705,10 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_sinteger, "sinteger");
   obj_test_not(cmp_object_is_uchar, "uchar");
   obj_test_not(cmp_object_is_ushort, "ushort");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_nil, "nil");
   obj_test_not(cmp_object_is_bool, "bool");
   obj_test_not(cmp_object_is_str, "str");
@@ -3686,8 +3736,10 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_uchar, "uchar");
   obj_test_not(cmp_object_is_ushort, "ushort");
   obj_test_not(cmp_object_is_uint, "uint");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_nil, "nil");
   obj_test_not(cmp_object_is_bool, "bool");
   obj_test_not(cmp_object_is_str, "str");
@@ -3696,6 +3748,7 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_map, "map");
   obj_test_not(cmp_object_is_ext, "ext");
 
+#ifndef CMP_NO_FLOAT
   obj_write(cmp_write_float, 1.f);
   obj_test(cmp_object_is_float, cmp_object_as_float, "float", float, 1.f);
   obj_test_not(cmp_object_is_char, "char");
@@ -3737,6 +3790,7 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_array, "array");
   obj_test_not(cmp_object_is_map, "map");
   obj_test_not(cmp_object_is_ext, "ext");
+#endif
 
   obj_write_no_val(cmp_write_nil);
   obj_test_no_read(cmp_object_is_nil, "nil");
@@ -3750,8 +3804,10 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_uint, "uint");
   obj_test_not(cmp_object_is_ulong, "ulong");
   obj_test_not(cmp_object_is_uinteger, "uinteger");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_bool, "bool");
   obj_test_not(cmp_object_is_str, "str");
   obj_test_not(cmp_object_is_bin, "bin");
@@ -3771,8 +3827,10 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_uint, "uint");
   obj_test_not(cmp_object_is_ulong, "ulong");
   obj_test_not(cmp_object_is_uinteger, "uinteger");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_nil, "nil");
   obj_test_not(cmp_object_is_str, "str");
   obj_test_not(cmp_object_is_bin, "bin");
@@ -3792,8 +3850,10 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_uint, "uint");
   obj_test_not(cmp_object_is_ulong, "ulong");
   obj_test_not(cmp_object_is_uinteger, "uinteger");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_nil, "nil");
   obj_test_not(cmp_object_is_str, "str");
   obj_test_not(cmp_object_is_bin, "bin");
@@ -3813,8 +3873,10 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_uint, "uint");
   obj_test_not(cmp_object_is_ulong, "ulong");
   obj_test_not(cmp_object_is_uinteger, "uinteger");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_nil, "nil");
   obj_test_not(cmp_object_is_str, "str");
   obj_test_not(cmp_object_is_bin, "bin");
@@ -3834,8 +3896,10 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_uint, "uint");
   obj_test_not(cmp_object_is_ulong, "ulong");
   obj_test_not(cmp_object_is_uinteger, "uinteger");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_nil, "nil");
   obj_test_not(cmp_object_is_str, "str");
   obj_test_not(cmp_object_is_bin, "bin");
@@ -3855,8 +3919,10 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_uint, "uint");
   obj_test_not(cmp_object_is_ulong, "ulong");
   obj_test_not(cmp_object_is_uinteger, "uinteger");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_nil, "nil");
   obj_test_not(cmp_object_is_bool, "bool");
   obj_test_not(cmp_object_is_bin, "bin");
@@ -3877,8 +3943,10 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_uint, "uint");
   obj_test_not(cmp_object_is_ulong, "ulong");
   obj_test_not(cmp_object_is_uinteger, "uinteger");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_nil, "nil");
   obj_test_not(cmp_object_is_bool, "bool");
   obj_test_not(cmp_object_is_bin, "bin");
@@ -3899,8 +3967,10 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_uint, "uint");
   obj_test_not(cmp_object_is_ulong, "ulong");
   obj_test_not(cmp_object_is_uinteger, "uinteger");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_nil, "nil");
   obj_test_not(cmp_object_is_bool, "bool");
   obj_test_not(cmp_object_is_str, "string");
@@ -3920,17 +3990,16 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_uint, "uint");
   obj_test_not(cmp_object_is_ulong, "ulong");
   obj_test_not(cmp_object_is_uinteger, "uinteger");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_nil, "nil");
   obj_test_not(cmp_object_is_bool, "bool");
   obj_test_not(cmp_object_is_str, "string");
   obj_test_not(cmp_object_is_array, "array");
   obj_test_not(cmp_object_is_map, "map");
   obj_test_not(cmp_object_is_ext, "ext");
-
-
-
 
   M_BufferSeek(&buf, 0);
   cmp_write_array(&cmp, 2);
@@ -3949,8 +4018,10 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_uint, "uint");
   obj_test_not(cmp_object_is_ulong, "ulong");
   obj_test_not(cmp_object_is_uinteger, "uinteger");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_nil, "nil");
   obj_test_not(cmp_object_is_bool, "bool");
   obj_test_not(cmp_object_is_str, "string");
@@ -3975,8 +4046,10 @@ static void test_obj(void **state) {
   obj_test_not(cmp_object_is_uint, "uint");
   obj_test_not(cmp_object_is_ulong, "ulong");
   obj_test_not(cmp_object_is_uinteger, "uinteger");
+#ifndef CMP_NO_FLOAT
   obj_test_not(cmp_object_is_float, "float");
   obj_test_not(cmp_object_is_double, "double");
+#endif
   obj_test_not(cmp_object_is_nil, "nil");
   obj_test_not(cmp_object_is_bool, "bool");
   obj_test_not(cmp_object_is_str, "string");
@@ -4043,6 +4116,8 @@ static void test_obj(void **state) {
   obj.as.s64 = 0x100000002;
   assert_true(cmp_write_object(&cmp, &obj));
   assert_true(cmp_write_object_v4(&cmp, &obj));
+
+#ifndef CMP_NO_FLOAT
   obj.type = CMP_TYPE_FLOAT;
   obj.as.flt = 1.1f;
   assert_true(cmp_write_object(&cmp, &obj));
@@ -4051,6 +4126,7 @@ static void test_obj(void **state) {
   obj.as.dbl = 1.1;
   assert_true(cmp_write_object(&cmp, &obj));
   assert_true(cmp_write_object_v4(&cmp, &obj));
+#endif
 
   obj.type = CMP_TYPE_BIN8;
   obj.as.bin_size = 1;
@@ -4149,6 +4225,7 @@ static void test_obj(void **state) {
 }
 
 /* Thanks to andreyvps for this test */
+#ifndef CMP_NO_FLOAT
 void test_float_flip(void **state) {
   buf_t buf;
   cmp_ctx_t cmp;
@@ -4215,6 +4292,7 @@ void test_float_flip(void **state) {
 
   teardown_cmp_and_buf(&cmp, &buf);
 }
+#endif
 
 void test_skipping(void **state) {
   buf_t buf;
@@ -4445,8 +4523,10 @@ void test_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_MAP32);
 
   M_BufferClear(&buf);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_write_float(&cmp, 1.1f));
   assert_true(cmp_write_double(&cmp, 1.1));
+#endif
   assert_true(cmp_write_fixext1(&cmp, 1, "C"));
   assert_true(cmp_write_fixext2(&cmp, 2, "CC"));
   assert_true(cmp_write_fixext4(&cmp, 3, "CCCC"));
@@ -4458,6 +4538,7 @@ void test_skipping(void **state) {
   assert_true(cmp_write_nil(&cmp));
   assert_true(cmp_write_array32(&cmp, 4));
 
+#ifndef CMP_NO_FLOAT
   M_BufferSeek(&buf, 0);
   assert_true(cmp_read_object(&cmp, &obj));
   assert_int_equal(obj.type, CMP_TYPE_FLOAT);
@@ -4466,31 +4547,40 @@ void test_skipping(void **state) {
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_read_object(&cmp, &obj));
   assert_int_equal(obj.type, CMP_TYPE_DOUBLE);
+#endif
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_read_object(&cmp, &obj));
   assert_int_equal(obj.type, CMP_TYPE_FIXEXT1);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_read_object(&cmp, &obj));
   assert_int_equal(obj.type, CMP_TYPE_FIXEXT2);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_read_object(&cmp, &obj));
   assert_int_equal(obj.type, CMP_TYPE_FIXEXT4);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4498,18 +4588,10 @@ void test_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_FIXEXT8);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_read_object(&cmp, &obj));
-  assert_int_equal(obj.type, CMP_TYPE_FIXEXT16);
-
-  M_BufferSeek(&buf, 0);
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4518,8 +4600,22 @@ void test_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_FIXEXT16);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXEXT16);
+
+  M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4529,8 +4625,10 @@ void test_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_EXT8);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4541,8 +4639,10 @@ void test_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_EXT16);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4554,8 +4654,10 @@ void test_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_EXT32);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4568,8 +4670,10 @@ void test_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_NIL);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4747,8 +4851,10 @@ void test_deprecated_limited_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_MAP32);
 
   M_BufferClear(&buf);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_write_float(&cmp, 1.1f));
   assert_true(cmp_write_double(&cmp, 1.1));
+#endif
   assert_true(cmp_write_fixext1(&cmp, 1, "C"));
   assert_true(cmp_write_fixext2(&cmp, 2, "CC"));
   assert_true(cmp_write_fixext4(&cmp, 3, "CCCC"));
@@ -4760,6 +4866,7 @@ void test_deprecated_limited_skipping(void **state) {
   assert_true(cmp_write_nil(&cmp));
   assert_true(cmp_write_array32(&cmp, 4));
 
+#ifndef CMP_NO_FLOAT
   M_BufferSeek(&buf, 0);
   assert_true(cmp_read_object(&cmp, &obj));
   assert_int_equal(obj.type, CMP_TYPE_FLOAT);
@@ -4768,31 +4875,40 @@ void test_deprecated_limited_skipping(void **state) {
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_read_object(&cmp, &obj));
   assert_int_equal(obj.type, CMP_TYPE_DOUBLE);
+#endif
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_read_object(&cmp, &obj));
   assert_int_equal(obj.type, CMP_TYPE_FIXEXT1);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_read_object(&cmp, &obj));
   assert_int_equal(obj.type, CMP_TYPE_FIXEXT2);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_read_object(&cmp, &obj));
   assert_int_equal(obj.type, CMP_TYPE_FIXEXT4);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4800,18 +4916,10 @@ void test_deprecated_limited_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_FIXEXT8);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_read_object(&cmp, &obj));
-  assert_int_equal(obj.type, CMP_TYPE_FIXEXT16);
-
-  M_BufferSeek(&buf, 0);
-  assert_true(cmp_skip_object_no_limit(&cmp));
-  assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4820,8 +4928,22 @@ void test_deprecated_limited_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_FIXEXT16);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_read_object(&cmp, &obj));
+  assert_int_equal(obj.type, CMP_TYPE_FIXEXT16);
+
+  M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
+  assert_true(cmp_skip_object_no_limit(&cmp));
+  assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4831,8 +4953,10 @@ void test_deprecated_limited_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_EXT8);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4843,8 +4967,10 @@ void test_deprecated_limited_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_EXT16);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4856,8 +4982,10 @@ void test_deprecated_limited_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_EXT32);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4870,8 +4998,10 @@ void test_deprecated_limited_skipping(void **state) {
   assert_int_equal(obj.type, CMP_TYPE_NIL);
 
   M_BufferSeek(&buf, 0);
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
+#endif
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
   assert_true(cmp_skip_object_no_limit(&cmp));
@@ -4899,8 +5029,10 @@ void test_errors(void **state) {
   int16_t s16;
   int32_t s32;
   int64_t s64;
+#ifndef CMP_NO_FLOAT
   float f;
   double d;
+#endif
   uint32_t size;
   int8_t type;
 
@@ -4935,8 +5067,10 @@ void test_errors(void **state) {
   assert_true(cmp_write_integer(&cmp, -200));
   assert_true(cmp_write_integer(&cmp, -33000));
   assert_true(cmp_write_integer(&cmp, 0x80000002));
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_write_float(&cmp, 1.1f));
   assert_true(cmp_write_double(&cmp, 1.1));
+#endif
   assert_true(cmp_write_map(&cmp, 1));
   assert_true(cmp_write_str(&cmp, "a", 1));
   assert_true(cmp_write_str(&cmp, "apple", 5));
@@ -4992,8 +5126,10 @@ void test_errors(void **state) {
   assert_false(cmp_write_integer(&cmp, -200));
   assert_false(cmp_write_integer(&cmp, -33000));
   assert_false(cmp_write_integer(&cmp, 0x80000002));
+#ifndef CMP_NO_FLOAT
   assert_false(cmp_write_float(&cmp, 1.1f));
   assert_false(cmp_write_double(&cmp, 1.1));
+#endif
   assert_false(cmp_write_map(&cmp, 1));
   assert_false(cmp_write_str(&cmp, "a", 1));
   assert_false(cmp_write_str(&cmp, "apple", 5));
@@ -5051,10 +5187,12 @@ void test_errors(void **state) {
   assert_false(cmp_write_integer(&cmp, -33000));
   writer_successes = 1;
   assert_false(cmp_write_integer(&cmp, 0xFFFFFFFF2));
+#ifndef CMP_NO_FLOAT
   writer_successes = 1;
   assert_false(cmp_write_float(&cmp, 1.1f));
   writer_successes = 1;
   assert_false(cmp_write_double(&cmp, 1.1));
+#endif
   writer_successes = 1;
   assert_false(cmp_write_str(&cmp, "a", 1));
   writer_successes = 1;
@@ -5199,6 +5337,7 @@ void test_errors(void **state) {
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_object(&cmp, &obj));
 
+#ifndef CMP_NO_FLOAT
   M_BufferSeek(&buf, 0);
   assert_true(cmp_write_float(&cmp, 1.1f));
   M_BufferSeek(&buf, 0);
@@ -5208,6 +5347,7 @@ void test_errors(void **state) {
   assert_true(cmp_write_double(&cmp, 1.1));
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_object(&cmp, &obj));
+#endif
 
   M_BufferSeek(&buf, 0);
   assert_true(cmp_write_map(&cmp, 1));
@@ -5372,6 +5512,7 @@ void test_errors(void **state) {
   reader_successes = 1;
   assert_false(cmp_read_object(&cmp, &obj));
 
+#ifndef CMP_NO_FLOAT
   M_BufferSeek(&buf, 0);
   assert_true(cmp_write_float(&cmp, 1.1f));
   M_BufferSeek(&buf, 0);
@@ -5383,6 +5524,7 @@ void test_errors(void **state) {
   M_BufferSeek(&buf, 0);
   reader_successes = 1;
   assert_false(cmp_read_object(&cmp, &obj));
+#endif
 
   M_BufferSeek(&buf, 0);
   assert_true(cmp_write_map(&cmp, 0x100));
@@ -5567,6 +5709,7 @@ void test_errors(void **state) {
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_s64(&cmp, &s64));
 
+#ifndef CMP_NO_FLOAT
   M_BufferSeek(&buf, 0);
   assert_true(cmp_write_float(&cmp, 1.1f));
   M_BufferSeek(&buf, 0);
@@ -5576,6 +5719,7 @@ void test_errors(void **state) {
   assert_true(cmp_write_double(&cmp, 1.1));
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_double(&cmp, &d));
+#endif
 
   writer_successes = 1;
 
@@ -5606,11 +5750,13 @@ void test_errors(void **state) {
   M_BufferSeek(&buf, 0);
   assert_false(cmp_write_s64(&cmp, 0x80000002));
 
+#ifndef CMP_NO_FLOAT
   M_BufferSeek(&buf, 0);
   assert_false(cmp_write_float(&cmp, 1.1f));
 
   M_BufferSeek(&buf, 0);
   assert_false(cmp_write_double(&cmp, 1.1));
+#endif
 
   reader_successes = -1;
 
@@ -5662,6 +5808,7 @@ void test_errors(void **state) {
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_s64(&cmp, &s64));
 
+#ifndef CMP_NO_FLOAT
   M_BufferClear(&buf);
   writer_successes = 1;
   assert_false(cmp_write_float(&cmp, 1.1f));
@@ -5673,6 +5820,7 @@ void test_errors(void **state) {
   assert_false(cmp_write_double(&cmp, 1.1));
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_double(&cmp, &d));
+#endif
 
   writer_successes = -1;
   reader_successes = -1;
@@ -5706,10 +5854,12 @@ void test_errors(void **state) {
   assert_false(cmp_read_s32(&cmp, &s32));
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_s64(&cmp, &s64));
+#ifndef CMP_NO_FLOAT
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_float(&cmp, &f));
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_double(&cmp, &d));
+#endif
   M_BufferSeek(&buf, 0);
   assert_false(cmp_read_str_size(&cmp, &size));
   M_BufferSeek(&buf, 0);
@@ -5739,8 +5889,10 @@ void test_errors(void **state) {
   assert_true(cmp_write_u16(&cmp, 300));
   assert_true(cmp_write_u32(&cmp, 70000));
   assert_true(cmp_write_u64(&cmp, 0xFFFFFFFFF));
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_write_decimal(&cmp, 1.1f));
   assert_true(cmp_write_decimal(&cmp, 1.1));
+#endif
 
   M_BufferSeek(&buf, 0);
   assert_true(cmp_read_char(&cmp, &s8));
@@ -5754,8 +5906,11 @@ void test_errors(void **state) {
   assert_true(cmp_read_ushort(&cmp, &u16));
   assert_true(cmp_read_uint(&cmp, &u32));
   assert_true(cmp_read_ulong(&cmp, &u64));
+
+#ifndef CMP_NO_FLOAT
   assert_true(cmp_read_decimal(&cmp, &d));
   assert_true(cmp_read_decimal(&cmp, &d));
+#endif
 
   M_BufferClear(&buf);
   assert_true(cmp_write_nfix(&cmp, -1));
@@ -5800,7 +5955,11 @@ int main(void) {
     unit_test(test_map),
     unit_test(test_ext),
     unit_test(test_obj),
+
+#ifndef CMP_NO_FLOAT
     unit_test(test_float_flip),
+#endif
+
     unit_test(test_skipping),
     unit_test(test_deprecated_limited_skipping),
     unit_test(test_errors),

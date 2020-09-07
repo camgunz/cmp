@@ -204,3 +204,8 @@ Use these functions in lieu of their v5 counterparts:
   - `cmp_write_str_v4` instead of `cmp_write_str`
   - `cmp_write_object_v4` instead of `cmp_write_object`
 
+## Disabling Floating Point Operations
+
+Thanks to [tdragon](https://github.com/tdragon) it's possible to disable
+floating point operations in CMP by defining `CMP_NO_FLOAT`. No floating point
+functionality will be included.  Fair warning: this changes the ABI.

@@ -95,6 +95,7 @@ enum {
   LENGTH_WRITING_ERROR,
   SKIP_DEPTH_LIMIT_EXCEEDED_ERROR,
   INTERNAL_ERROR,
+  DISABLED_FLOATING_POINT_ERROR,
   ERROR_MAX
 };
 
@@ -117,6 +118,7 @@ const char * const cmp_error_messages[ERROR_MAX + 1] = {
   "Error writing size",
   "Depth limit exceeded while skipping",
   "Internal error",
+  "Floating point operations disabled",
   "Max Error"
 };
 
@@ -181,6 +183,7 @@ static uint64_t be64(uint64_t x) {
   return x;
 }
 
+#ifndef CMP_NO_FLOAT
 static float decode_befloat(const char *b) {
   float f = 0.;
   char *fb = (char *)&f;
@@ -212,6 +215,7 @@ static double decode_bedouble(const char *b) {
 
   return d;
 }
+#endif /* CMP_NO_FLOAT */
 
 static bool read_byte(cmp_ctx_t *ctx, uint8_t *x) {
   return ctx->read(ctx, x, sizeof(uint8_t));
@@ -641,6 +645,7 @@ static bool read_obj_data(cmp_ctx_t *ctx, uint8_t type_marker,
       return true;
     case CMP_TYPE_FLOAT:
     {
+#ifndef CMP_NO_FLOAT
       char bytes[4];
 
       if (!ctx->read(ctx, bytes, 4)) {
@@ -649,9 +654,14 @@ static bool read_obj_data(cmp_ctx_t *ctx, uint8_t type_marker,
       }
       obj->as.flt = decode_befloat(bytes);
       return true;
+#else /* CMP_NO_FLOAT */
+      ctx->error = DISABLED_FLOATING_POINT_ERROR;
+      return false;
+#endif /* CMP_NO_FLOAT */
     }
     case CMP_TYPE_DOUBLE:
     {
+#ifndef CMP_NO_FLOAT
       char bytes[8];
 
       if (!ctx->read(ctx, bytes, 8)) {
@@ -660,6 +670,10 @@ static bool read_obj_data(cmp_ctx_t *ctx, uint8_t type_marker,
       }
       obj->as.dbl = decode_bedouble(bytes);
       return true;
+#else /* CMP_NO_FLOAT */
+      ctx->error = DISABLED_FLOATING_POINT_ERROR;
+      return false;
+#endif /* CMP_NO_FLOAT */
     }
     case CMP_TYPE_BIN8:
     case CMP_TYPE_BIN16:
@@ -901,6 +915,7 @@ bool cmp_write_uinteger(cmp_ctx_t *ctx, uint64_t u) {
   return cmp_write_u64(ctx, u);
 }
 
+#ifndef CMP_NO_FLOAT
 bool cmp_write_float(cmp_ctx_t *ctx, float f) {
   if (!write_type_marker(ctx, FLOAT_MARKER))
     return false;
@@ -952,6 +967,7 @@ bool cmp_write_decimal(cmp_ctx_t *ctx, double d) {
   else
     return cmp_write_double(ctx, d);
 }
+#endif /* CMP_NO_FLOAT */
 
 bool cmp_write_nil(cmp_ctx_t *ctx) {
   return write_type_marker(ctx, NIL_MARKER);
@@ -1569,9 +1585,19 @@ bool cmp_write_object(cmp_ctx_t *ctx, const cmp_object_t *obj) {
     case CMP_TYPE_EXT32:
       return cmp_write_ext32_marker(ctx, obj->as.ext.type, obj->as.ext.size);
     case CMP_TYPE_FLOAT:
+#ifndef CMP_NO_FLOAT
       return cmp_write_float(ctx, obj->as.flt);
+#else /* CMP_NO_FLOAT */
+      ctx->error = DISABLED_FLOATING_POINT_ERROR;
+      return false;
+#endif /* CMP_NO_FLOAT */
     case CMP_TYPE_DOUBLE:
+#ifndef CMP_NO_FLOAT
       return cmp_write_double(ctx, obj->as.dbl);
+#else /* CMP_NO_FLOAT */
+      ctx->error = DISABLED_FLOATING_POINT_ERROR;
+      return false;
+#endif
     case CMP_TYPE_UINT8:
       return cmp_write_u8(ctx, obj->as.u8);
     case CMP_TYPE_UINT16:
@@ -1645,9 +1671,19 @@ bool cmp_write_object_v4(cmp_ctx_t *ctx, const cmp_object_t *obj) {
     case CMP_TYPE_EXT32:
       return cmp_write_ext32_marker(ctx, obj->as.ext.type, obj->as.ext.size);
     case CMP_TYPE_FLOAT:
+#ifndef CMP_NO_FLOAT
       return cmp_write_float(ctx, obj->as.flt);
+#else /* CMP_NO_FLOAT */
+      ctx->error = DISABLED_FLOATING_POINT_ERROR;
+      return false;
+#endif
     case CMP_TYPE_DOUBLE:
+#ifndef CMP_NO_FLOAT
       return cmp_write_double(ctx, obj->as.dbl);
+#else
+      ctx->error = DISABLED_FLOATING_POINT_ERROR;
+      return false;
+#endif
     case CMP_TYPE_UINT8:
       return cmp_write_u8(ctx, obj->as.u8);
     case CMP_TYPE_UINT16:
@@ -2171,6 +2207,7 @@ bool cmp_read_uinteger(cmp_ctx_t *ctx, uint64_t *d) {
   return cmp_read_ulong(ctx, d);
 }
 
+#ifndef CMP_NO_FLOAT
 bool cmp_read_float(cmp_ctx_t *ctx, float *f) {
   cmp_object_t obj;
 
@@ -2221,6 +2258,7 @@ bool cmp_read_decimal(cmp_ctx_t *ctx, double *d) {
       return false;
   }
 }
+#endif /* CMP_NO_FLOAT */
 
 bool cmp_read_nil(cmp_ctx_t *ctx) {
   cmp_object_t obj;
@@ -3342,6 +3380,7 @@ bool cmp_object_as_uinteger(const cmp_object_t *obj, uint64_t *d) {
   return cmp_object_as_ulong(obj, d);
 }
 
+#ifndef CMP_NO_FLOAT
 bool cmp_object_as_float(const cmp_object_t *obj, float *f) {
   if (obj->type == CMP_TYPE_FLOAT) {
     *f = obj->as.flt;
@@ -3359,6 +3398,7 @@ bool cmp_object_as_double(const cmp_object_t *obj, double *d) {
 
   return false;
 }
+#endif /* CMP_NO_FLOAT */
 
 bool cmp_object_as_bool(const cmp_object_t *obj, bool *b) {
   if (obj->type == CMP_TYPE_BOOLEAN) {

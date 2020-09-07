@@ -29,6 +29,7 @@
 # Coverage files
 *.gcda
 *.gcno
+coverage/
 
 # Testing executable
 test/test-cmp
@@ -36,6 +37,7 @@ cmptest
 cmptest2
 cmpaddrtest
 cmpmemtest
+cmpnofloattest
 cmpubtest
 
 # Example executables
