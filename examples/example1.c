@@ -45,13 +45,13 @@ static size_t file_writer(cmp_ctx_t *ctx, const void *data, size_t count) {
     return fwrite(data, sizeof(uint8_t), count, (FILE *)ctx->buf);
 }
 
-void error_and_exit(const char *msg) {
+static void error_and_exit(const char *msg) {
     fprintf(stderr, "%s\n\n", msg);
     exit(EXIT_FAILURE);
 }
 
 int main(void) {
-    FILE *fh = NULL;
+    FILE *fh;
     cmp_ctx_t cmp;
     uint32_t array_size = 0;
     uint32_t str_size = 0;

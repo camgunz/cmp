@@ -48,13 +48,13 @@ static size_t file_writer(cmp_ctx_t *ctx, const void *data, size_t count) {
     return fwrite(data, sizeof(uint8_t), count, (FILE *)ctx->buf);
 }
 
-void error_and_exit(const char *msg) {
+static void error_and_exit(const char *msg) {
     fprintf(stderr, "%s\n\n", msg);
     exit(EXIT_FAILURE);
 }
 
 int main(void) {
-    FILE *fh = NULL;
+    FILE *fh;
     cmp_ctx_t cmp;
     uint16_t year = 1983;
     uint8_t month = 5;
@@ -301,7 +301,7 @@ int main(void) {
 
     memset(sbuf, 0, sizeof(sbuf));
     binary_size = sizeof(sbuf);
-    if (!cmp_read_bin(&cmp, &sbuf, &binary_size))
+    if (!cmp_read_bin(&cmp, sbuf, &binary_size))
         error_and_exit(cmp_strerror(&cmp));
 
     if (memcmp(sbuf, "MessagePack", 11) != 0)
@@ -309,7 +309,7 @@ int main(void) {
 
     memset(sbuf, 0, sizeof(sbuf));
     binary_size = sizeof(sbuf);
-    if (!cmp_read_bin(&cmp, &sbuf, &binary_size))
+    if (!cmp_read_bin(&cmp, sbuf, &binary_size))
         error_and_exit(cmp_strerror(&cmp));
 
     if (memcmp(sbuf, "is great", 8) != 0)

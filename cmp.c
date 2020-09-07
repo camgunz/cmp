@@ -99,7 +99,7 @@ enum {
   ERROR_MAX
 };
 
-const char *cmp_error_messages[ERROR_MAX + 1] = {
+const char * const cmp_error_messages[ERROR_MAX + 1] = {
   "No Error",
   "Specified string data length is too long (> 0xFFFFFFFF)",
   "Specified binary data length is too long (> 0xFFFFFFFF)",
@@ -129,7 +129,7 @@ static uint16_t be16(uint16_t x) {
   char *b = (char *)&x;
 
   if (!is_bigendian()) {
-    char swap = 0;
+    char swap;
 
     swap = b[0];
     b[0] = b[1];
@@ -143,7 +143,7 @@ static uint32_t be32(uint32_t x) {
   char *b = (char *)&x;
 
   if (!is_bigendian()) {
-    char swap = 0;
+    char swap;
 
     swap = b[0];
     b[0] = b[3];
@@ -161,7 +161,7 @@ static uint64_t be64(uint64_t x) {
   char *b = (char *)&x;
 
   if (!is_bigendian()) {
-    char swap = 0;
+    char swap;
 
     swap = b[0];
     b[0] = b[7];
@@ -184,7 +184,7 @@ static uint64_t be64(uint64_t x) {
 }
 
 #ifndef CMP_NO_FLOAT
-static float decode_befloat(char *b) {
+static float decode_befloat(const char *b) {
   float f = 0.;
   char *fb = (char *)&f;
 
@@ -198,7 +198,7 @@ static float decode_befloat(char *b) {
   return f;
 }
 
-static double decode_bedouble(char *b) {
+static double decode_bedouble(const char *b) {
   double d = 0.;
   char *db = (char *)&d;
 
@@ -1552,7 +1552,7 @@ bool cmp_write_ext(cmp_ctx_t *ctx, int8_t tp, uint32_t sz, const void *data) {
   return cmp_write_ext32(ctx, tp, sz, data);
 }
 
-bool cmp_write_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
+bool cmp_write_object(cmp_ctx_t *ctx, const cmp_object_t *obj) {
   switch(obj->type) {
     case CMP_TYPE_POSITIVE_FIXNUM:
       return cmp_write_pfix(ctx, obj->as.u8);
@@ -1646,7 +1646,7 @@ bool cmp_write_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
   }
 }
 
-bool cmp_write_object_v4(cmp_ctx_t *ctx, cmp_object_t *obj) {
+bool cmp_write_object_v4(cmp_ctx_t *ctx, const cmp_object_t *obj) {
   switch(obj->type) {
     case CMP_TYPE_POSITIVE_FIXNUM:
       return cmp_write_pfix(ctx, obj->as.u8);
@@ -3004,7 +3004,7 @@ bool cmp_skip_object_limit(cmp_ctx_t *ctx, cmp_object_t *obj, uint32_t limit) {
   return true;
 }
 
-bool cmp_object_is_char(cmp_object_t *obj) {
+bool cmp_object_is_char(const cmp_object_t *obj) {
   switch (obj->type) {
     case CMP_TYPE_NEGATIVE_FIXNUM:
     case CMP_TYPE_SINT8:
@@ -3014,7 +3014,7 @@ bool cmp_object_is_char(cmp_object_t *obj) {
   }
 }
 
-bool cmp_object_is_short(cmp_object_t *obj) {
+bool cmp_object_is_short(const cmp_object_t *obj) {
   switch (obj->type) {
     case CMP_TYPE_NEGATIVE_FIXNUM:
     case CMP_TYPE_SINT8:
@@ -3025,7 +3025,7 @@ bool cmp_object_is_short(cmp_object_t *obj) {
   }
 }
 
-bool cmp_object_is_int(cmp_object_t *obj) {
+bool cmp_object_is_int(const cmp_object_t *obj) {
   switch (obj->type) {
     case CMP_TYPE_NEGATIVE_FIXNUM:
     case CMP_TYPE_SINT8:
@@ -3037,7 +3037,7 @@ bool cmp_object_is_int(cmp_object_t *obj) {
   }
 }
 
-bool cmp_object_is_long(cmp_object_t *obj) {
+bool cmp_object_is_long(const cmp_object_t *obj) {
   switch (obj->type) {
     case CMP_TYPE_NEGATIVE_FIXNUM:
     case CMP_TYPE_SINT8:
@@ -3050,11 +3050,11 @@ bool cmp_object_is_long(cmp_object_t *obj) {
   }
 }
 
-bool cmp_object_is_sinteger(cmp_object_t *obj) {
+bool cmp_object_is_sinteger(const cmp_object_t *obj) {
   return cmp_object_is_long(obj);
 }
 
-bool cmp_object_is_uchar(cmp_object_t *obj) {
+bool cmp_object_is_uchar(const cmp_object_t *obj) {
   switch (obj->type) {
     case CMP_TYPE_POSITIVE_FIXNUM:
     case CMP_TYPE_UINT8:
@@ -3064,7 +3064,7 @@ bool cmp_object_is_uchar(cmp_object_t *obj) {
   }
 }
 
-bool cmp_object_is_ushort(cmp_object_t *obj) {
+bool cmp_object_is_ushort(const cmp_object_t *obj) {
   switch (obj->type) {
     case CMP_TYPE_POSITIVE_FIXNUM:
     case CMP_TYPE_UINT8:
@@ -3076,7 +3076,7 @@ bool cmp_object_is_ushort(cmp_object_t *obj) {
   }
 }
 
-bool cmp_object_is_uint(cmp_object_t *obj) {
+bool cmp_object_is_uint(const cmp_object_t *obj) {
   switch (obj->type) {
     case CMP_TYPE_POSITIVE_FIXNUM:
     case CMP_TYPE_UINT8:
@@ -3088,7 +3088,7 @@ bool cmp_object_is_uint(cmp_object_t *obj) {
   }
 }
 
-bool cmp_object_is_ulong(cmp_object_t *obj) {
+bool cmp_object_is_ulong(const cmp_object_t *obj) {
   switch (obj->type) {
     case CMP_TYPE_POSITIVE_FIXNUM:
     case CMP_TYPE_UINT8:
@@ -3101,39 +3101,39 @@ bool cmp_object_is_ulong(cmp_object_t *obj) {
   }
 }
 
-bool cmp_object_is_uinteger(cmp_object_t *obj) {
+bool cmp_object_is_uinteger(const cmp_object_t *obj) {
   return cmp_object_is_ulong(obj);
 }
 
-bool cmp_object_is_float(cmp_object_t *obj) {
+bool cmp_object_is_float(const cmp_object_t *obj) {
   if (obj->type == CMP_TYPE_FLOAT)
     return true;
 
   return false;
 }
 
-bool cmp_object_is_double(cmp_object_t *obj) {
+bool cmp_object_is_double(const cmp_object_t *obj) {
   if (obj->type == CMP_TYPE_DOUBLE)
     return true;
 
   return false;
 }
 
-bool cmp_object_is_nil(cmp_object_t *obj) {
+bool cmp_object_is_nil(const cmp_object_t *obj) {
   if (obj->type == CMP_TYPE_NIL)
     return true;
 
   return false;
 }
 
-bool cmp_object_is_bool(cmp_object_t *obj) {
+bool cmp_object_is_bool(const cmp_object_t *obj) {
   if (obj->type == CMP_TYPE_BOOLEAN)
     return true;
 
   return false;
 }
 
-bool cmp_object_is_str(cmp_object_t *obj) {
+bool cmp_object_is_str(const cmp_object_t *obj) {
   switch (obj->type) {
     case CMP_TYPE_FIXSTR:
     case CMP_TYPE_STR8:
@@ -3145,7 +3145,7 @@ bool cmp_object_is_str(cmp_object_t *obj) {
   }
 }
 
-bool cmp_object_is_bin(cmp_object_t *obj) {
+bool cmp_object_is_bin(const cmp_object_t *obj) {
   switch (obj->type) {
     case CMP_TYPE_BIN8:
     case CMP_TYPE_BIN16:
@@ -3156,7 +3156,7 @@ bool cmp_object_is_bin(cmp_object_t *obj) {
   }
 }
 
-bool cmp_object_is_array(cmp_object_t *obj) {
+bool cmp_object_is_array(const cmp_object_t *obj) {
   switch (obj->type) {
     case CMP_TYPE_FIXARRAY:
     case CMP_TYPE_ARRAY16:
@@ -3167,7 +3167,7 @@ bool cmp_object_is_array(cmp_object_t *obj) {
   }
 }
 
-bool cmp_object_is_map(cmp_object_t *obj) {
+bool cmp_object_is_map(const cmp_object_t *obj) {
   switch (obj->type) {
     case CMP_TYPE_FIXMAP:
     case CMP_TYPE_MAP16:
@@ -3178,7 +3178,7 @@ bool cmp_object_is_map(cmp_object_t *obj) {
   }
 }
 
-bool cmp_object_is_ext(cmp_object_t *obj) {
+bool cmp_object_is_ext(const cmp_object_t *obj) {
   switch (obj->type) {
     case CMP_TYPE_FIXEXT1:
     case CMP_TYPE_FIXEXT2:
@@ -3194,7 +3194,7 @@ bool cmp_object_is_ext(cmp_object_t *obj) {
   }
 }
 
-bool cmp_object_as_char(cmp_object_t *obj, int8_t *c) {
+bool cmp_object_as_char(const cmp_object_t *obj, int8_t *c) {
   switch (obj->type) {
     case CMP_TYPE_POSITIVE_FIXNUM:
     case CMP_TYPE_NEGATIVE_FIXNUM:
@@ -3214,7 +3214,7 @@ bool cmp_object_as_char(cmp_object_t *obj, int8_t *c) {
   }
 }
 
-bool cmp_object_as_short(cmp_object_t *obj, int16_t *s) {
+bool cmp_object_as_short(const cmp_object_t *obj, int16_t *s) {
   switch (obj->type) {
     case CMP_TYPE_POSITIVE_FIXNUM:
     case CMP_TYPE_NEGATIVE_FIXNUM:
@@ -3240,7 +3240,7 @@ bool cmp_object_as_short(cmp_object_t *obj, int16_t *s) {
   }
 }
 
-bool cmp_object_as_int(cmp_object_t *obj, int32_t *i) {
+bool cmp_object_as_int(const cmp_object_t *obj, int32_t *i) {
   switch (obj->type) {
     case CMP_TYPE_POSITIVE_FIXNUM:
     case CMP_TYPE_NEGATIVE_FIXNUM:
@@ -3272,7 +3272,7 @@ bool cmp_object_as_int(cmp_object_t *obj, int32_t *i) {
   }
 }
 
-bool cmp_object_as_long(cmp_object_t *obj, int64_t *d) {
+bool cmp_object_as_long(const cmp_object_t *obj, int64_t *d) {
   switch (obj->type) {
     case CMP_TYPE_POSITIVE_FIXNUM:
     case CMP_TYPE_NEGATIVE_FIXNUM:
@@ -3310,11 +3310,11 @@ bool cmp_object_as_long(cmp_object_t *obj, int64_t *d) {
   }
 }
 
-bool cmp_object_as_sinteger(cmp_object_t *obj, int64_t *d) {
+bool cmp_object_as_sinteger(const cmp_object_t *obj, int64_t *d) {
   return cmp_object_as_long(obj, d);
 }
 
-bool cmp_object_as_uchar(cmp_object_t *obj, uint8_t *c) {
+bool cmp_object_as_uchar(const cmp_object_t *obj, uint8_t *c) {
   switch (obj->type) {
     case CMP_TYPE_POSITIVE_FIXNUM:
     case CMP_TYPE_UINT8:
@@ -3325,7 +3325,7 @@ bool cmp_object_as_uchar(cmp_object_t *obj, uint8_t *c) {
   }
 }
 
-bool cmp_object_as_ushort(cmp_object_t *obj, uint16_t *s) {
+bool cmp_object_as_ushort(const cmp_object_t *obj, uint16_t *s) {
   switch (obj->type) {
     case CMP_TYPE_POSITIVE_FIXNUM:
     case CMP_TYPE_UINT8:
@@ -3339,7 +3339,7 @@ bool cmp_object_as_ushort(cmp_object_t *obj, uint16_t *s) {
   }
 }
 
-bool cmp_object_as_uint(cmp_object_t *obj, uint32_t *i) {
+bool cmp_object_as_uint(const cmp_object_t *obj, uint32_t *i) {
   switch (obj->type) {
     case CMP_TYPE_POSITIVE_FIXNUM:
     case CMP_TYPE_UINT8:
@@ -3356,7 +3356,7 @@ bool cmp_object_as_uint(cmp_object_t *obj, uint32_t *i) {
   }
 }
 
-bool cmp_object_as_ulong(cmp_object_t *obj, uint64_t *u) {
+bool cmp_object_as_ulong(const cmp_object_t *obj, uint64_t *u) {
   switch (obj->type) {
     case CMP_TYPE_POSITIVE_FIXNUM:
     case CMP_TYPE_UINT8:
@@ -3376,12 +3376,12 @@ bool cmp_object_as_ulong(cmp_object_t *obj, uint64_t *u) {
   }
 }
 
-bool cmp_object_as_uinteger(cmp_object_t *obj, uint64_t *d) {
+bool cmp_object_as_uinteger(const cmp_object_t *obj, uint64_t *d) {
   return cmp_object_as_ulong(obj, d);
 }
 
 #ifndef CMP_NO_FLOAT
-bool cmp_object_as_float(cmp_object_t *obj, float *f) {
+bool cmp_object_as_float(const cmp_object_t *obj, float *f) {
   if (obj->type == CMP_TYPE_FLOAT) {
     *f = obj->as.flt;
     return true;
@@ -3390,7 +3390,7 @@ bool cmp_object_as_float(cmp_object_t *obj, float *f) {
   return false;
 }
 
-bool cmp_object_as_double(cmp_object_t *obj, double *d) {
+bool cmp_object_as_double(const cmp_object_t *obj, double *d) {
   if (obj->type == CMP_TYPE_DOUBLE) {
     *d = obj->as.dbl;
     return true;
@@ -3400,7 +3400,7 @@ bool cmp_object_as_double(cmp_object_t *obj, double *d) {
 }
 #endif /* CMP_NO_FLOAT */
 
-bool cmp_object_as_bool(cmp_object_t *obj, bool *b) {
+bool cmp_object_as_bool(const cmp_object_t *obj, bool *b) {
   if (obj->type == CMP_TYPE_BOOLEAN) {
     if (obj->as.boolean)
       *b = true;
@@ -3413,7 +3413,7 @@ bool cmp_object_as_bool(cmp_object_t *obj, bool *b) {
   return false;
 }
 
-bool cmp_object_as_str(cmp_object_t *obj, uint32_t *size) {
+bool cmp_object_as_str(const cmp_object_t *obj, uint32_t *size) {
   switch (obj->type) {
     case CMP_TYPE_FIXSTR:
     case CMP_TYPE_STR8:
@@ -3426,7 +3426,7 @@ bool cmp_object_as_str(cmp_object_t *obj, uint32_t *size) {
   }
 }
 
-bool cmp_object_as_bin(cmp_object_t *obj, uint32_t *size) {
+bool cmp_object_as_bin(const cmp_object_t *obj, uint32_t *size) {
   switch (obj->type) {
     case CMP_TYPE_BIN8:
     case CMP_TYPE_BIN16:
@@ -3438,7 +3438,7 @@ bool cmp_object_as_bin(cmp_object_t *obj, uint32_t *size) {
   }
 }
 
-bool cmp_object_as_array(cmp_object_t *obj, uint32_t *size) {
+bool cmp_object_as_array(const cmp_object_t *obj, uint32_t *size) {
   switch (obj->type) {
     case CMP_TYPE_FIXARRAY:
     case CMP_TYPE_ARRAY16:
@@ -3450,7 +3450,7 @@ bool cmp_object_as_array(cmp_object_t *obj, uint32_t *size) {
   }
 }
 
-bool cmp_object_as_map(cmp_object_t *obj, uint32_t *size) {
+bool cmp_object_as_map(const cmp_object_t *obj, uint32_t *size) {
   switch (obj->type) {
     case CMP_TYPE_FIXMAP:
     case CMP_TYPE_MAP16:
@@ -3462,7 +3462,7 @@ bool cmp_object_as_map(cmp_object_t *obj, uint32_t *size) {
   }
 }
 
-bool cmp_object_as_ext(cmp_object_t *obj, int8_t *type, uint32_t *size) {
+bool cmp_object_as_ext(const cmp_object_t *obj, int8_t *type, uint32_t *size) {
   switch (obj->type) {
     case CMP_TYPE_FIXEXT1:
     case CMP_TYPE_FIXEXT2:
@@ -3480,7 +3480,7 @@ bool cmp_object_as_ext(cmp_object_t *obj, int8_t *type, uint32_t *size) {
   }
 }
 
-bool cmp_object_to_str(cmp_ctx_t *ctx, cmp_object_t *obj, char *data,
+bool cmp_object_to_str(cmp_ctx_t *ctx, const cmp_object_t *obj, char *data,
                                                           uint32_t buf_size) {
   uint32_t str_size = 0;
 
@@ -3507,7 +3507,7 @@ bool cmp_object_to_str(cmp_ctx_t *ctx, cmp_object_t *obj, char *data,
   }
 }
 
-bool cmp_object_to_bin(cmp_ctx_t *ctx, cmp_object_t *obj, void *data,
+bool cmp_object_to_bin(cmp_ctx_t *ctx, const cmp_object_t *obj, void *data,
                                                           uint32_t buf_size) {
   uint32_t bin_size = 0;
 
