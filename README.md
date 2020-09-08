@@ -217,3 +217,9 @@ Use these functions in lieu of their v5 counterparts:
 Thanks to [tdragon](https://github.com/tdragon) it's possible to disable
 floating point operations in CMP by defining `CMP_NO_FLOAT`. No floating point
 functionality will be included.  Fair warning: this changes the ABI.
+
+## Setting Endianness at Compile Time
+
+CMP will honor `WORDS_BIGENDIAN`. If defined to `0` it will convert data
+to/from little-endian format when writing/reading. If defined to `1` it won't.
+If not defined, CMP will check at runtime.

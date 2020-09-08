@@ -122,8 +122,14 @@ const char * const cmp_error_messages[ERROR_MAX + 1] = {
   "Max Error"
 };
 
+#if WORDS_BIGENDIAN == 0
+#define is_bigendian() (false)
+#elif WORDS_BIGENDIAN == 1
+#define is_bigendian() (true)
+#else
 static const int32_t _i = 1;
 #define is_bigendian() ((*(char *)&_i) == 0)
+#endif
 
 static uint16_t be16(uint16_t x) {
   char *b = (char *)&x;
