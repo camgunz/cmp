@@ -341,8 +341,22 @@ bool cmp_skip_object(cmp_ctx_t *ctx, cmp_object_t *obj);
  * Otherwise:
  *   - (Don't touch `obj`)
  *   - Return `true`
+ *
+ * WARNING: This can cause your application to spend an unbounded amount of
+ *          time reading nested data structures.  Unless you completely trust
+ *          the data source, you should use `cmp_skip_object`.
  */
 bool cmp_skip_object_flat(cmp_ctx_t *ctx, cmp_object_t *obj);
+
+/*
+ * This is similar to `cmp_skip_object`, except it will continually skip
+ * nested data structures.
+ *
+ * WARNING: This can cause your application to spend an unbounded amount of
+ *          time reading nested data structures.  Unless you completely trust
+ *          the data source, you should use `cmp_skip_object`.
+ */
+bool cmp_skip_object_no_limit(cmp_ctx_t *ctx);
 
 /*
  * WARNING: THIS FUNCTION IS DEPRECATED AND WILL BE REMOVED IN A FUTURE RELEASE
@@ -374,17 +388,6 @@ bool cmp_skip_object_limit(cmp_ctx_t *ctx, cmp_object_t *obj, uint32_t limit)
 #ifdef _MSC_VER
 #pragma deprecated(cmp_skip_object_limit)
 #endif
-
-/*
- * This is similar to `cmp_skip_object`, except it will continually skip
- * nested data structures.
- *
- * WARNING: This can cause your application to spend an unbounded amount of
- *          time reading nested data structures.  Unless you completely trust
- *          the data source, you should strongly consider `cmp_skip_object` or
- *          `cmp_skip_object_limit`.
- */
-bool cmp_skip_object_no_limit(cmp_ctx_t *ctx);
 
 /*
  * ============================================================================
