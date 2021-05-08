@@ -196,6 +196,12 @@ static float decode_befloat(const char *b) {
     fb[2] = b[1];
     fb[3] = b[0];
   }
+  else {
+    fb[0] = b[0];
+    fb[1] = b[1];
+    fb[2] = b[2];
+    fb[3] = b[3];
+  }
 
   return f;
 }
@@ -213,6 +219,16 @@ static double decode_bedouble(const char *b) {
     db[5] = b[2];
     db[6] = b[1];
     db[7] = b[0];
+  }
+  else {
+    db[0] = b[0];
+    db[1] = b[1];
+    db[2] = b[2];
+    db[3] = b[3];
+    db[4] = b[4];
+    db[5] = b[5];
+    db[6] = b[6];
+    db[7] = b[7];
   }
 
   return d;
@@ -2434,7 +2450,7 @@ bool cmp_read_fixext1_marker(cmp_ctx_t *ctx, int8_t *type) {
 
   if (!cmp_read_object(ctx, &obj))
     return false;
-  
+
   if (obj.type != CMP_TYPE_FIXEXT1) {
     ctx->error = INVALID_TYPE_ERROR;
     return false;
@@ -2460,7 +2476,7 @@ bool cmp_read_fixext2_marker(cmp_ctx_t *ctx, int8_t *type) {
 
   if (!cmp_read_object(ctx, &obj))
     return false;
-  
+
   if (obj.type != CMP_TYPE_FIXEXT2) {
     ctx->error = INVALID_TYPE_ERROR;
     return false;
@@ -2486,7 +2502,7 @@ bool cmp_read_fixext4_marker(cmp_ctx_t *ctx, int8_t *type) {
 
   if (!cmp_read_object(ctx, &obj))
     return false;
-  
+
   if (obj.type != CMP_TYPE_FIXEXT4) {
     ctx->error = INVALID_TYPE_ERROR;
     return false;
@@ -2512,7 +2528,7 @@ bool cmp_read_fixext8_marker(cmp_ctx_t *ctx, int8_t *type) {
 
   if (!cmp_read_object(ctx, &obj))
     return false;
-  
+
   if (obj.type != CMP_TYPE_FIXEXT8) {
     ctx->error = INVALID_TYPE_ERROR;
     return false;
@@ -2538,7 +2554,7 @@ bool cmp_read_fixext16_marker(cmp_ctx_t *ctx, int8_t *type) {
 
   if (!cmp_read_object(ctx, &obj))
     return false;
-  
+
   if (obj.type != CMP_TYPE_FIXEXT16) {
     ctx->error = INVALID_TYPE_ERROR;
     return false;
