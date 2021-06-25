@@ -2858,6 +2858,13 @@ void test_string(void **state) {
 
   reader_successes = 1;
   M_BufferClear(&buf);
+  assert_true(cmp_write_str_marker(&cmp, UINT32_MAX));
+  M_BufferSeek(&buf, 0);
+  size = 1;
+  assert_false(cmp_read_str(&cmp, str8, &size));
+
+  reader_successes = 1;
+  M_BufferClear(&buf);
   assert_true(cmp_write_str(&cmp, "Hello", 5));
   M_BufferSeek(&buf, 0);
   assert_true(cmp_read_object(&cmp, &obj));
