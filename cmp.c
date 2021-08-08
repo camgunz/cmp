@@ -2354,7 +2354,7 @@ bool cmp_read_str(cmp_ctx_t *ctx, char *data, uint32_t *size) {
   if (!cmp_read_str_size(ctx, &str_size))
     return false;
 
-  if ((str_size + 1) > *size) {
+  if (str_size >= *size) {
     *size = str_size;
     ctx->error = STR_DATA_LENGTH_TOO_LONG_ERROR;
     return false;
@@ -3508,7 +3508,7 @@ bool cmp_object_to_str(cmp_ctx_t *ctx, const cmp_object_t *obj, char *data,
     case CMP_TYPE_STR16:
     case CMP_TYPE_STR32:
       str_size = obj->as.str_size;
-      if ((str_size + 1) > buf_size) {
+      if (str_size >= buf_size) {
         ctx->error = STR_DATA_LENGTH_TOO_LONG_ERROR;
         return false;
       }
