@@ -72,23 +72,23 @@ void M_BufferInitWithCapacity(buf_t *buf, size_t capacity) {
   M_BufferEnsureTotalCapacity(buf, capacity);
 }
 
-size_t M_BufferGetCapacity(buf_t *buf) {
+size_t M_BufferGetCapacity(const buf_t *buf) {
   return buf->capacity;
 }
 
-size_t M_BufferGetSize(buf_t *buf) {
+size_t M_BufferGetSize(const buf_t *buf) {
   return buf->size;
 }
 
-size_t M_BufferGetCursor(buf_t *buf) {
+size_t M_BufferGetCursor(const buf_t *buf) {
   return buf->cursor;
 }
 
-char* M_BufferGetData(buf_t *buf) {
+char* M_BufferGetData(const buf_t *buf) {
   return buf->data;
 }
 
-char* M_BufferGetDataAtCursor(buf_t *buf) {
+char* M_BufferGetDataAtCursor(const buf_t *buf) {
   return buf->data + buf->cursor;
 }
 
@@ -123,11 +123,11 @@ void M_BufferEnsureTotalCapacity(buf_t *buf, size_t capacity) {
   }
 }
 
-void M_BufferCopy(buf_t *dst, buf_t *src) {
+void M_BufferCopy(buf_t *dst, const buf_t *src) {
   M_BufferSetData(dst, M_BufferGetData(src), M_BufferGetSize(src));
 }
 
-void M_BufferCursorCopy(buf_t *dst, buf_t *src) {
+void M_BufferCursorCopy(buf_t *dst, const buf_t *src) {
   M_BufferWrite(
     dst,
     M_BufferGetDataAtCursor(src),
@@ -158,8 +158,8 @@ void M_BufferSetString(buf_t *buf, const char *data, size_t length) {
 }
 
 bool M_BufferSetFile(buf_t *buf, const char *filename) {
-  FILE *fp = NULL;
-  size_t length = 0;
+  FILE *fp;
+  size_t length;
   bool out = false;
 
   if ((fp = fopen(filename, "rb")) == NULL)
@@ -210,7 +210,7 @@ bool M_BufferSeekForward(buf_t *buf, size_t count) {
   return true;
 }
 
-uint8_t M_BufferPeek(buf_t *buf) {
+uint8_t M_BufferPeek(const buf_t *buf) {
   return *(buf->data + buf->cursor);
 }
 
@@ -339,14 +339,14 @@ void M_BufferWriteZeros(buf_t *buf, size_t count) {
   check_cursor(buf);
 }
 
-bool M_BufferEqualsString(buf_t *buf, const char *s) {
+bool M_BufferEqualsString(const buf_t *buf, const char *s) {
   if (strncmp(buf->data + buf->cursor, s, buf->size - buf->cursor) == 0)
     return true;
 
   return false;
 }
 
-bool M_BufferEqualsData(buf_t *buf, const void *d, size_t size) {
+bool M_BufferEqualsData(const buf_t *buf, const void *d, size_t size) {
   if (buf->cursor + size > buf->size)
     return false;
 
@@ -464,7 +464,7 @@ bool M_BufferReadString(buf_t *buf, char *s, size_t length) {
   return M_BufferRead(buf, s, length);
 }
 
-bool M_BufferReadStringDup(buf_t *buf, char **s) {
+bool M_BufferReadStringDup(const buf_t *buf, char **s) {
   char *d = buf->data + buf->cursor;
   size_t length = strlen(d);
 
@@ -475,7 +475,7 @@ bool M_BufferReadStringDup(buf_t *buf, char **s) {
   return true;
 }
 
-bool M_BufferCopyString(buf_t *dst, buf_t *src) {
+bool M_BufferCopyString(buf_t *dst, const buf_t *src) {
   char *s = src->data + src->cursor;
   size_t length = strlen(s);
 
@@ -515,7 +515,7 @@ void M_BufferTruncate(buf_t *buf, size_t new_size) {
     buf->cursor = buf->size - 1;
 }
 
-void M_BufferZero(buf_t *buf) {
+void M_BufferZero(const buf_t *buf) {
   memset(buf->data, 0, buf->capacity);
 }
 
@@ -531,7 +531,7 @@ void M_BufferFree(buf_t *buf) {
   buf->data = NULL;
 }
 
-void M_BufferPrint(buf_t *buf) {
+void M_BufferPrint(const buf_t *buf) {
   printf("Buffer capacity, size and cursor: [%zu, %zu, %zu].\n",
     buf->capacity,
     buf->size,
@@ -548,7 +548,7 @@ void M_BufferPrint(buf_t *buf) {
   printf("\n");
 }
 
-void M_BufferPrintAll(buf_t *buf) {
+void M_BufferPrintAll(const buf_t *buf) {
   printf("Buffer capacity, size and cursor: [%zu, %zu, %zu].\n",
     buf->capacity,
     buf->size,

@@ -37,17 +37,17 @@ buf_t* M_BufferNewWithCapacity(size_t capacity);
 void   M_BufferInit(buf_t *buf);
 void   M_BufferInitWithCapacity(buf_t *buf, size_t capacity);
 
-size_t M_BufferGetCapacity(buf_t *buf);
-size_t M_BufferGetSize(buf_t *buf);
-size_t M_BufferGetCursor(buf_t *buf);
-char*  M_BufferGetData(buf_t *buf);
-char*  M_BufferGetDataAtCursor(buf_t *buf);
+size_t M_BufferGetCapacity(const buf_t *buf);
+size_t M_BufferGetSize(const buf_t *buf);
+size_t M_BufferGetCursor(const buf_t *buf);
+char*  M_BufferGetData(const buf_t *buf);
+char*  M_BufferGetDataAtCursor(const buf_t *buf);
 
 void M_BufferEnsureCapacity(buf_t *buf, size_t capacity);
 void M_BufferEnsureTotalCapacity(buf_t *buf, size_t capacity);
 
-void M_BufferCopy(buf_t *dst, buf_t *src);
-void M_BufferCursorCopy(buf_t *dst, buf_t *src);
+void M_BufferCopy(buf_t *dst, const buf_t *src);
+void M_BufferCursorCopy(buf_t *dst, const buf_t *src);
 bool M_BufferMove(buf_t *buf, size_t dpos, size_t spos, size_t count);
 
 void M_BufferSetData(buf_t *buf, const void *data, size_t size);
@@ -58,7 +58,7 @@ bool M_BufferSeek(buf_t *buf, size_t pos);
 bool M_BufferSeekBackward(buf_t *buf, size_t count);
 bool M_BufferSeekForward(buf_t *buf, size_t count);
 
-uint8_t M_BufferPeek(buf_t *buf);
+uint8_t M_BufferPeek(const buf_t *buf);
 
 void M_BufferWrite(buf_t *buf, const void *data, size_t size);
 void M_BufferWriteBool(buf_t *buf, bool b);
@@ -91,8 +91,8 @@ void M_BufferWriteDoubles(buf_t *buf, const double *doubles, size_t count);
 void M_BufferWriteString(buf_t *buf, const char *string, size_t length);
 void M_BufferWriteZeros(buf_t *buf, size_t count);
 
-bool M_BufferEqualsString(buf_t *buf, const char *s);
-bool M_BufferEqualsData(buf_t *buf, const void *d, size_t size);
+bool M_BufferEqualsString(const buf_t *buf, const char *s);
+bool M_BufferEqualsData(const buf_t *buf, const void *d, size_t size);
 
 bool M_BufferRead(buf_t *buf, void *data, size_t size);
 bool M_BufferReadBool(buf_t *buf, bool *b);
@@ -120,17 +120,17 @@ bool M_BufferReadDouble(buf_t *buf, double *d);
 bool M_BufferReadDoubles(buf_t *buf, double *d, size_t count);
 #endif
 bool M_BufferReadString(buf_t *buf, char *s, size_t length);
-bool M_BufferReadStringDup(buf_t *buf, char **s);
-bool M_BufferCopyString(buf_t *dst, buf_t *src);
+bool M_BufferReadStringDup(const buf_t *buf, char **s);
+bool M_BufferCopyString(buf_t *dst, const buf_t *src);
 
 void M_BufferCompact(buf_t *buf);
 void M_BufferTruncate(buf_t *buf, size_t new_size);
-void M_BufferZero(buf_t *buf);
+void M_BufferZero(const buf_t *buf);
 void M_BufferClear(buf_t *buf);
 void M_BufferFree(buf_t *buf);
 
-void M_BufferPrint(buf_t *buf);
-void M_BufferPrintAll(buf_t *buf);
+void M_BufferPrint(const buf_t *buf);
+void M_BufferPrintAll(const buf_t *buf);
 
 #endif
 
