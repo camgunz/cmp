@@ -119,12 +119,12 @@ const char * const cmp_error_messages[ERROR_MAX + 1] = {
 };
 
 #if WORDS_BIGENDIAN == 0
-#define is_bigendian() (false)
+static bool is_bigendian(void) { return false; }
 #elif WORDS_BIGENDIAN == 1
-#define is_bigendian() (true)
+static bool is_bigendian(void) { return true; }
 #else
 static const int32_t _i = 1;
-#define is_bigendian() ((*(char *)&_i) == 0)
+static bool is_bigendian(void) { return (*(char *)&_i) == 0; }
 #endif
 
 static uint16_t be16(uint16_t x) {
