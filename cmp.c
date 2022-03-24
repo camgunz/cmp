@@ -2750,6 +2750,7 @@ bool cmp_skip_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
           case CMP_TYPE_EXT16:
           case CMP_TYPE_EXT32:
             size++;
+            break;
           default:
             break;
         }
@@ -2816,6 +2817,7 @@ bool cmp_skip_object_flat(cmp_ctx_t *ctx, cmp_object_t *obj) {
             case CMP_TYPE_EXT16:
             case CMP_TYPE_EXT32:
               size++;
+              break;
             default:
               break;
           }
@@ -2892,6 +2894,7 @@ bool cmp_skip_object_no_limit(cmp_ctx_t *ctx) {
             case CMP_TYPE_EXT16:
             case CMP_TYPE_EXT32:
               size++;
+              break;
             default:
               break;
           }
@@ -2983,6 +2986,7 @@ bool cmp_skip_object_limit(cmp_ctx_t *ctx, cmp_object_t *obj, uint32_t limit) {
             case CMP_TYPE_EXT16:
             case CMP_TYPE_EXT32:
               size++;
+              break;
             default:
               break;
           }
