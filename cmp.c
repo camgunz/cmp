@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 #include "cmp.h"
 
+#include <string.h>
+
 static const uint32_t version = 19;
 static const uint32_t mp_version = 5;
 
@@ -976,7 +978,7 @@ bool cmp_write_decimal(cmp_ctx_t *ctx, double d) {
   float f = (float)d;
   double df = (double)f;
 
-  if (df == d)
+  if (memcmp(&df, &d, sizeof(df)) == 0)
     return cmp_write_float(ctx, f);
   else
     return cmp_write_double(ctx, d);
