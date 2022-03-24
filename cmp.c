@@ -95,7 +95,7 @@ enum {
   ERROR_MAX
 };
 
-const char * const cmp_error_messages[ERROR_MAX + 1] = {
+static const char * const cmp_error_messages[ERROR_MAX + 1] = {
   "No Error",
   "Specified string data length is too long (> 0xFFFFFFFF)",
   "Specified binary data length is too long (> 0xFFFFFFFF)",
@@ -118,7 +118,7 @@ const char * const cmp_error_messages[ERROR_MAX + 1] = {
   "Max Error"
 };
 
-#if WORDS_BIGENDIAN == 0
+#if !defined(WORDS_BIGENDIAN) || WORDS_BIGENDIAN == 0
 #define is_bigendian() (false)
 #elif WORDS_BIGENDIAN == 1
 #define is_bigendian() (true)
