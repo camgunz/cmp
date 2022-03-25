@@ -118,10 +118,8 @@ static const char * const cmp_error_messages[ERROR_MAX + 1] = {
   "Max Error"
 };
 
-#if !defined(WORDS_BIGENDIAN) || WORDS_BIGENDIAN == 0
-#define is_bigendian() (false)
-#elif WORDS_BIGENDIAN == 1
-#define is_bigendian() (true)
+#ifdef WORDS_BIGENDIAN
+#define is_bigendian() (WORDS_BIGENDIAN)
 #else
 static const int32_t _i = 1;
 #define is_bigendian() ((*(char *)&_i) == 0)
