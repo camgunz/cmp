@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#ifndef CMP_H__
-#define CMP_H__
+#ifndef CMP_H_INCLUDED
+#define CMP_H_INCLUDED
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -566,7 +566,7 @@ bool cmp_object_to_bin(cmp_ctx_t *ctx, const cmp_object_t *obj, void *data, uint
 #define cmp_write_uint     cmp_write_uinteger
 #define cmp_read_sinteger  cmp_read_integer
 
-#endif /* CMP_H__ */
+#endif /* CMP_H_INCLUDED */
 
 /* vi: set et ts=2 sw=2: */
 
