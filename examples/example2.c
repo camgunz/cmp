@@ -52,8 +52,8 @@ static void error_and_exit(const char *msg) {
 }
 
 int main(void) {
-    FILE *fh = {0}
-    cmp_ctx_t cmp = {0}
+    FILE *fh = {0};
+    cmp_ctx_t cmp = {0};
     uint16_t year = 1983;
     uint8_t month = 5;
     uint8_t day = 28;

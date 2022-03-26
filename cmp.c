@@ -95,7 +95,7 @@ enum {
   ERROR_MAX
 };
 
-const char * const cmp_error_messages[ERROR_MAX + 1] = {
+static const char * const cmp_error_messages[ERROR_MAX + 1] = {
   "No Error",
   "Specified string data length is too long (> 0xFFFFFFFF)",
   "Specified binary data length is too long (> 0xFFFFFFFF)",
@@ -118,13 +118,11 @@ const char * const cmp_error_messages[ERROR_MAX + 1] = {
   "Max Error"
 };
 
-#if WORDS_BIGENDIAN == 0
-#define is_bigendian() (false)
-#elif WORDS_BIGENDIAN == 1
-#define is_bigendian() (true)
+#ifdef WORDS_BIGENDIAN
+#define is_bigendian() (WORDS_BIGENDIAN)
 #else
 static const int32_t _i = 1;
-#define is_bigendian() ((*(char *)&_i) == 0)
+#define is_bigendian() ((*(const char *)&_i) == 0)
 #endif
 
 static uint16_t be16(uint16_t x) {
@@ -2750,6 +2748,7 @@ bool cmp_skip_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
           case CMP_TYPE_EXT16:
           case CMP_TYPE_EXT32:
             size++;
+            break;
           default:
             break;
         }
@@ -2816,6 +2815,7 @@ bool cmp_skip_object_flat(cmp_ctx_t *ctx, cmp_object_t *obj) {
             case CMP_TYPE_EXT16:
             case CMP_TYPE_EXT32:
               size++;
+              break;
             default:
               break;
           }
@@ -2892,6 +2892,7 @@ bool cmp_skip_object_no_limit(cmp_ctx_t *ctx) {
             case CMP_TYPE_EXT16:
             case CMP_TYPE_EXT32:
               size++;
+              break;
             default:
               break;
           }
@@ -2983,6 +2984,7 @@ bool cmp_skip_object_limit(cmp_ctx_t *ctx, cmp_object_t *obj, uint32_t limit) {
             case CMP_TYPE_EXT16:
             case CMP_TYPE_EXT32:
               size++;
+              break;
             default:
               break;
           }
