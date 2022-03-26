@@ -1457,11 +1457,11 @@ bool cmp_write_ext8_marker(cmp_ctx_t *ctx, int8_t type, uint8_t size) {
   return false;
 }
 
-bool cmp_write_ext8(cmp_ctx_t *ctx, int8_t tp, uint8_t sz, const void *data) {
-  if (!cmp_write_ext8_marker(ctx, tp, sz))
+bool cmp_write_ext8(cmp_ctx_t *ctx, int8_t type, uint8_t size, const void *data) {
+  if (!cmp_write_ext8_marker(ctx, type, size))
     return false;
 
-  if (ctx->write(ctx, data, sz))
+  if (ctx->write(ctx, data, size))
     return true;
 
   ctx->error = DATA_WRITING_ERROR;
@@ -1486,11 +1486,11 @@ bool cmp_write_ext16_marker(cmp_ctx_t *ctx, int8_t type, uint16_t size) {
   return false;
 }
 
-bool cmp_write_ext16(cmp_ctx_t *ctx, int8_t tp, uint16_t sz, const void *data) {
-  if (!cmp_write_ext16_marker(ctx, tp, sz))
+bool cmp_write_ext16(cmp_ctx_t *ctx, int8_t type, uint16_t size, const void *data) {
+  if (!cmp_write_ext16_marker(ctx, type, size))
     return false;
 
-  if (ctx->write(ctx, data, sz))
+  if (ctx->write(ctx, data, size))
     return true;
 
   ctx->error = DATA_WRITING_ERROR;
@@ -1515,53 +1515,53 @@ bool cmp_write_ext32_marker(cmp_ctx_t *ctx, int8_t type, uint32_t size) {
   return false;
 }
 
-bool cmp_write_ext32(cmp_ctx_t *ctx, int8_t tp, uint32_t sz, const void *data) {
-  if (!cmp_write_ext32_marker(ctx, tp, sz))
+bool cmp_write_ext32(cmp_ctx_t *ctx, int8_t type, uint32_t size, const void *data) {
+  if (!cmp_write_ext32_marker(ctx, type, size))
     return false;
 
-  if (ctx->write(ctx, data, sz))
+  if (ctx->write(ctx, data, size))
     return true;
 
   ctx->error = DATA_WRITING_ERROR;
   return false;
 }
 
-bool cmp_write_ext_marker(cmp_ctx_t *ctx, int8_t tp, uint32_t sz) {
-  if (sz == 1)
-    return cmp_write_fixext1_marker(ctx, tp);
-  if (sz == 2)
-    return cmp_write_fixext2_marker(ctx, tp);
-  if (sz == 4)
-    return cmp_write_fixext4_marker(ctx, tp);
-  if (sz == 8)
-    return cmp_write_fixext8_marker(ctx, tp);
-  if (sz == 16)
-    return cmp_write_fixext16_marker(ctx, tp);
-  if (sz <= 0xFF)
-    return cmp_write_ext8_marker(ctx, tp, (uint8_t)sz);
-  if (sz <= 0xFFFF)
-    return cmp_write_ext16_marker(ctx, tp, (uint16_t)sz);
+bool cmp_write_ext_marker(cmp_ctx_t *ctx, int8_t type, uint32_t size) {
+  if (size == 1)
+    return cmp_write_fixext1_marker(ctx, type);
+  if (size == 2)
+    return cmp_write_fixext2_marker(ctx, type);
+  if (size == 4)
+    return cmp_write_fixext4_marker(ctx, type);
+  if (size == 8)
+    return cmp_write_fixext8_marker(ctx, type);
+  if (size == 16)
+    return cmp_write_fixext16_marker(ctx, type);
+  if (size <= 0xFF)
+    return cmp_write_ext8_marker(ctx, type, (uint8_t)size);
+  if (size <= 0xFFFF)
+    return cmp_write_ext16_marker(ctx, type, (uint16_t)size);
 
-  return cmp_write_ext32_marker(ctx, tp, sz);
+  return cmp_write_ext32_marker(ctx, type, size);
 }
 
-bool cmp_write_ext(cmp_ctx_t *ctx, int8_t tp, uint32_t sz, const void *data) {
-  if (sz == 1)
-    return cmp_write_fixext1(ctx, tp, data);
-  if (sz == 2)
-    return cmp_write_fixext2(ctx, tp, data);
-  if (sz == 4)
-    return cmp_write_fixext4(ctx, tp, data);
-  if (sz == 8)
-    return cmp_write_fixext8(ctx, tp, data);
-  if (sz == 16)
-    return cmp_write_fixext16(ctx, tp, data);
-  if (sz <= 0xFF)
-    return cmp_write_ext8(ctx, tp, (uint8_t)sz, data);
-  if (sz <= 0xFFFF)
-    return cmp_write_ext16(ctx, tp, (uint16_t)sz, data);
+bool cmp_write_ext(cmp_ctx_t *ctx, int8_t type, uint32_t size, const void *data) {
+  if (size == 1)
+    return cmp_write_fixext1(ctx, type, data);
+  if (size == 2)
+    return cmp_write_fixext2(ctx, type, data);
+  if (size == 4)
+    return cmp_write_fixext4(ctx, type, data);
+  if (size == 8)
+    return cmp_write_fixext8(ctx, type, data);
+  if (size == 16)
+    return cmp_write_fixext16(ctx, type, data);
+  if (size <= 0xFF)
+    return cmp_write_ext8(ctx, type, (uint8_t)size, data);
+  if (size <= 0xFFFF)
+    return cmp_write_ext16(ctx, type, (uint16_t)size, data);
 
-  return cmp_write_ext32(ctx, tp, sz, data);
+  return cmp_write_ext32(ctx, type, size, data);
 }
 
 bool cmp_write_object(cmp_ctx_t *ctx, const cmp_object_t *obj) {
@@ -2215,8 +2215,8 @@ bool cmp_read_ulong(cmp_ctx_t *ctx, uint64_t *u) {
   return false;
 }
 
-bool cmp_read_uinteger(cmp_ctx_t *ctx, uint64_t *d) {
-  return cmp_read_ulong(ctx, d);
+bool cmp_read_uinteger(cmp_ctx_t *ctx, uint64_t *u) {
+  return cmp_read_ulong(ctx, u);
 }
 
 #ifndef CMP_NO_FLOAT
@@ -3392,8 +3392,8 @@ bool cmp_object_as_ulong(const cmp_object_t *obj, uint64_t *u) {
   }
 }
 
-bool cmp_object_as_uinteger(const cmp_object_t *obj, uint64_t *d) {
-  return cmp_object_as_ulong(obj, d);
+bool cmp_object_as_uinteger(const cmp_object_t *obj, uint64_t *u) {
+  return cmp_object_as_ulong(obj, u);
 }
 
 #ifndef CMP_NO_FLOAT
