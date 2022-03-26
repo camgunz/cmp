@@ -756,7 +756,6 @@ static bool read_obj_data(cmp_ctx_t *ctx, uint8_t type_marker,
         ctx->error = EXT_TYPE_READING_ERROR;
         return false;
       }
-      obj->as.ext.type = obj->as.ext.type;
       return true;
     case CMP_TYPE_EXT32:
       if (!read_type_size(ctx, type_marker, obj->type, &obj->as.ext.size)) {
@@ -766,7 +765,6 @@ static bool read_obj_data(cmp_ctx_t *ctx, uint8_t type_marker,
         ctx->error = EXT_TYPE_READING_ERROR;
         return false;
       }
-      obj->as.ext.type = obj->as.ext.type;
       return true;
     default:
       break;
