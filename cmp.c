@@ -139,7 +139,9 @@ static uint16_t be16(uint16_t x) {
   return x;
 }
 
-static int16_t sbe16(int16_t x) { return (int16_t)be16((uint16_t)x); }
+static int16_t sbe16(int16_t x) {
+  return (int16_t)be16((uint16_t)x);
+}
 
 static uint32_t be32(uint32_t x) {
   char *b = (char *)&x;
@@ -157,7 +159,9 @@ static uint32_t be32(uint32_t x) {
   return x;
 }
 
-static int32_t sbe32(int32_t x) { return (int32_t)be32((uint32_t)x); }
+static int32_t sbe32(int32_t x) {
+  return (int32_t)be32((uint32_t)x);
+}
 
 static uint64_t be64(uint64_t x) {
   char *b = (char *)&x;
@@ -185,7 +189,9 @@ static uint64_t be64(uint64_t x) {
   return x;
 }
 
-static int64_t sbe64(int64_t x) { return (int64_t)be64((uint64_t)x); }
+static int64_t sbe64(int64_t x) {
+  return (int64_t)be64((uint64_t)x);
+}
 
 #ifndef CMP_NO_FLOAT
 static float decode_befloat(const char *b) {
