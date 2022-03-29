@@ -4,7 +4,7 @@ CLANG ?= clang
 EXTRA_CFLAGS ?= -Werror -Wall -Wextra -funsigned-char -fwrapv -Wconversion \
 				-Wno-sign-conversion -Wmissing-format-attribute \
 				-Wpointer-arith -Wformat-nonliteral -Winit-self \
-				-Wwrite-strings -Wshadow \ -Wenum-compare -Wempty-body \
+				-Wwrite-strings -Wshadow -Wenum-compare -Wempty-body \
 				-Wparentheses -Wcast-align -Wstrict-aliasing --pedantic-errors
 CMPCFLAGS ?= -std=c89 -Wno-c99-extensions
 TESTCFLAGS ?= -std=c99 -Wno-error=deprecated-declarations \
@@ -58,7 +58,7 @@ cmpprof: cmp.o
 cmpunittest: cmp.o
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(TESTCFLAGS) $(LDFLAGS) \
 		-fprofile-arcs -ftest-coverage -g -I. \
-		-o cmptest cmp.o test/test.c test/tests.c test/buf.c test/utils.c \
+		-o cmpunittest cmp.o test/test.c test/tests.c test/buf.c test/utils.c \
 		-lcmocka
 
 cmpnofloattest: cmp.o
