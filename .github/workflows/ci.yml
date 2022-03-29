@@ -1,0 +1,19 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: sudo apt-get install -y --no-install-recommends libcmocka-dev
+      - name: Build library
+        run: make -j4
+      - name: Build test programs
+        run: make testprogs
+      - name: Run tests
+        run: make test

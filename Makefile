@@ -1,7 +1,7 @@
 CC ?= gcc
 CLANG ?= clang
 
-CFLAGS ?= -Werror -Wall -Wextra -funsigned-char -fwrapv -Wconversion -Wno-sign-conversion -Wmissing-format-attribute -Wpointer-arith -Wformat-nonliteral -Winit-self -Wwrite-strings -Wshadow -Wenum-compare -Wempty-body -Wparentheses -Wcast-align -Wstrict-aliasing --pedantic-errors
+CFLAGS ?= -Werror -Wall -Wextra -funsigned-char -fwrapv -Wconversion -Wno-c99-extensions -Wno-sign-conversion -Wmissing-format-attribute -Wpointer-arith -Wformat-nonliteral -Winit-self -Wwrite-strings -Wshadow -Wenum-compare -Wempty-body -Wparentheses -Wcast-align -Wstrict-aliasing --pedantic-errors
 CMPCFLAGS ?= -std=c89 -Wno-c99-extensions
 TESTCFLAGS ?= -std=c99 -Wno-error=deprecated-declarations -Wno-deprecated-declarations -O0
 NOFPUTESTCFLAGS ?= $(TESTCFLAGS) -DCMP_NO_FLOAT
@@ -12,7 +12,7 @@ UBCFLAGS ?= -fsanitize=undefined
 
 .PHONY: all clean test coverage
 
-all: cmptest example1 example2
+all: cmpunittest example1 example2
 
 profile: cmpprof
 	@env LD_PRELOAD=/usr/lib/libprofiler.so CPUPROFILE=cmp.prof \
@@ -20,6 +20,8 @@ profile: cmpprof
 	@pprof --web ./cmpprof cmp.prof
 
 test: addrtest memtest nofloattest ubtest unittest
+
+testprogs: cmpaddrtest cmpmemtest cmpnofloattest cmpubtest cmpunittest
 
 addrtest: cmpaddrtest
 	@./cmpaddrtest
@@ -34,10 +36,10 @@ nofloattest: cmpnofloattest
 ubtest: cmpubtest
 	@./cmpubtest
 
-unittest: cmptest
-	@./cmptest
+unittest: cmpunittest
+	@./cmpunittest
 
-cmp.o:
+cmp.o: cmp.c
 	$(CC) $(CFLAGS) $(CMPCFLAGS) -fprofile-arcs -ftest-coverage -g -I. -c cmp.c
 
 cmpprof: cmp.o
@@ -45,16 +47,16 @@ cmpprof: cmp.o
 		-o cmpprof cmp.o test/profile.c test/tests.c test/buf.c test/utils.c \
 		-lcmocka -lprofiler
 
-cmptest: cmp.o
+cmpunittest: cmp.o
 	$(CC) $(CFLAGS) $(TESTCFLAGS) -fprofile-arcs -ftest-coverage -g -I. \
-		-o cmptest cmp.o test/test.c test/tests.c test/buf.c test/utils.c -lcmocka
+		-o cmpunittest cmp.o test/test.c test/tests.c test/buf.c test/utils.c -lcmocka
 
 cmpnofloattest: cmp.o
 	$(CC) $(CFLAGS) $(NOFPUTESTCFLAGS) -fprofile-arcs -ftest-coverage -g -I. \
 		-o cmpnofloattest cmp.o test/test.c test/tests.c test/buf.c test/utils.c \
 		-lcmocka
 
-clangcmp.o:
+clangcmp.o: cmp.c
 	$(CLANG) $(CFLAGS) $(CMPCFLAGS) -fprofile-arcs -ftest-coverage -g -I. \
 		-c cmp.c -o clangcmp.o
 
@@ -88,7 +90,7 @@ coverage:
 
 clean:
 	@rm -f cmp.prof
-	@rm -f cmptest
+	@rm -f cmpunittest
 	@rm -f cmpaddrtest
 	@rm -f cmpmemtest
 	@rm -f cmpubtest
