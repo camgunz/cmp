@@ -298,7 +298,7 @@ bool cmp_read_str_size(cmp_ctx_t *ctx, uint32_t *size);
 
 /*
  * Reads a string from the backend; according to the spec, the string's data
- * ought to be encoded using UTF-8, 
+ * ought to be encoded using UTF-8, but CMP leaves that job up to the programmer.
  */
 bool cmp_read_str(cmp_ctx_t *ctx, char *data, uint32_t *size);
 
