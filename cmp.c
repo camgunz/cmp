@@ -24,8 +24,8 @@ THE SOFTWARE.
 
 #include "cmp.h"
 
-static const uint32_t _cmp_version = 20;
-static const uint32_t _cmp_mp_version = 5;
+static const uint32_t cmp_version_ = 20;
+static const uint32_t cmp_mp_version_ = 5;
 
 enum {
   POSITIVE_FIXNUM_MARKER = 0x00,
@@ -121,8 +121,8 @@ static const char * const cmp_error_messages[ERROR_MAX + 1] = {
 #ifdef WORDS_BIGENDIAN
 #define is_bigendian() (WORDS_BIGENDIAN)
 #else
-static const int32_t _i = 1;
-#define is_bigendian() ((*(const char *)&_i) == 0)
+static const int32_t i_ = 1;
+#define is_bigendian() ((*(const char *)&i_) == 0)
 #endif
 
 static uint16_t be16(uint16_t x) {
@@ -797,11 +797,11 @@ void cmp_init(cmp_ctx_t *ctx, void *buf, cmp_reader read,
 }
 
 uint32_t cmp_version(void) {
-  return _cmp_version;
+  return cmp_version_;
 }
 
 uint32_t cmp_mp_version(void) {
-  return _cmp_mp_version;
+  return cmp_mp_version_;
 }
 
 const char* cmp_strerror(cmp_ctx_t *ctx) {
