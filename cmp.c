@@ -126,13 +126,9 @@ static const int32_t i_ = 1;
 #endif
 
 static uint16_t be16(uint16_t x) {
-  char *b = (char *)&x;
-
-  if (!is_bigendian()) {
-    char swap = b[0];
-    b[0] = b[1];
-    b[1] = swap;
-  }
+  if (!is_bigendian())
+    return ((x >> 8) & 0x00ff)
+         | ((x << 8) & 0xff00);
 
   return x;
 }
@@ -142,17 +138,9 @@ static int16_t sbe16(int16_t x) {
 }
 
 static uint32_t be32(uint32_t x) {
-  char *b = (char *)&x;
-
-  if (!is_bigendian()) {
-    char swap = b[0];
-    b[0] = b[3];
-    b[3] = swap;
-
-    swap = b[1];
-    b[1] = b[2];
-    b[2] = swap;
-  }
+  if (!is_bigendian())
+    return ((uint32_t)be16((uint16_t)(x >> 16)))
+         | ((uint32_t)be16((uint16_t)(x & 0xffff)) << 16);
 
   return x;
 }
@@ -162,27 +150,9 @@ static int32_t sbe32(int32_t x) {
 }
 
 static uint64_t be64(uint64_t x) {
-  char *b = (char *)&x;
-
-  if (!is_bigendian()) {
-    char swap;
-
-    swap = b[0];
-    b[0] = b[7];
-    b[7] = swap;
-
-    swap = b[1];
-    b[1] = b[6];
-    b[6] = swap;
-
-    swap = b[2];
-    b[2] = b[5];
-    b[5] = swap;
-
-    swap = b[3];
-    b[3] = b[4];
-    b[4] = swap;
-  }
+  if (!is_bigendian())
+    return ((uint64_t)be32((uint32_t)(x >> 32)))
+         | ((uint64_t)be32((uint32_t)(x & 0xffffffff)) << 32);
 
   return x;
 }
