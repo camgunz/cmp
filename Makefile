@@ -14,7 +14,7 @@ NOFPUTESTCFLAGS ?= $(TESTCFLAGS) -DCMP_NO_FLOAT
 ADDRCFLAGS ?= -fsanitize=address
 MEMCFLAGS ?= -fsanitize=memory -fno-omit-frame-pointer \
 			 -fno-optimize-sibling-calls
-UBCFLAGS ?= -fsanitize=undefined
+UBCFLAGS ?= -fsanitize=undefined,nullability,local-bounds,float-divide-by-zero,integer
 
 .PHONY: all clean test coverage
 

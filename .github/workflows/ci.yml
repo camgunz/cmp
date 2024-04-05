@@ -15,5 +15,13 @@ jobs:
         run: make -j4
       - name: Build test programs
         run: make testprogs
-      - name: Run tests
-        run: make test
+      - name: Run unit tests
+        run: make unittest
+      - name: Run ASAN tests
+        run: make addrtest
+      - name: Run MSAN tests
+        run: make memtest
+      - name: Run UBSAN tests
+        run: make ubtest
+      - name: Run tests without FPU (no float)
+        run: make nofloattest
