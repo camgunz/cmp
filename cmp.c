@@ -72,58 +72,64 @@ enum {
   FIXSTR_SIZE   = 0x1F
 };
 
-enum {
-  ERROR_NONE,
-  STR_DATA_LENGTH_TOO_LONG_ERROR,
-  BIN_DATA_LENGTH_TOO_LONG_ERROR,
-  ARRAY_LENGTH_TOO_LONG_ERROR,
-  MAP_LENGTH_TOO_LONG_ERROR,
-  INPUT_VALUE_TOO_LARGE_ERROR,
-  FIXED_VALUE_WRITING_ERROR,
-  TYPE_MARKER_READING_ERROR,
-  TYPE_MARKER_WRITING_ERROR,
-  DATA_READING_ERROR,
-  DATA_WRITING_ERROR,
-  EXT_TYPE_READING_ERROR,
-  EXT_TYPE_WRITING_ERROR,
-  INVALID_TYPE_ERROR,
-  LENGTH_READING_ERROR,
-  LENGTH_WRITING_ERROR,
-  SKIP_DEPTH_LIMIT_EXCEEDED_ERROR,
-  INTERNAL_ERROR,
-  DISABLED_FLOATING_POINT_ERROR,
-  ERROR_MAX
-};
+typedef enum cmp_error_e {
+  CMP_ERROR_NONE,
+  CMP_ERROR_STR_DATA_LENGTH_TOO_LONG,
+  CMP_ERROR_BIN_DATA_LENGTH_TOO_LONG,
+  CMP_ERROR_ARRAY_LENGTH_TOO_LONG,
+  CMP_ERROR_MAP_LENGTH_TOO_LONG,
+  CMP_ERROR_INPUT_VALUE_TOO_LARGE,
+  CMP_ERROR_FIXED_VALUE_WRITING,
+  CMP_ERROR_TYPE_MARKER_READING,
+  CMP_ERROR_TYPE_MARKER_WRITING,
+  CMP_ERROR_DATA_READING,
+  CMP_ERROR_DATA_WRITING,
+  CMP_ERROR_EXT_TYPE_READING,
+  CMP_ERROR_EXT_TYPE_WRITING,
+  CMP_ERROR_INVALID_TYPE,
+  CMP_ERROR_LENGTH_READING,
+  CMP_ERROR_LENGTH_WRITING,
+  CMP_ERROR_SKIP_DEPTH_LIMIT_EXCEEDED,
+  CMP_ERROR_INTERNAL,
+  CMP_ERROR_DISABLED_FLOATING_POINT,
+  CMP_ERROR_MAX
+} cmp_error_t;
 
-static const char * const cmp_error_messages[ERROR_MAX + 1] = {
-  "No Error",
-  "Specified string data length is too long (> 0xFFFFFFFF)",
-  "Specified binary data length is too long (> 0xFFFFFFFF)",
-  "Specified array length is too long (> 0xFFFFFFFF)",
-  "Specified map length is too long (> 0xFFFFFFFF)",
-  "Input value is too large",
-  "Error writing fixed value",
-  "Error reading type marker",
-  "Error writing type marker",
-  "Error reading packed data",
-  "Error writing packed data",
-  "Error reading ext type",
-  "Error writing ext type",
-  "Invalid type",
-  "Error reading size",
-  "Error writing size",
-  "Depth limit exceeded while skipping",
-  "Internal error",
-  "Floating point operations disabled",
-  "Max Error"
-};
+static const char *cmp_error_message(cmp_error_t error) {
+  switch (error) {
+    case CMP_ERROR_NONE:                      return "No Error";
+    case CMP_ERROR_STR_DATA_LENGTH_TOO_LONG:  return "Specified string data length is too long (> 0xFFFFFFFF)";
+    case CMP_ERROR_BIN_DATA_LENGTH_TOO_LONG:  return "Specified binary data length is too long (> 0xFFFFFFFF)";
+    case CMP_ERROR_ARRAY_LENGTH_TOO_LONG:     return "Specified array length is too long (> 0xFFFFFFFF)";
+    case CMP_ERROR_MAP_LENGTH_TOO_LONG:       return "Specified map length is too long (> 0xFFFFFFFF)";
+    case CMP_ERROR_INPUT_VALUE_TOO_LARGE:     return "Input value is too large";
+    case CMP_ERROR_FIXED_VALUE_WRITING:       return "Error writing fixed value";
+    case CMP_ERROR_TYPE_MARKER_READING:       return "Error reading type marker";
+    case CMP_ERROR_TYPE_MARKER_WRITING:       return "Error writing type marker";
+    case CMP_ERROR_DATA_READING:              return "Error reading packed data";
+    case CMP_ERROR_DATA_WRITING:              return "Error writing packed data";
+    case CMP_ERROR_EXT_TYPE_READING:          return "Error reading ext type";
+    case CMP_ERROR_EXT_TYPE_WRITING:          return "Error writing ext type";
+    case CMP_ERROR_INVALID_TYPE:              return "Invalid type";
+    case CMP_ERROR_LENGTH_READING:            return "Error reading size";
+    case CMP_ERROR_LENGTH_WRITING:            return "Error writing size";
+    case CMP_ERROR_SKIP_DEPTH_LIMIT_EXCEEDED: return "Depth limit exceeded while skipping";
+    case CMP_ERROR_INTERNAL:                  return "Internal error";
+    case CMP_ERROR_DISABLED_FLOATING_POINT:   return "Floating point operations disabled";
+    case CMP_ERROR_MAX:                       return "Max Error";
+  }
+  return "";
+}
 
+static bool is_bigendian(void) {
 #ifdef WORDS_BIGENDIAN
-#define is_bigendian() (WORDS_BIGENDIAN)
+  return WORDS_BIGENDIAN;
 #else
-static const int32_t i_ = 1;
-#define is_bigendian() ((*(const char *)&i_) == 0)
+  const int32_t one = 1;
+  const char *one_bytes = (const char *)&one;
+  return *one_bytes == 0;
 #endif
+}
 
 static uint16_t be16(uint16_t x) {
   char *b = (char *)&x;
@@ -272,7 +278,7 @@ static bool read_type_marker(cmp_ctx_t *ctx, uint8_t *marker) {
     return true;
   }
 
-  ctx->error = TYPE_MARKER_READING_ERROR;
+  ctx->error = CMP_ERROR_TYPE_MARKER_READING;
   return false;
 }
 
@@ -280,7 +286,7 @@ static bool write_type_marker(cmp_ctx_t *ctx, uint8_t marker) {
   if (write_byte(ctx, marker))
     return true;
 
-  ctx->error = TYPE_MARKER_WRITING_ERROR;
+  ctx->error = CMP_ERROR_TYPE_MARKER_WRITING;
   return false;
 }
 
@@ -288,7 +294,7 @@ static bool write_fixed_value(cmp_ctx_t *ctx, uint8_t value) {
   if (write_byte(ctx, value))
     return true;
 
-  ctx->error = FIXED_VALUE_WRITING_ERROR;
+  ctx->error = CMP_ERROR_FIXED_VALUE_WRITING;
   return false;
 }
 
@@ -445,42 +451,42 @@ static bool read_type_size(cmp_ctx_t *ctx, uint8_t type_marker,
       return true;
     case CMP_TYPE_BIN8:
       if (!ctx->read(ctx, &u8temp, sizeof(uint8_t))) {
-        ctx->error = LENGTH_READING_ERROR;
+        ctx->error = CMP_ERROR_LENGTH_READING;
         return false;
       }
       *size = u8temp;
       return true;
     case CMP_TYPE_BIN16:
       if (!ctx->read(ctx, &u16temp, sizeof(uint16_t))) {
-        ctx->error = LENGTH_READING_ERROR;
+        ctx->error = CMP_ERROR_LENGTH_READING;
         return false;
       }
       *size = be16(u16temp);
       return true;
     case CMP_TYPE_BIN32:
       if (!ctx->read(ctx, &u32temp, sizeof(uint32_t))) {
-        ctx->error = LENGTH_READING_ERROR;
+        ctx->error = CMP_ERROR_LENGTH_READING;
         return false;
       }
       *size = be32(u32temp);
       return true;
     case CMP_TYPE_EXT8:
       if (!ctx->read(ctx, &u8temp, sizeof(uint8_t))) {
-        ctx->error = LENGTH_READING_ERROR;
+        ctx->error = CMP_ERROR_LENGTH_READING;
         return false;
       }
       *size = u8temp;
       return true;
     case CMP_TYPE_EXT16:
       if (!ctx->read(ctx, &u16temp, sizeof(uint16_t))) {
-        ctx->error = LENGTH_READING_ERROR;
+        ctx->error = CMP_ERROR_LENGTH_READING;
         return false;
       }
       *size = be16(u16temp);
       return true;
     case CMP_TYPE_EXT32:
       if (!ctx->read(ctx, &u32temp, sizeof(uint32_t))) {
-        ctx->error = LENGTH_READING_ERROR;
+        ctx->error = CMP_ERROR_LENGTH_READING;
         return false;
       }
       *size = be32(u32temp);
@@ -532,49 +538,49 @@ static bool read_type_size(cmp_ctx_t *ctx, uint8_t type_marker,
       return true;
     case CMP_TYPE_STR8:
       if (!ctx->read(ctx, &u8temp, sizeof(uint8_t))) {
-        ctx->error = DATA_READING_ERROR;
+        ctx->error = CMP_ERROR_DATA_READING;
         return false;
       }
       *size = u8temp;
       return true;
     case CMP_TYPE_STR16:
       if (!ctx->read(ctx, &u16temp, sizeof(uint16_t))) {
-        ctx->error = DATA_READING_ERROR;
+        ctx->error = CMP_ERROR_DATA_READING;
         return false;
       }
       *size = be16(u16temp);
       return true;
     case CMP_TYPE_STR32:
       if (!ctx->read(ctx, &u32temp, sizeof(uint32_t))) {
-        ctx->error = DATA_READING_ERROR;
+        ctx->error = CMP_ERROR_DATA_READING;
         return false;
       }
       *size = be32(u32temp);
       return true;
     case CMP_TYPE_ARRAY16:
       if (!ctx->read(ctx, &u16temp, sizeof(uint16_t))) {
-        ctx->error = DATA_READING_ERROR;
+        ctx->error = CMP_ERROR_DATA_READING;
         return false;
       }
       *size = be16(u16temp);
       return true;
     case CMP_TYPE_ARRAY32:
       if (!ctx->read(ctx, &u32temp, sizeof(uint32_t))) {
-        ctx->error = DATA_READING_ERROR;
+        ctx->error = CMP_ERROR_DATA_READING;
         return false;
       }
       *size = be32(u32temp);
       return true;
     case CMP_TYPE_MAP16:
       if (!ctx->read(ctx, &u16temp, sizeof(uint16_t))) {
-        ctx->error = DATA_READING_ERROR;
+        ctx->error = CMP_ERROR_DATA_READING;
         return false;
       }
       *size = be16(u16temp);
       return true;
     case CMP_TYPE_MAP32:
       if (!ctx->read(ctx, &u32temp, sizeof(uint32_t))) {
-        ctx->error = DATA_READING_ERROR;
+        ctx->error = CMP_ERROR_DATA_READING;
         return false;
       }
       *size = be32(u32temp);
@@ -583,7 +589,7 @@ static bool read_type_size(cmp_ctx_t *ctx, uint8_t type_marker,
       *size = 0;
       return true;
     default:
-      ctx->error = INVALID_TYPE_ERROR;
+      ctx->error = CMP_ERROR_INVALID_TYPE;
       return false;
   }
 }
@@ -611,58 +617,58 @@ static bool read_obj_data(cmp_ctx_t *ctx, uint8_t type_marker,
         default:
           break;
       }
-      ctx->error = INTERNAL_ERROR;
+      ctx->error = CMP_ERROR_INTERNAL;
       return false;
     case CMP_TYPE_UINT8:
       if (!ctx->read(ctx, &obj->as.u8, sizeof(uint8_t))) {
-        ctx->error = DATA_READING_ERROR;
+        ctx->error = CMP_ERROR_DATA_READING;
         return false;
       }
       return true;
     case CMP_TYPE_UINT16:
       if (!ctx->read(ctx, &obj->as.u16, sizeof(uint16_t))) {
-        ctx->error = DATA_READING_ERROR;
+        ctx->error = CMP_ERROR_DATA_READING;
         return false;
       }
       obj->as.u16 = be16(obj->as.u16);
       return true;
     case CMP_TYPE_UINT32:
       if (!ctx->read(ctx, &obj->as.u32, sizeof(uint32_t))) {
-        ctx->error = DATA_READING_ERROR;
+        ctx->error = CMP_ERROR_DATA_READING;
         return false;
       }
       obj->as.u32 = be32(obj->as.u32);
       return true;
     case CMP_TYPE_UINT64:
       if (!ctx->read(ctx, &obj->as.u64, sizeof(uint64_t))) {
-        ctx->error = DATA_READING_ERROR;
+        ctx->error = CMP_ERROR_DATA_READING;
         return false;
       }
       obj->as.u64 = be64(obj->as.u64);
       return true;
     case CMP_TYPE_SINT8:
       if (!ctx->read(ctx, &obj->as.s8, sizeof(int8_t))) {
-        ctx->error = DATA_READING_ERROR;
+        ctx->error = CMP_ERROR_DATA_READING;
         return false;
       }
       return true;
     case CMP_TYPE_SINT16:
       if (!ctx->read(ctx, &obj->as.s16, sizeof(int16_t))) {
-        ctx->error = DATA_READING_ERROR;
+        ctx->error = CMP_ERROR_DATA_READING;
         return false;
       }
       obj->as.s16 = sbe16(obj->as.s16);
       return true;
     case CMP_TYPE_SINT32:
       if (!ctx->read(ctx, &obj->as.s32, sizeof(int32_t))) {
-        ctx->error = DATA_READING_ERROR;
+        ctx->error = CMP_ERROR_DATA_READING;
         return false;
       }
       obj->as.s32 = sbe32(obj->as.s32);
       return true;
     case CMP_TYPE_SINT64:
       if (!ctx->read(ctx, &obj->as.s64, sizeof(int64_t))) {
-        ctx->error = DATA_READING_ERROR;
+        ctx->error = CMP_ERROR_DATA_READING;
         return false;
       }
       obj->as.s64 = sbe64(obj->as.s64);
@@ -673,13 +679,13 @@ static bool read_obj_data(cmp_ctx_t *ctx, uint8_t type_marker,
       char bytes[4];
 
       if (!ctx->read(ctx, bytes, 4)) {
-        ctx->error = DATA_READING_ERROR;
+        ctx->error = CMP_ERROR_DATA_READING;
         return false;
       }
       obj->as.flt = decode_befloat(bytes);
       return true;
 #else /* CMP_NO_FLOAT */
-      ctx->error = DISABLED_FLOATING_POINT_ERROR;
+      ctx->error = CMP_ERROR_DISABLED_FLOATING_POINT;
       return false;
 #endif /* CMP_NO_FLOAT */
     }
@@ -689,13 +695,13 @@ static bool read_obj_data(cmp_ctx_t *ctx, uint8_t type_marker,
       char bytes[8];
 
       if (!ctx->read(ctx, bytes, 8)) {
-        ctx->error = DATA_READING_ERROR;
+        ctx->error = CMP_ERROR_DATA_READING;
         return false;
       }
       obj->as.dbl = decode_bedouble(bytes);
       return true;
 #else /* CMP_NO_FLOAT */
-      ctx->error = DISABLED_FLOATING_POINT_ERROR;
+      ctx->error = CMP_ERROR_DISABLED_FLOATING_POINT;
       return false;
 #endif /* CMP_NO_FLOAT */
     }
@@ -718,35 +724,35 @@ static bool read_obj_data(cmp_ctx_t *ctx, uint8_t type_marker,
       return read_type_size(ctx, type_marker, obj->type, &obj->as.map_size);
     case CMP_TYPE_FIXEXT1:
       if (!ctx->read(ctx, &obj->as.ext.type, sizeof(int8_t))) {
-        ctx->error = EXT_TYPE_READING_ERROR;
+        ctx->error = CMP_ERROR_EXT_TYPE_READING;
         return false;
       }
       obj->as.ext.size = 1;
       return true;
     case CMP_TYPE_FIXEXT2:
       if (!ctx->read(ctx, &obj->as.ext.type, sizeof(int8_t))) {
-        ctx->error = EXT_TYPE_READING_ERROR;
+        ctx->error = CMP_ERROR_EXT_TYPE_READING;
         return false;
       }
       obj->as.ext.size = 2;
       return true;
     case CMP_TYPE_FIXEXT4:
       if (!ctx->read(ctx, &obj->as.ext.type, sizeof(int8_t))) {
-        ctx->error = EXT_TYPE_READING_ERROR;
+        ctx->error = CMP_ERROR_EXT_TYPE_READING;
         return false;
       }
       obj->as.ext.size = 4;
       return true;
     case CMP_TYPE_FIXEXT8:
       if (!ctx->read(ctx, &obj->as.ext.type, sizeof(int8_t))) {
-        ctx->error = EXT_TYPE_READING_ERROR;
+        ctx->error = CMP_ERROR_EXT_TYPE_READING;
         return false;
       }
       obj->as.ext.size = 8;
       return true;
     case CMP_TYPE_FIXEXT16:
       if (!ctx->read(ctx, &obj->as.ext.type, sizeof(int8_t))) {
-        ctx->error = EXT_TYPE_READING_ERROR;
+        ctx->error = CMP_ERROR_EXT_TYPE_READING;
         return false;
       }
       obj->as.ext.size = 16;
@@ -756,7 +762,7 @@ static bool read_obj_data(cmp_ctx_t *ctx, uint8_t type_marker,
         return false;
       }
       if (!ctx->read(ctx, &obj->as.ext.type, sizeof(int8_t))) {
-        ctx->error = EXT_TYPE_READING_ERROR;
+        ctx->error = CMP_ERROR_EXT_TYPE_READING;
         return false;
       }
       return true;
@@ -765,7 +771,7 @@ static bool read_obj_data(cmp_ctx_t *ctx, uint8_t type_marker,
         return false;
       }
       if (!ctx->read(ctx, &obj->as.ext.type, sizeof(int8_t))) {
-        ctx->error = EXT_TYPE_READING_ERROR;
+        ctx->error = CMP_ERROR_EXT_TYPE_READING;
         return false;
       }
       return true;
@@ -774,7 +780,7 @@ static bool read_obj_data(cmp_ctx_t *ctx, uint8_t type_marker,
         return false;
       }
       if (!ctx->read(ctx, &obj->as.ext.type, sizeof(int8_t))) {
-        ctx->error = EXT_TYPE_READING_ERROR;
+        ctx->error = CMP_ERROR_EXT_TYPE_READING;
         return false;
       }
       return true;
@@ -782,14 +788,14 @@ static bool read_obj_data(cmp_ctx_t *ctx, uint8_t type_marker,
       break;
   }
 
-  ctx->error = INVALID_TYPE_ERROR;
+  ctx->error = CMP_ERROR_INVALID_TYPE;
   return false;
 }
 
 void cmp_init(cmp_ctx_t *ctx, void *buf, cmp_reader read,
                                          cmp_skipper skip,
                                          cmp_writer write) {
-  ctx->error = ERROR_NONE;
+  ctx->error = CMP_ERROR_NONE;
   ctx->buf = buf;
   ctx->read = read;
   ctx->skip = skip;
@@ -805,8 +811,8 @@ uint32_t cmp_mp_version(void) {
 }
 
 const char* cmp_strerror(cmp_ctx_t *ctx) {
-  if (ctx->error > ERROR_NONE && ctx->error < ERROR_MAX)
-    return cmp_error_messages[ctx->error];
+  if (ctx->error > CMP_ERROR_NONE && ctx->error < CMP_ERROR_MAX)
+    return cmp_error_message((cmp_error_t)ctx->error);
 
   return "";
 }
@@ -815,7 +821,7 @@ bool cmp_write_pfix(cmp_ctx_t *ctx, uint8_t c) {
   if (c <= 0x7F)
     return write_fixed_value(ctx, c);
 
-  ctx->error = INPUT_VALUE_TOO_LARGE_ERROR;
+  ctx->error = CMP_ERROR_INPUT_VALUE_TOO_LARGE;
   return false;
 }
 
@@ -823,7 +829,7 @@ bool cmp_write_nfix(cmp_ctx_t *ctx, int8_t c) {
   if (c >= -32 && c <= -1)
     return write_fixed_value(ctx, (uint8_t)c);
 
-  ctx->error = INPUT_VALUE_TOO_LARGE_ERROR;
+  ctx->error = CMP_ERROR_INPUT_VALUE_TOO_LARGE;
   return false;
 }
 
@@ -833,7 +839,7 @@ bool cmp_write_sfix(cmp_ctx_t *ctx, int8_t c) {
   if (c >= -32 && c <= -1)
     return cmp_write_nfix(ctx, c);
 
-  ctx->error = INPUT_VALUE_TOO_LARGE_ERROR;
+  ctx->error = CMP_ERROR_INPUT_VALUE_TOO_LARGE;
   return false;
 }
 
@@ -1021,7 +1027,7 @@ bool cmp_write_fixstr_marker(cmp_ctx_t *ctx, uint8_t size) {
   if (size <= FIXSTR_SIZE)
     return write_fixed_value(ctx, FIXSTR_MARKER | size);
 
-  ctx->error = INPUT_VALUE_TOO_LARGE_ERROR;
+  ctx->error = CMP_ERROR_INPUT_VALUE_TOO_LARGE;
   return false;
 }
 
@@ -1035,7 +1041,7 @@ bool cmp_write_fixstr(cmp_ctx_t *ctx, const char *data, uint8_t size) {
   if (ctx->write(ctx, data, size) == size)
     return true;
 
-  ctx->error = DATA_WRITING_ERROR;
+  ctx->error = CMP_ERROR_DATA_WRITING;
   return false;
 }
 
@@ -1046,7 +1052,7 @@ bool cmp_write_str8_marker(cmp_ctx_t *ctx, uint8_t size) {
   if (ctx->write(ctx, &size, sizeof(uint8_t)) == sizeof(uint8_t))
     return true;
 
-  ctx->error = LENGTH_WRITING_ERROR;
+  ctx->error = CMP_ERROR_LENGTH_WRITING;
   return false;
 }
 
@@ -1060,7 +1066,7 @@ bool cmp_write_str8(cmp_ctx_t *ctx, const char *data, uint8_t size) {
   if (ctx->write(ctx, data, size) == size)
     return true;
 
-  ctx->error = DATA_WRITING_ERROR;
+  ctx->error = CMP_ERROR_DATA_WRITING;
   return false;
 }
 
@@ -1073,7 +1079,7 @@ bool cmp_write_str16_marker(cmp_ctx_t *ctx, uint16_t size) {
   if (ctx->write(ctx, &size, sizeof(uint16_t)) == sizeof(uint16_t))
     return true;
 
-  ctx->error = LENGTH_WRITING_ERROR;
+  ctx->error = CMP_ERROR_LENGTH_WRITING;
   return false;
 }
 
@@ -1087,7 +1093,7 @@ bool cmp_write_str16(cmp_ctx_t *ctx, const char *data, uint16_t size) {
   if (ctx->write(ctx, data, size) == size)
     return true;
 
-  ctx->error = DATA_WRITING_ERROR;
+  ctx->error = CMP_ERROR_DATA_WRITING;
   return false;
 }
 
@@ -1100,7 +1106,7 @@ bool cmp_write_str32_marker(cmp_ctx_t *ctx, uint32_t size) {
   if (ctx->write(ctx, &size, sizeof(uint32_t)) == sizeof(uint32_t))
     return true;
 
-  ctx->error = LENGTH_WRITING_ERROR;
+  ctx->error = CMP_ERROR_LENGTH_WRITING;
   return false;
 }
 
@@ -1114,7 +1120,7 @@ bool cmp_write_str32(cmp_ctx_t *ctx, const char *data, uint32_t size) {
   if (ctx->write(ctx, data, size) == size)
     return true;
 
-  ctx->error = DATA_WRITING_ERROR;
+  ctx->error = CMP_ERROR_DATA_WRITING;
   return false;
 }
 
@@ -1165,7 +1171,7 @@ bool cmp_write_bin8_marker(cmp_ctx_t *ctx, uint8_t size) {
   if (ctx->write(ctx, &size, sizeof(uint8_t)) == sizeof(uint8_t))
     return true;
 
-  ctx->error = LENGTH_WRITING_ERROR;
+  ctx->error = CMP_ERROR_LENGTH_WRITING;
   return false;
 }
 
@@ -1179,7 +1185,7 @@ bool cmp_write_bin8(cmp_ctx_t *ctx, const void *data, uint8_t size) {
   if (ctx->write(ctx, data, size) == size)
     return true;
 
-  ctx->error = DATA_WRITING_ERROR;
+  ctx->error = CMP_ERROR_DATA_WRITING;
   return false;
 }
 
@@ -1192,7 +1198,7 @@ bool cmp_write_bin16_marker(cmp_ctx_t *ctx, uint16_t size) {
   if (ctx->write(ctx, &size, sizeof(uint16_t)) == sizeof(uint16_t))
     return true;
 
-  ctx->error = LENGTH_WRITING_ERROR;
+  ctx->error = CMP_ERROR_LENGTH_WRITING;
   return false;
 }
 
@@ -1206,7 +1212,7 @@ bool cmp_write_bin16(cmp_ctx_t *ctx, const void *data, uint16_t size) {
   if (ctx->write(ctx, data, size) == size)
     return true;
 
-  ctx->error = DATA_WRITING_ERROR;
+  ctx->error = CMP_ERROR_DATA_WRITING;
   return false;
 }
 
@@ -1219,7 +1225,7 @@ bool cmp_write_bin32_marker(cmp_ctx_t *ctx, uint32_t size) {
   if (ctx->write(ctx, &size, sizeof(uint32_t)) == sizeof(uint32_t))
     return true;
 
-  ctx->error = LENGTH_WRITING_ERROR;
+  ctx->error = CMP_ERROR_LENGTH_WRITING;
   return false;
 }
 
@@ -1233,7 +1239,7 @@ bool cmp_write_bin32(cmp_ctx_t *ctx, const void *data, uint32_t size) {
   if (ctx->write(ctx, data, size) == size)
     return true;
 
-  ctx->error = DATA_WRITING_ERROR;
+  ctx->error = CMP_ERROR_DATA_WRITING;
   return false;
 }
 
@@ -1259,7 +1265,7 @@ bool cmp_write_fixarray(cmp_ctx_t *ctx, uint8_t size) {
   if (size <= FIXARRAY_SIZE)
     return write_fixed_value(ctx, FIXARRAY_MARKER | size);
 
-  ctx->error = INPUT_VALUE_TOO_LARGE_ERROR;
+  ctx->error = CMP_ERROR_INPUT_VALUE_TOO_LARGE;
   return false;
 }
 
@@ -1272,7 +1278,7 @@ bool cmp_write_array16(cmp_ctx_t *ctx, uint16_t size) {
   if (ctx->write(ctx, &size, sizeof(uint16_t)) == sizeof(uint16_t))
     return true;
 
-  ctx->error = LENGTH_WRITING_ERROR;
+  ctx->error = CMP_ERROR_LENGTH_WRITING;
   return false;
 }
 
@@ -1285,7 +1291,7 @@ bool cmp_write_array32(cmp_ctx_t *ctx, uint32_t size) {
   if (ctx->write(ctx, &size, sizeof(uint32_t)) == sizeof(uint32_t))
     return true;
 
-  ctx->error = LENGTH_WRITING_ERROR;
+  ctx->error = CMP_ERROR_LENGTH_WRITING;
   return false;
 }
 
@@ -1302,7 +1308,7 @@ bool cmp_write_fixmap(cmp_ctx_t *ctx, uint8_t size) {
   if (size <= FIXMAP_SIZE)
     return write_fixed_value(ctx, FIXMAP_MARKER | size);
 
-  ctx->error = INPUT_VALUE_TOO_LARGE_ERROR;
+  ctx->error = CMP_ERROR_INPUT_VALUE_TOO_LARGE;
   return false;
 }
 
@@ -1315,7 +1321,7 @@ bool cmp_write_map16(cmp_ctx_t *ctx, uint16_t size) {
   if (ctx->write(ctx, &size, sizeof(uint16_t)) == sizeof(uint16_t))
     return true;
 
-  ctx->error = LENGTH_WRITING_ERROR;
+  ctx->error = CMP_ERROR_LENGTH_WRITING;
   return false;
 }
 
@@ -1328,7 +1334,7 @@ bool cmp_write_map32(cmp_ctx_t *ctx, uint32_t size) {
   if (ctx->write(ctx, &size, sizeof(uint32_t)) == sizeof(uint32_t))
     return true;
 
-  ctx->error = LENGTH_WRITING_ERROR;
+  ctx->error = CMP_ERROR_LENGTH_WRITING;
   return false;
 }
 
@@ -1348,7 +1354,7 @@ bool cmp_write_fixext1_marker(cmp_ctx_t *ctx, int8_t type) {
   if (ctx->write(ctx, &type, sizeof(int8_t)) == sizeof(int8_t))
     return true;
 
-  ctx->error = EXT_TYPE_WRITING_ERROR;
+  ctx->error = CMP_ERROR_EXT_TYPE_WRITING;
   return false;
 }
 
@@ -1359,7 +1365,7 @@ bool cmp_write_fixext1(cmp_ctx_t *ctx, int8_t type, const void *data) {
   if (ctx->write(ctx, data, 1) == 1)
     return true;
 
-  ctx->error = DATA_WRITING_ERROR;
+  ctx->error = CMP_ERROR_DATA_WRITING;
   return false;
 }
 
@@ -1370,7 +1376,7 @@ bool cmp_write_fixext2_marker(cmp_ctx_t *ctx, int8_t type) {
   if (ctx->write(ctx, &type, sizeof(int8_t)) == sizeof(int8_t))
     return true;
 
-  ctx->error = EXT_TYPE_WRITING_ERROR;
+  ctx->error = CMP_ERROR_EXT_TYPE_WRITING;
   return false;
 }
 
@@ -1381,7 +1387,7 @@ bool cmp_write_fixext2(cmp_ctx_t *ctx, int8_t type, const void *data) {
   if (ctx->write(ctx, data, 2) == 2)
     return true;
 
-  ctx->error = DATA_WRITING_ERROR;
+  ctx->error = CMP_ERROR_DATA_WRITING;
   return false;
 }
 
@@ -1392,7 +1398,7 @@ bool cmp_write_fixext4_marker(cmp_ctx_t *ctx, int8_t type) {
   if (ctx->write(ctx, &type, sizeof(int8_t)) == sizeof(int8_t))
     return true;
 
-  ctx->error = EXT_TYPE_WRITING_ERROR;
+  ctx->error = CMP_ERROR_EXT_TYPE_WRITING;
   return false;
 }
 
@@ -1403,7 +1409,7 @@ bool cmp_write_fixext4(cmp_ctx_t *ctx, int8_t type, const void *data) {
   if (ctx->write(ctx, data, 4) == 4)
     return true;
 
-  ctx->error = DATA_WRITING_ERROR;
+  ctx->error = CMP_ERROR_DATA_WRITING;
   return false;
 }
 
@@ -1414,7 +1420,7 @@ bool cmp_write_fixext8_marker(cmp_ctx_t *ctx, int8_t type) {
   if (ctx->write(ctx, &type, sizeof(int8_t)) == sizeof(int8_t))
     return true;
 
-  ctx->error = EXT_TYPE_WRITING_ERROR;
+  ctx->error = CMP_ERROR_EXT_TYPE_WRITING;
   return false;
 }
 
@@ -1425,7 +1431,7 @@ bool cmp_write_fixext8(cmp_ctx_t *ctx, int8_t type, const void *data) {
   if (ctx->write(ctx, data, 8) == 8)
     return true;
 
-  ctx->error = DATA_WRITING_ERROR;
+  ctx->error = CMP_ERROR_DATA_WRITING;
   return false;
 }
 
@@ -1436,7 +1442,7 @@ bool cmp_write_fixext16_marker(cmp_ctx_t *ctx, int8_t type) {
   if (ctx->write(ctx, &type, sizeof(int8_t)) == sizeof(int8_t))
     return true;
 
-  ctx->error = EXT_TYPE_WRITING_ERROR;
+  ctx->error = CMP_ERROR_EXT_TYPE_WRITING;
   return false;
 }
 
@@ -1447,7 +1453,7 @@ bool cmp_write_fixext16(cmp_ctx_t *ctx, int8_t type, const void *data) {
   if (ctx->write(ctx, data, 16) == 16)
     return true;
 
-  ctx->error = DATA_WRITING_ERROR;
+  ctx->error = CMP_ERROR_DATA_WRITING;
   return false;
 }
 
@@ -1456,14 +1462,14 @@ bool cmp_write_ext8_marker(cmp_ctx_t *ctx, int8_t type, uint8_t size) {
     return false;
 
   if (ctx->write(ctx, &size, sizeof(uint8_t)) != sizeof(uint8_t)) {
-    ctx->error = LENGTH_WRITING_ERROR;
+    ctx->error = CMP_ERROR_LENGTH_WRITING;
     return false;
   }
 
   if (ctx->write(ctx, &type, sizeof(int8_t)) == sizeof(int8_t))
     return true;
 
-  ctx->error = EXT_TYPE_WRITING_ERROR;
+  ctx->error = CMP_ERROR_EXT_TYPE_WRITING;
   return false;
 }
 
@@ -1474,7 +1480,7 @@ bool cmp_write_ext8(cmp_ctx_t *ctx, int8_t type, uint8_t size, const void *data)
   if (ctx->write(ctx, data, size) == size)
     return true;
 
-  ctx->error = DATA_WRITING_ERROR;
+  ctx->error = CMP_ERROR_DATA_WRITING;
   return false;
 }
 
@@ -1485,14 +1491,14 @@ bool cmp_write_ext16_marker(cmp_ctx_t *ctx, int8_t type, uint16_t size) {
   size = be16(size);
 
   if (ctx->write(ctx, &size, sizeof(uint16_t)) != sizeof(uint16_t)) {
-    ctx->error = LENGTH_WRITING_ERROR;
+    ctx->error = CMP_ERROR_LENGTH_WRITING;
     return false;
   }
 
   if (ctx->write(ctx, &type, sizeof(int8_t)) == sizeof(int8_t))
     return true;
 
-  ctx->error = EXT_TYPE_WRITING_ERROR;
+  ctx->error = CMP_ERROR_EXT_TYPE_WRITING;
   return false;
 }
 
@@ -1503,7 +1509,7 @@ bool cmp_write_ext16(cmp_ctx_t *ctx, int8_t type, uint16_t size, const void *dat
   if (ctx->write(ctx, data, size) == size)
     return true;
 
-  ctx->error = DATA_WRITING_ERROR;
+  ctx->error = CMP_ERROR_DATA_WRITING;
   return false;
 }
 
@@ -1514,14 +1520,14 @@ bool cmp_write_ext32_marker(cmp_ctx_t *ctx, int8_t type, uint32_t size) {
   size = be32(size);
 
   if (ctx->write(ctx, &size, sizeof(uint32_t)) != sizeof(uint32_t)) {
-    ctx->error = LENGTH_WRITING_ERROR;
+    ctx->error = CMP_ERROR_LENGTH_WRITING;
     return false;
   }
 
   if (ctx->write(ctx, &type, sizeof(int8_t)) == sizeof(int8_t))
     return true;
 
-  ctx->error = EXT_TYPE_WRITING_ERROR;
+  ctx->error = CMP_ERROR_EXT_TYPE_WRITING;
   return false;
 }
 
@@ -1532,7 +1538,7 @@ bool cmp_write_ext32(cmp_ctx_t *ctx, int8_t type, uint32_t size, const void *dat
   if (ctx->write(ctx, data, size) == size)
     return true;
 
-  ctx->error = DATA_WRITING_ERROR;
+  ctx->error = CMP_ERROR_DATA_WRITING;
   return false;
 }
 
@@ -1610,14 +1616,14 @@ bool cmp_write_object(cmp_ctx_t *ctx, const cmp_object_t *obj) {
 #ifndef CMP_NO_FLOAT
       return cmp_write_float(ctx, obj->as.flt);
 #else /* CMP_NO_FLOAT */
-      ctx->error = DISABLED_FLOATING_POINT_ERROR;
+      ctx->error = CMP_ERROR_DISABLED_FLOATING_POINT;
       return false;
 #endif /* CMP_NO_FLOAT */
     case CMP_TYPE_DOUBLE:
 #ifndef CMP_NO_FLOAT
       return cmp_write_double(ctx, obj->as.dbl);
 #else /* CMP_NO_FLOAT */
-      ctx->error = DISABLED_FLOATING_POINT_ERROR;
+      ctx->error = CMP_ERROR_DISABLED_FLOATING_POINT;
       return false;
 #endif
     case CMP_TYPE_UINT8:
@@ -1663,7 +1669,7 @@ bool cmp_write_object(cmp_ctx_t *ctx, const cmp_object_t *obj) {
     case CMP_TYPE_NEGATIVE_FIXNUM:
       return cmp_write_nfix(ctx, obj->as.s8);
     default:
-      ctx->error = INVALID_TYPE_ERROR;
+      ctx->error = CMP_ERROR_INVALID_TYPE;
       return false;
   }
 }
@@ -1696,14 +1702,14 @@ bool cmp_write_object_v4(cmp_ctx_t *ctx, const cmp_object_t *obj) {
 #ifndef CMP_NO_FLOAT
       return cmp_write_float(ctx, obj->as.flt);
 #else /* CMP_NO_FLOAT */
-      ctx->error = DISABLED_FLOATING_POINT_ERROR;
+      ctx->error = CMP_ERROR_DISABLED_FLOATING_POINT;
       return false;
 #endif
     case CMP_TYPE_DOUBLE:
 #ifndef CMP_NO_FLOAT
       return cmp_write_double(ctx, obj->as.dbl);
 #else
-      ctx->error = DISABLED_FLOATING_POINT_ERROR;
+      ctx->error = CMP_ERROR_DISABLED_FLOATING_POINT;
       return false;
 #endif
     case CMP_TYPE_UINT8:
@@ -1747,7 +1753,7 @@ bool cmp_write_object_v4(cmp_ctx_t *ctx, const cmp_object_t *obj) {
     case CMP_TYPE_NEGATIVE_FIXNUM:
       return cmp_write_nfix(ctx, obj->as.s8);
     default:
-      ctx->error = INVALID_TYPE_ERROR;
+      ctx->error = CMP_ERROR_INVALID_TYPE;
       return false;
   }
 }
@@ -1759,7 +1765,7 @@ bool cmp_read_pfix(cmp_ctx_t *ctx, uint8_t *c) {
     return false;
 
   if (obj.type != CMP_TYPE_POSITIVE_FIXNUM) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -1774,7 +1780,7 @@ bool cmp_read_nfix(cmp_ctx_t *ctx, int8_t *c) {
     return false;
 
   if (obj.type != CMP_TYPE_NEGATIVE_FIXNUM) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -1794,7 +1800,7 @@ bool cmp_read_sfix(cmp_ctx_t *ctx, int8_t *c) {
       *c = obj.as.s8;
       return true;
     default:
-      ctx->error = INVALID_TYPE_ERROR;
+      ctx->error = CMP_ERROR_INVALID_TYPE;
       return false;
   }
 }
@@ -1806,7 +1812,7 @@ bool cmp_read_s8(cmp_ctx_t *ctx, int8_t *c) {
     return false;
 
   if (obj.type != CMP_TYPE_SINT8) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -1821,7 +1827,7 @@ bool cmp_read_s16(cmp_ctx_t *ctx, int16_t *s) {
     return false;
 
   if (obj.type != CMP_TYPE_SINT16) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -1836,7 +1842,7 @@ bool cmp_read_s32(cmp_ctx_t *ctx, int32_t *i) {
     return false;
 
   if (obj.type != CMP_TYPE_SINT32) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -1851,7 +1857,7 @@ bool cmp_read_s64(cmp_ctx_t *ctx, int64_t *l) {
     return false;
 
   if (obj.type != CMP_TYPE_SINT64) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -1881,7 +1887,7 @@ bool cmp_read_char(cmp_ctx_t *ctx, int8_t *c) {
       break;
   }
 
-  ctx->error = INVALID_TYPE_ERROR;
+  ctx->error = CMP_ERROR_INVALID_TYPE;
   return false;
 }
 
@@ -1913,7 +1919,7 @@ bool cmp_read_short(cmp_ctx_t *ctx, int16_t *s) {
       break;
   }
 
-  ctx->error = INVALID_TYPE_ERROR;
+  ctx->error = CMP_ERROR_INVALID_TYPE;
   return false;
 }
 
@@ -1951,7 +1957,7 @@ bool cmp_read_int(cmp_ctx_t *ctx, int32_t *i) {
       break;
   }
 
-  ctx->error = INVALID_TYPE_ERROR;
+  ctx->error = CMP_ERROR_INVALID_TYPE;
   return false;
 }
 
@@ -1995,7 +2001,7 @@ bool cmp_read_long(cmp_ctx_t *ctx, int64_t *d) {
       break;
   }
 
-  ctx->error = INVALID_TYPE_ERROR;
+  ctx->error = CMP_ERROR_INVALID_TYPE;
   return false;
 }
 
@@ -2014,7 +2020,7 @@ bool cmp_read_u8(cmp_ctx_t *ctx, uint8_t *c) {
     return false;
 
   if (obj.type != CMP_TYPE_UINT8) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -2029,7 +2035,7 @@ bool cmp_read_u16(cmp_ctx_t *ctx, uint16_t *s) {
     return false;
 
   if (obj.type != CMP_TYPE_UINT16) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -2044,7 +2050,7 @@ bool cmp_read_u32(cmp_ctx_t *ctx, uint32_t *i) {
     return false;
 
   if (obj.type != CMP_TYPE_UINT32) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -2059,7 +2065,7 @@ bool cmp_read_u64(cmp_ctx_t *ctx, uint64_t *l) {
     return false;
 
   if (obj.type != CMP_TYPE_UINT64) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -2089,7 +2095,7 @@ bool cmp_read_uchar(cmp_ctx_t *ctx, uint8_t *c) {
       break;
   }
 
-  ctx->error = INVALID_TYPE_ERROR;
+  ctx->error = CMP_ERROR_INVALID_TYPE;
   return false;
 }
 
@@ -2124,7 +2130,7 @@ bool cmp_read_ushort(cmp_ctx_t *ctx, uint16_t *s) {
       break;
   }
 
-  ctx->error = INVALID_TYPE_ERROR;
+  ctx->error = CMP_ERROR_INVALID_TYPE;
   return false;
 }
 
@@ -2168,7 +2174,7 @@ bool cmp_read_uint(cmp_ctx_t *ctx, uint32_t *i) {
       break;
   }
 
-  ctx->error = INVALID_TYPE_ERROR;
+  ctx->error = CMP_ERROR_INVALID_TYPE;
   return false;
 }
 
@@ -2221,7 +2227,7 @@ bool cmp_read_ulong(cmp_ctx_t *ctx, uint64_t *u) {
       break;
   }
 
-  ctx->error = INVALID_TYPE_ERROR;
+  ctx->error = CMP_ERROR_INVALID_TYPE;
   return false;
 }
 
@@ -2237,7 +2243,7 @@ bool cmp_read_float(cmp_ctx_t *ctx, float *f) {
     return false;
 
   if (obj.type != CMP_TYPE_FLOAT) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -2253,7 +2259,7 @@ bool cmp_read_double(cmp_ctx_t *ctx, double *d) {
     return false;
 
   if (obj.type != CMP_TYPE_DOUBLE) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -2276,7 +2282,7 @@ bool cmp_read_decimal(cmp_ctx_t *ctx, double *d) {
       *d = obj.as.dbl;
       return true;
     default:
-      ctx->error = INVALID_TYPE_ERROR;
+      ctx->error = CMP_ERROR_INVALID_TYPE;
       return false;
   }
 }
@@ -2291,7 +2297,7 @@ bool cmp_read_nil(cmp_ctx_t *ctx) {
   if (obj.type == CMP_TYPE_NIL)
     return true;
 
-  ctx->error = INVALID_TYPE_ERROR;
+  ctx->error = CMP_ERROR_INVALID_TYPE;
   return false;
 }
 
@@ -2302,7 +2308,7 @@ bool cmp_read_bool(cmp_ctx_t *ctx, bool *b) {
     return false;
 
   if (obj.type != CMP_TYPE_BOOLEAN) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -2321,7 +2327,7 @@ bool cmp_read_bool_as_u8(cmp_ctx_t *ctx, uint8_t *b) {
     return false;
 
   if (obj.type != CMP_TYPE_BOOLEAN) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -2347,7 +2353,7 @@ bool cmp_read_str_size(cmp_ctx_t *ctx, uint32_t *size) {
       *size = obj.as.str_size;
       return true;
     default:
-      ctx->error = INVALID_TYPE_ERROR;
+      ctx->error = CMP_ERROR_INVALID_TYPE;
       return false;
   }
 }
@@ -2360,12 +2366,12 @@ bool cmp_read_str(cmp_ctx_t *ctx, char *data, uint32_t *size) {
 
   if (str_size >= *size) {
     *size = str_size;
-    ctx->error = STR_DATA_LENGTH_TOO_LONG_ERROR;
+    ctx->error = CMP_ERROR_STR_DATA_LENGTH_TOO_LONG;
     return false;
   }
 
   if (!ctx->read(ctx, data, str_size)) {
-    ctx->error = DATA_READING_ERROR;
+    ctx->error = CMP_ERROR_DATA_READING;
     return false;
   }
 
@@ -2388,7 +2394,7 @@ bool cmp_read_bin_size(cmp_ctx_t *ctx, uint32_t *size) {
       *size = obj.as.bin_size;
       return true;
     default:
-      ctx->error = INVALID_TYPE_ERROR;
+      ctx->error = CMP_ERROR_INVALID_TYPE;
       return false;
   }
 }
@@ -2400,12 +2406,12 @@ bool cmp_read_bin(cmp_ctx_t *ctx, void *data, uint32_t *size) {
     return false;
 
   if (bin_size > *size) {
-    ctx->error = BIN_DATA_LENGTH_TOO_LONG_ERROR;
+    ctx->error = CMP_ERROR_BIN_DATA_LENGTH_TOO_LONG;
     return false;
   }
 
   if (!ctx->read(ctx, data, bin_size)) {
-    ctx->error = DATA_READING_ERROR;
+    ctx->error = CMP_ERROR_DATA_READING;
     return false;
   }
 
@@ -2426,7 +2432,7 @@ bool cmp_read_array(cmp_ctx_t *ctx, uint32_t *size) {
       *size = obj.as.array_size;
       return true;
     default:
-      ctx->error = INVALID_TYPE_ERROR;
+      ctx->error = CMP_ERROR_INVALID_TYPE;
       return false;
   }
 }
@@ -2444,7 +2450,7 @@ bool cmp_read_map(cmp_ctx_t *ctx, uint32_t *size) {
       *size = obj.as.map_size;
       return true;
     default:
-      ctx->error = INVALID_TYPE_ERROR;
+      ctx->error = CMP_ERROR_INVALID_TYPE;
       return false;
   }
 }
@@ -2456,7 +2462,7 @@ bool cmp_read_fixext1_marker(cmp_ctx_t *ctx, int8_t *type) {
     return false;
 
   if (obj.type != CMP_TYPE_FIXEXT1) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -2471,7 +2477,7 @@ bool cmp_read_fixext1(cmp_ctx_t *ctx, int8_t *type, void *data) {
   if (ctx->read(ctx, data, 1))
     return true;
 
-  ctx->error = DATA_READING_ERROR;
+  ctx->error = CMP_ERROR_DATA_READING;
   return false;
 }
 
@@ -2482,7 +2488,7 @@ bool cmp_read_fixext2_marker(cmp_ctx_t *ctx, int8_t *type) {
     return false;
 
   if (obj.type != CMP_TYPE_FIXEXT2) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -2497,7 +2503,7 @@ bool cmp_read_fixext2(cmp_ctx_t *ctx, int8_t *type, void *data) {
   if (ctx->read(ctx, data, 2))
     return true;
 
-  ctx->error = DATA_READING_ERROR;
+  ctx->error = CMP_ERROR_DATA_READING;
   return false;
 }
 
@@ -2508,7 +2514,7 @@ bool cmp_read_fixext4_marker(cmp_ctx_t *ctx, int8_t *type) {
     return false;
 
   if (obj.type != CMP_TYPE_FIXEXT4) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -2523,7 +2529,7 @@ bool cmp_read_fixext4(cmp_ctx_t *ctx, int8_t *type, void *data) {
   if (ctx->read(ctx, data, 4))
     return true;
 
-  ctx->error = DATA_READING_ERROR;
+  ctx->error = CMP_ERROR_DATA_READING;
   return false;
 }
 
@@ -2534,7 +2540,7 @@ bool cmp_read_fixext8_marker(cmp_ctx_t *ctx, int8_t *type) {
     return false;
 
   if (obj.type != CMP_TYPE_FIXEXT8) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -2549,7 +2555,7 @@ bool cmp_read_fixext8(cmp_ctx_t *ctx, int8_t *type, void *data) {
   if (ctx->read(ctx, data, 8))
     return true;
 
-  ctx->error = DATA_READING_ERROR;
+  ctx->error = CMP_ERROR_DATA_READING;
   return false;
 }
 
@@ -2560,7 +2566,7 @@ bool cmp_read_fixext16_marker(cmp_ctx_t *ctx, int8_t *type) {
     return false;
 
   if (obj.type != CMP_TYPE_FIXEXT16) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -2575,7 +2581,7 @@ bool cmp_read_fixext16(cmp_ctx_t *ctx, int8_t *type, void *data) {
   if (ctx->read(ctx, data, 16))
     return true;
 
-  ctx->error = DATA_READING_ERROR;
+  ctx->error = CMP_ERROR_DATA_READING;
   return false;
 }
 
@@ -2586,7 +2592,7 @@ bool cmp_read_ext8_marker(cmp_ctx_t *ctx, int8_t *type, uint8_t *size) {
     return false;
 
   if (obj.type != CMP_TYPE_EXT8) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -2603,7 +2609,7 @@ bool cmp_read_ext8(cmp_ctx_t *ctx, int8_t *type, uint8_t *size, void *data) {
   if (ctx->read(ctx, data, *size))
     return true;
 
-  ctx->error = DATA_READING_ERROR;
+  ctx->error = CMP_ERROR_DATA_READING;
   return false;
 }
 
@@ -2614,7 +2620,7 @@ bool cmp_read_ext16_marker(cmp_ctx_t *ctx, int8_t *type, uint16_t *size) {
     return false;
 
   if (obj.type != CMP_TYPE_EXT16) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -2631,7 +2637,7 @@ bool cmp_read_ext16(cmp_ctx_t *ctx, int8_t *type, uint16_t *size, void *data) {
   if (ctx->read(ctx, data, *size))
     return true;
 
-  ctx->error = DATA_READING_ERROR;
+  ctx->error = CMP_ERROR_DATA_READING;
   return false;
 }
 
@@ -2642,7 +2648,7 @@ bool cmp_read_ext32_marker(cmp_ctx_t *ctx, int8_t *type, uint32_t *size) {
     return false;
 
   if (obj.type != CMP_TYPE_EXT32) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -2659,7 +2665,7 @@ bool cmp_read_ext32(cmp_ctx_t *ctx, int8_t *type, uint32_t *size, void *data) {
   if (ctx->read(ctx, data, *size))
     return true;
 
-  ctx->error = DATA_READING_ERROR;
+  ctx->error = CMP_ERROR_DATA_READING;
   return false;
 }
 
@@ -2682,7 +2688,7 @@ bool cmp_read_ext_marker(cmp_ctx_t *ctx, int8_t *type, uint32_t *size) {
       *size = obj.as.ext.size;
       return true;
     default:
-      ctx->error = INVALID_TYPE_ERROR;
+      ctx->error = CMP_ERROR_INVALID_TYPE;
       return false;
   }
 }
@@ -2694,7 +2700,7 @@ bool cmp_read_ext(cmp_ctx_t *ctx, int8_t *type, uint32_t *size, void *data) {
   if (ctx->read(ctx, data, *size))
     return true;
 
-  ctx->error = DATA_READING_ERROR;
+  ctx->error = CMP_ERROR_DATA_READING;
   return false;
 }
 
@@ -2705,7 +2711,7 @@ bool cmp_read_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
     return false;
 
   if (!type_marker_to_cmp_type(type_marker, &obj->type)) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -2722,7 +2728,7 @@ bool cmp_skip_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
   }
 
   if (!type_marker_to_cmp_type(type_marker, &cmp_type)) {
-    ctx->error = INVALID_TYPE_ERROR;
+    ctx->error = CMP_ERROR_INVALID_TYPE;
     return false;
   }
 
@@ -2739,7 +2745,7 @@ bool cmp_skip_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
         return false;
       }
 
-      ctx->error = SKIP_DEPTH_LIMIT_EXCEEDED_ERROR;
+      ctx->error = CMP_ERROR_SKIP_DEPTH_LIMIT_EXCEEDED;
 
       return false;
     default:
@@ -2784,7 +2790,7 @@ bool cmp_skip_object_flat(cmp_ctx_t *ctx, cmp_object_t *obj) {
     }
 
     if (!type_marker_to_cmp_type(type_marker, &cmp_type)) {
-      ctx->error = INVALID_TYPE_ERROR;
+      ctx->error = CMP_ERROR_INVALID_TYPE;
       return false;
     }
 
@@ -2802,7 +2808,7 @@ bool cmp_skip_object_flat(cmp_ctx_t *ctx, cmp_object_t *obj) {
             return false;
           }
 
-          ctx->error = SKIP_DEPTH_LIMIT_EXCEEDED_ERROR;
+          ctx->error = CMP_ERROR_SKIP_DEPTH_LIMIT_EXCEEDED;
           return false;
         }
 
@@ -2874,7 +2880,7 @@ bool cmp_skip_object_no_limit(cmp_ctx_t *ctx) {
     }
 
     if (!type_marker_to_cmp_type(type_marker, &cmp_type)) {
-      ctx->error = INVALID_TYPE_ERROR;
+      ctx->error = CMP_ERROR_INVALID_TYPE;
       return false;
     }
 
@@ -2952,7 +2958,7 @@ bool cmp_skip_object_limit(cmp_ctx_t *ctx, cmp_object_t *obj, uint32_t limit) {
     }
 
     if (!type_marker_to_cmp_type(type_marker, &cmp_type)) {
-      ctx->error = INVALID_TYPE_ERROR;
+      ctx->error = CMP_ERROR_INVALID_TYPE;
       return false;
     }
 
@@ -2972,7 +2978,7 @@ bool cmp_skip_object_limit(cmp_ctx_t *ctx, cmp_object_t *obj, uint32_t limit) {
             return false;
           }
 
-          ctx->error = SKIP_DEPTH_LIMIT_EXCEEDED_ERROR;
+          ctx->error = CMP_ERROR_SKIP_DEPTH_LIMIT_EXCEEDED;
 
           return false;
         }
@@ -3517,12 +3523,12 @@ bool cmp_object_to_str(cmp_ctx_t *ctx, const cmp_object_t *obj, char *data,
     case CMP_TYPE_STR32:
       str_size = obj->as.str_size;
       if (str_size >= buf_size) {
-        ctx->error = STR_DATA_LENGTH_TOO_LONG_ERROR;
+        ctx->error = CMP_ERROR_STR_DATA_LENGTH_TOO_LONG;
         return false;
       }
 
       if (!ctx->read(ctx, data, str_size)) {
-        ctx->error = DATA_READING_ERROR;
+        ctx->error = CMP_ERROR_DATA_READING;
         return false;
       }
 
@@ -3543,12 +3549,12 @@ bool cmp_object_to_bin(cmp_ctx_t *ctx, const cmp_object_t *obj, void *data,
     case CMP_TYPE_BIN32:
       bin_size = obj->as.bin_size;
       if (bin_size > buf_size) {
-        ctx->error = BIN_DATA_LENGTH_TOO_LONG_ERROR;
+        ctx->error = CMP_ERROR_BIN_DATA_LENGTH_TOO_LONG;
         return false;
       }
 
       if (!ctx->read(ctx, data, bin_size)) {
-        ctx->error = DATA_READING_ERROR;
+        ctx->error = CMP_ERROR_DATA_READING;
         return false;
       }
       return true;
