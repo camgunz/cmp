@@ -780,7 +780,7 @@ uint32_t cmp_mp_version(void) {
   return cmp_mp_version_;
 }
 
-const char* cmp_strerror(cmp_ctx_t *ctx) {
+const char* cmp_strerror(const cmp_ctx_t *ctx) {
   if (ctx->error > CMP_ERROR_NONE && ctx->error < CMP_ERROR_MAX)
     return cmp_error_message((cmp_error_t)ctx->error);
 

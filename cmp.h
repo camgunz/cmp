@@ -145,7 +145,7 @@ uint32_t cmp_version(void);
 uint32_t cmp_mp_version(void);
 
 /* Returns a string description of a CMP context's error */
-const char* cmp_strerror(cmp_ctx_t *ctx);
+const char* cmp_strerror(const cmp_ctx_t *ctx);
 
 /* Writes a signed integer to the backend */
 bool cmp_write_integer(cmp_ctx_t *ctx, int64_t d);
