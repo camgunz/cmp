@@ -230,10 +230,10 @@ static bool skip_bytes(cmp_ctx_t *ctx, size_t count) {
     return ctx->skip(ctx, count);
   }
   else {
-    uint8_t floor;
     size_t i;
 
-    for (i = 0; i < count; i++) {
+    for (i = 0; i < count; ++i) {
+      uint8_t floor;
       if (!ctx->read(ctx, &floor, sizeof(uint8_t))) {
         return false;
       }
@@ -928,7 +928,7 @@ bool cmp_write_float(cmp_ctx_t *ctx, float f) {
     char *fbuf = (char *)&f;
     size_t i;
 
-    for (i = 0; i < sizeof(float); i++)
+    for (i = 0; i < sizeof(float); ++i)
       swapped[i] = fbuf[sizeof(float) - i - 1];
 
     return ctx->write(ctx, swapped, sizeof(float)) == sizeof(float);
@@ -947,7 +947,7 @@ bool cmp_write_double(cmp_ctx_t *ctx, double d) {
     char *dbuf = (char *)&d;
     size_t i;
 
-    for (i = 0; i < sizeof(double); i++)
+    for (i = 0; i < sizeof(double); ++i)
       swapped[i] = dbuf[sizeof(double) - i - 1];
 
     return ctx->write(ctx, swapped, sizeof(double)) == sizeof(double);
@@ -2733,7 +2733,7 @@ bool cmp_skip_object(cmp_ctx_t *ctx, cmp_object_t *obj) {
           case CMP_TYPE_EXT8:
           case CMP_TYPE_EXT16:
           case CMP_TYPE_EXT32:
-            size++;
+            ++size;
             break;
           default:
             break;
@@ -2800,7 +2800,7 @@ bool cmp_skip_object_flat(cmp_ctx_t *ctx, cmp_object_t *obj) {
             case CMP_TYPE_EXT8:
             case CMP_TYPE_EXT16:
             case CMP_TYPE_EXT32:
-              size++;
+              ++size;
               break;
             default:
               break;
@@ -2877,7 +2877,7 @@ bool cmp_skip_object_no_limit(cmp_ctx_t *ctx) {
             case CMP_TYPE_EXT8:
             case CMP_TYPE_EXT16:
             case CMP_TYPE_EXT32:
-              size++;
+              ++size;
               break;
             default:
               break;
@@ -2939,7 +2939,7 @@ bool cmp_skip_object_limit(cmp_ctx_t *ctx, cmp_object_t *obj, uint32_t limit) {
       case CMP_TYPE_FIXMAP:
       case CMP_TYPE_MAP16:
       case CMP_TYPE_MAP32:
-        depth++;
+        ++depth;
 
         if (depth > limit) {
           obj->type = cmp_type;
@@ -2969,7 +2969,7 @@ bool cmp_skip_object_limit(cmp_ctx_t *ctx, cmp_object_t *obj, uint32_t limit) {
             case CMP_TYPE_EXT8:
             case CMP_TYPE_EXT16:
             case CMP_TYPE_EXT32:
-              size++;
+              ++size;
               break;
             default:
               break;
