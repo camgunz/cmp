@@ -4696,6 +4696,95 @@ void test_skipping(void **state) {
   teardown_cmp_and_buf(&cmp, &buf);
 }
 
+static bool skip_object_variant(cmp_ctx_t *cmp, cmp_object_t *obj,
+                                unsigned int variant) {
+  switch (variant) {
+    case 0:
+      return cmp_skip_object(cmp, obj);
+    case 1:
+      return cmp_skip_object_flat(cmp, obj);
+    case 2:
+      return cmp_skip_object_no_limit(cmp);
+    default:
+      return cmp_skip_object_limit(cmp, obj, 2);
+  }
+}
+
+void test_skipping_empty_ext(void **state) {
+  const struct {
+    unsigned char data[6];
+    size_t size;
+  } values[] = {
+    {{0xc7, 0, 42}, 3},             /* ext8, empty payload */
+    {{0xc8, 0, 0, 42}, 4},          /* ext16, empty payload */
+    {{0xc9, 0, 0, 0, 0, 42}, 6},    /* ext32, empty payload */
+    {{0xc7, 1, 42, 7}, 4},          /* ext8, one-byte payload */
+    {{0xd4, 42, 7}, 3},             /* fixext1 */
+    {{0xa0}, 1},                    /* empty string */
+    {{0xc4, 0}, 2}                  /* empty binary */
+  };
+  buf_t buf;
+  cmp_ctx_t cmp;
+  cmp_object_t obj;
+  cmp_skipper skip;
+  unsigned int variant, use_skip, container;
+  size_t i, end;
+  uint16_t next;
+
+  (void)state;
+  setup_cmp_and_buf(&cmp, &buf);
+  skip = cmp.skip;
+
+  for (use_skip = 0; use_skip < 2; ++use_skip) {
+    cmp.skip = use_skip ? skip : NULL;
+    for (variant = 0; variant < 4; ++variant) {
+      for (container = 0; container < 4; ++container) {
+        if ((variant == 0 && container != 0) ||
+            (variant == 1 && container == 3)) {
+          continue;
+        }
+        for (i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
+          M_BufferClear(&buf);
+          if (container == 1 || container == 3) {
+            assert_true(cmp_write_array(&cmp, 1));
+          }
+          if (container == 2) {
+            assert_true(cmp_write_map(&cmp, 1));
+            assert_true(cmp_write_str(&cmp, "key", 3));
+          }
+          if (container == 3) {
+            assert_true(cmp_write_array(&cmp, 1));
+          }
+          M_BufferWrite(&buf, values[i].data, values[i].size);
+          end = M_BufferGetCursor(&buf);
+          assert_true(cmp_write_uint(&cmp, 300));
+          M_BufferSeek(&buf, 0);
+          assert_true(skip_object_variant(&cmp, &obj, variant));
+          assert_int_equal(M_BufferGetCursor(&buf), end);
+          assert_true(cmp_read_ushort(&cmp, &next));
+          assert_int_equal(next, 300);
+          assert_int_equal(M_BufferGetCursor(&buf), M_BufferGetSize(&buf));
+        }
+      }
+
+      for (i = 0; i < 3; ++i) {
+        /* Empty extensions still need their type byte, including at EOF. */
+        M_BufferSetData(&buf, values[i].data, values[i].size);
+        M_BufferSeek(&buf, 0);
+        assert_true(skip_object_variant(&cmp, &obj, variant));
+        assert_int_equal(M_BufferGetCursor(&buf), values[i].size);
+
+        M_BufferSetData(&buf, values[i].data, values[i].size - 1);
+        M_BufferSeek(&buf, 0);
+        assert_false(skip_object_variant(&cmp, &obj, variant));
+        assert_int_equal(M_BufferGetCursor(&buf), values[i].size - 1);
+      }
+    }
+  }
+
+  teardown_cmp_and_buf(&cmp, &buf);
+}
+
 void test_skip_bytes(void **state) {
   buf_t buf;
   cmp_ctx_t cmp;

@@ -38,6 +38,7 @@ void test_obj(void **state);
 void test_float_flip(void **state);
 #endif
 void test_skipping(void **state);
+void test_skipping_empty_ext(void **state);
 void test_skip_bytes(void **state);
 void test_deprecated_limited_skipping(void **state);
 void test_errors(void **state);

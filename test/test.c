@@ -33,7 +33,7 @@ THE SOFTWARE.
 
 int main(void) {
   /* Use the old CMocka API because Travis' latest Ubuntu is Trusty */
-  const UnitTest tests[18] = {
+  const UnitTest tests[19] = {
     unit_test(test_msgpack),
     unit_test(test_fixedint),
     unit_test(test_numbers),
@@ -51,6 +51,7 @@ int main(void) {
 #endif
 
     unit_test(test_skipping),
+    unit_test(test_skipping_empty_ext),
     unit_test(test_skip_bytes),
     unit_test(test_deprecated_limited_skipping),
     unit_test(test_errors),
